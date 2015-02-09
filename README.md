@@ -1,6 +1,21 @@
 # sbrocks
 A 64 bit Unix OS developed at SBU
 
+##Warm-up Project #1 (Part 1 of 2): The Shell
+- Implement a shell – sbush, must be able to …
+- Support changing current directory ( cd )
+- Execute binaries interactively
+- Execute scripts
+- Execute pipelines of binaries ( /bin/ls | /bin/grep test )
+- Set and use PATH and PS1 variables
+
+##Warm-up Project #1 (Part 2 of 2): The Standard Library
+- Implement a standard library – sblibc, must be able to …
+- Provide all functionality needed by your sbush
+- Implement all functions from include/stdlib.h
+- implement bin/ls and bin/cat to test them
+- Rely on 64-bit Linux syscall numbers and conventions
+
 How to test ??
 ```
 - ls -l
