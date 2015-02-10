@@ -2,6 +2,8 @@
 #include <sys/defs.h>
 #include <sys/syscall.h>
 #include <syscall.h>
+#include <string.h>
+#include <stdio.h>
 
 static void *breakPtr;
 
@@ -110,21 +112,65 @@ int dup2(int oldfd, int newfd){
     int res = syscall_2(SYS_dup2, (uint64_t) oldfd, (uint64_t) newfd);
     return res;
 }
-/*
-void *malloc(size_t size){
-    uint64_t res = syscall_1(6, size);
-    return (void *)res;
-}*/
 
 void *opendir(const char *name){
-    uint64_t res =syscall_1(SYS_getdents, (uint64_t)name);
-    return (void *)res;
+	int fd = open(name, O_DIRECTORY);
+	char buf[1024];
+	//struct dirent *d = NULL;
+	if(fd < 0)
+		return NULL;
+	//static struct dirent dp;
+	//printf("sashi 1 \n");
+	int res = syscall_3(SYS_getdents, (uint64_t)fd, (uint64_t)buf, (uint64_t)sizeof(struct dirent));
+	if(res == -1)
+		return NULL;
+	//printf("sashi 2 \n");
+	struct dir *d = malloc(sizeof(struct dir));
+	d->fd = fd;
+	d->addr = (void *)buf;
+	//printf("sashi 1 \n");
+	strcpy(d->d_name, name);
+	//printf("sashi 2 \n");
+	//d = (struct dirent *)buf;
+    return (void *)d;
+}
+
+/*
+void *opendir(const char *name){
+	int fd = open(name, O_DIRECTORY);
+	char buf[1024];
+	struct dirent *d = NULL;
+	if(fd < 0)
+		return NULL;
+	static struct dirent dp;
+	int res = syscall_3(SYS_getdents, (uint64_t)fd, (uint64_t)buf, (uint64_t)sizeof(dp));
+	if(res == -1)
+		return NULL;
+	d = (struct dirent *)buf;
+    return (void *)d;
+}
+*/
+struct dirent *readdir(void *dir)
+{
+	struct dirent *dip = (struct dirent *)dir;
+	struct dirent *next;
+	next = (struct dirent *)(dir + dip->d_reclen);
+	if(next->d_reclen == 0)
+		return NULL;
+	return next;
 }
 
 int closedir(void *dir){
-	int res = syscall_1(12, (uint64_t)dir);
+	struct dir *dp = (struct dir *)dir;
+	int res = -1;
+	if(dp != NULL)
+	{	
+		res = close(dp->fd);
+		free(dp);
+	}
 	return res;
 }
+
 /*working*/
 pid_t waitpid(pid_t pid,int *status, int options){
     pid_t res = syscall_3(SYS_wait4,(uint64_t)pid,(uint64_t)status,(uint64_t)options);

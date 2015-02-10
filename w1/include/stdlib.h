@@ -3,6 +3,8 @@
 
 #include <sys/defs.h>
 
+
+
 extern __thread int errno;
 
 int main(int argc, char* argv[], char* envp[]);
@@ -43,14 +45,23 @@ int dup(int oldfd);
 int dup2(int oldfd, int newfd);
 
 // directories
-#define NAME_MAX 255
+#define NAME_MAX 1024
 struct dirent
 {
-	long d_ino;
-	off_t d_off;
-	unsigned short d_reclen;
-	char d_name [NAME_MAX+1];
+	long d_ino;					/* file number of entry */
+	off_t d_off;				
+	unsigned short d_reclen;	/* length of this record */
+	char d_name [NAME_MAX+1];	/* name must be no longer than this */
 };
+
+struct dir
+{
+	int fd;
+	void *addr;
+	//char addr[1024];
+	char d_name[NAME_MAX+1];
+};
+
 void *opendir(const char *name);
 struct dirent *readdir(void *dir);
 int closedir(void *dir);

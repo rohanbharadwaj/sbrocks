@@ -7,7 +7,8 @@
 http://www.scs.stanford.edu/histar/src/pkg/uclibc/libc/sysdeps/linux/e1/crt1.c
 */
 void _start(uint64_t sTop) {
-	uint64_t *argc;
+	uint64_t *argc =  (uint64_t*)(&sTop);
+	//printf("shashi argc")
 	char **argv = NULL;
 	char **envp = NULL;
 	int res;

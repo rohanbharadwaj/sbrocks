@@ -18,7 +18,8 @@ enum
 	FREE
 };
 
-#define sizeof(type) (char *)(&type+1)-(char*)(&type)
+//#define sizeof(type) (char *)(&type+1)-(char*)(&type)
+
 #define BLOCK_SIZE sizeof(mem)
 
 struct mem_block *allocateMemory(size_t size);
