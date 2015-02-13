@@ -124,57 +124,13 @@ void executeScript(char* fname,char *envp[]){
         }
     
 }
-#if 0
-int parseCommand(char *inputString)
-{
-	//printf("parseCommand \n");
-    char *srcPtr = inputString;
-    int len = strlen(inputString);
-    char *str = NULL;
-    int i = 0;
-    cmdcount = 0;
-    int argcount = 0;
-    int count = 0;
-    while(i < len)
-    {
-        str = srcPtr;
-        while((*srcPtr != ' ' && *srcPtr != '|') && i < len )
-        {
-            i++;
-            count++;
-            srcPtr++;
-        }
-        trim(str);
-        int l = strlen(str);
-        if(count > 0 && l > 0)
-        {
-            commands[cmdcount][argcount]=malloc(count);
-            strncpy(commands[cmdcount][argcount], str, count);
-			//printf("commands are %s \n", commands[cmdcount][argcount]);
-            argcount++;
-        }
-        
-        if(*srcPtr == '|')
-        {
-            cmdcount++;
-            argcount = 0;
-            srcPtr++;
-            i++;
-        }
-        count = 0;
-        while (*srcPtr == ' ' && i<len) {
-            *srcPtr = '\0';
-            srcPtr++;
-            i++;
-        }
-        commands[cmdcount][argcount]=NULL;
-    }
-    return cmdcount + 1;
-}
-#endif
 
 int parseCommand(char *inputString)
 {
+   /* for(int i = 0; i < cmdcount; i++)
+    {
+        free(commands[i]);
+    }*/
     char *srcPtr = inputString;
     int len = strlen(inputString);
     char *str = NULL;
@@ -186,23 +142,35 @@ int parseCommand(char *inputString)
     while(i < len)
     {
         str = srcPtr;
-        while((*srcPtr != ' ') && i < len)
-        {            
+        while((*srcPtr != ' '  && *srcPtr != '|') && i < len)
+        {      
+            //printf("%c \n", *srcPtr); 
             i++;
             count++;
-            if(*srcPtr == '|')
+            srcPtr++;
+        }    
+        if(*srcPtr == '|')
+        {
+            trim(str);
+            int len = strlen(str);
+            if(len > 0 && count > 0)
             {
-                cmdcount++;
-                argcount = 0;
-                found = 1;
+                commands[cmdcount][argcount]=malloc(len);
+                strncpy(commands[cmdcount][argcount], str, count);
+                //printf("command is %s \n",commands[cmdcount][argcount]);
+                argcount++;
             }
+            cmdcount++;
+            argcount = 0;
+            found = 1;
             srcPtr++;
         }
+            
         if(found != 1)
         {
             trim(str);
             int len = strlen(str);
-            if(len > 0)
+            if(len > 0 && count > 0)
             {
                 commands[cmdcount][argcount]=malloc(len);
                 strncpy(commands[cmdcount][argcount], str, count);
@@ -217,6 +185,7 @@ int parseCommand(char *inputString)
             srcPtr++;
             i++;
         }
+        //printf("shashi:  %c \n", *srcPtr); 
         commands[cmdcount][argcount]=NULL;
 
     }
@@ -497,6 +466,7 @@ void executeProcess(char *envp[]){
         exit(1);
     }
     waitpid(pid,&status,0);
+    commands[0][1] = NULL;
 }
 
 void executeProcessPipe(int n,char *envp[]){
@@ -561,6 +531,10 @@ void executeProcessPipe(int n,char *envp[]){
         exit(1);
     }
     waitpid(pid,&status,0);
+    for(i=0;i<n;i++)
+    {
+        commands[i][1] = NULL;
+    }
 }
 
 
@@ -633,16 +607,6 @@ int isSpace(char c)
 {
     return (c == ' ' || c == '\t' || c == '\n' || c == '\12');
 }
-
-/*void serror(int error){
-    switch(error){
-        case 2 : printf("No Such File or directory\n"); break;
-        case 12 : printf("Our of memory\n"); break;
-        case 13 : printf("Permission denied\n"); break;
-        case 30 : printf("Read-only file system\n"); break;
-        default : printf("Error in Opening or Executing\n");
-    }
-}*/
 
 void welcome()
 {
