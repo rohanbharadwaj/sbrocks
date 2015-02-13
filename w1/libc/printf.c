@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
+#include <error.h>
 
 #define ZEROPAD 1               /* pad with zero */
 #define SIGN    2               /* unsigned/signed long */
@@ -283,3 +284,82 @@ int vsprintf(char *buf, const char *fmt, va_list args)
 	return str - buf;
 }
 
+void serror(int error){
+    switch(error){
+		case EPERM:	 
+				printf("operation is not permitted \n");
+				break;
+        case ENOENT : 
+				printf("No Such File or directory\n"); 
+				break;
+		case EINTR	:
+				printf("Interrupted system call \n");
+				break;
+		case EIO : 
+				printf("Input outpur error \n"); 
+				break;
+		case E2BIG : 
+				printf("Argument list too long \n"); 
+				break;	
+		case ENOEXEC : 
+				printf("Exec format error \n"); 
+				break;	
+		case EBADF 	 : 
+				printf("Bad File number \n"); 
+				break;
+		case ECHILD : 
+				printf("No child process \n"); 
+				break;
+		case EAGAIN:
+				printf("error: try again \n");
+				break;
+        case ENOMEM : 
+				printf("Out of memory\n");
+				break;
+        case EACCES : 
+				printf("Permission denied\n"); 
+				break;
+		case EFAULT : 
+				printf("Bad address \n"); 
+				break;	
+		case EBUSY	:
+				printf("Device or resource busy \n");
+				break;
+		case EEXIST : 
+				printf("File exists \n"); 
+				break;	
+		case ENOTDIR : 
+				printf("Not a directory \n"); 
+				break;	
+		case EISDIR : 
+				printf("is a directory \n"); 
+				break;	
+		case EINVAL : 
+				printf("Invalid Argument \n"); 
+				break;
+		case ENFILE	:
+				printf("File table overflow \n");
+				break;
+		case EMFILE :
+				printf("Too many open files \n");
+				break;
+		case EFBIG : 
+				printf("File too large \n"); 
+				break;
+        case EROFS : 
+				printf("Read-only file system\n"); 
+				break;
+		case ELOOP:
+				printf("Too many symbolic links encountered \n");
+				break;
+		case EPIPE: 
+				printf("Broken pipe \n"); 
+				break;
+		case ENAMETOOLONG : 
+				printf("File name too long \n"); 
+				break;	
+        default : 
+			printf("Error in Opening or Executing\n");
+		
+    }
+}

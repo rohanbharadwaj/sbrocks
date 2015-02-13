@@ -3,5 +3,6 @@
 
 int printf(const char *format, ...);
 int scanf(const char *format, ...);
+void serror(int error);
 
 #endif

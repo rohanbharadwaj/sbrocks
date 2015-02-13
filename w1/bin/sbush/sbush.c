@@ -634,7 +634,7 @@ int isSpace(char c)
     return (c == ' ' || c == '\t' || c == '\n' || c == '\12');
 }
 
-void serror(int error){
+/*void serror(int error){
     switch(error){
         case 2 : printf("No Such File or directory\n"); break;
         case 12 : printf("Our of memory\n"); break;
@@ -642,7 +642,7 @@ void serror(int error){
         case 30 : printf("Read-only file system\n"); break;
         default : printf("Error in Opening or Executing\n");
     }
-}
+}*/
 
 void welcome()
 {

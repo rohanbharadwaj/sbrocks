@@ -4,9 +4,10 @@
 #include <syscall.h>
 #include <string.h>
 #include <stdio.h>
+#include <error.h>
 
 static void *breakPtr;
-
+__thread int errno;
 /*working*/
 void exit(int status){
     syscall_1(SYS_exit, status);
@@ -33,10 +34,15 @@ void *sbrk(size_t increment){
 /*working*/
 pid_t fork(){
     uint32_t res = syscall_0(SYS_fork);
+	if((int)res < 0)
+	{
+		errno = -res;
+		return -1;
+	}
     return res;
 }
 
-/*working*/
+/*this method doesnt throw error always successful*/
 pid_t getpid(){
     uint32_t res = syscall_0(SYS_getpid);
     return res;
@@ -49,6 +55,11 @@ pid_t getppid(){
 /*wrokig*/
 int execve(const char *filename, char *const argv[], char *const envp[]){
     uint64_t res = syscall_3(SYS_execve, (uint64_t)filename, (uint64_t)argv, (uint64_t)envp);
+	if((int)res < 0)
+	{
+		errno = -res;
+		return -1;
+	}
     return res;
 }
 
@@ -64,52 +75,102 @@ unsigned int alarm(unsigned int seconds){
 /*working*/
 char *getcwd(char *buf, size_t size){
     uint64_t res = syscall_2(SYS_getcwd, (uint64_t) buf, (uint64_t) size);
+	if((char *)res == NULL)
+	{
+		errno = EFAULT;
+	}
     return (char *)res;
 }
 /*working*/ 
 int chdir(const char *path){
     int res = syscall_1(SYS_chdir, (uint64_t)path);
+	if(res < 0)
+	{
+		errno = -res;
+		return -1;
+	}
     return res;
 }
 /*working*/    
 int open(const char *pathname, int flags){
     uint64_t res = syscall_2(SYS_open, (uint64_t) pathname, (uint64_t) flags);
+	if((int)res < 0)
+	{
+		errno = -res;
+		return -1;
+	}
     return res;
 }
 
 /*working*/
 ssize_t read(int fd, void *buf, size_t count){
     ssize_t res = syscall_3(SYS_read, (uint64_t) fd, (uint64_t) buf, (uint64_t) count);
+	if((int)res < 0)
+	{
+		errno = -res;
+		return -1;
+	}
     return res;
 }
+
 /*working*/
 ssize_t write(int fd, const void *buf, size_t count){
     ssize_t res = syscall_3(SYS_write, (uint64_t) fd, (uint64_t) buf, (uint64_t) count);
+	if((int)res < 0)
+	{
+		errno = -res;
+		return -1;
+	}
     return res; 
 }
 
 off_t lseek(int fildes, off_t offset, int whence){
     off_t res = syscall_3(SYS_lseek, (uint64_t) fildes, (uint64_t) offset, (uint64_t) whence);
+	if((int)res < 0)
+	{
+		errno = -res;
+		return -1;
+	}
     return res;
 }
 /*working*/
 int close(int fd){
     int res = syscall_1(SYS_close, fd);
+	if(res < 0)
+	{
+		errno = -res;
+		return -1;
+	}
     return res;
 }
 /*working*/
 int pipe(int filedes[2]){
     int res = syscall_1(SYS_pipe, (uint64_t)filedes);
+	if(res < 0)
+	{
+		errno = -res;
+		return -1;
+	}
     return res;
 }
 
 int dup(int oldfd){
     int res = syscall_1(SYS_dup,oldfd);
+	if(res < 0)
+	{
+		errno = -res;
+		return -1;
+	}
     return res;
 }
 
 int dup2(int oldfd, int newfd){
     int res = syscall_2(SYS_dup2, (uint64_t) oldfd, (uint64_t) newfd);
+	if(res < 0)
+	{
+		errno = -res;
+		return -1;
+	}
     return res;
 }
 
@@ -122,8 +183,11 @@ void *opendir(const char *name){
 	//static struct dirent dp;
 	//printf("sashi 1 \n");
 	int res = syscall_3(SYS_getdents, (uint64_t)fd, (uint64_t)buf, (uint64_t)sizeof(struct dirent));
-	if(res == -1)
+	if(res < 0)
+	{
+		errno = -res;	
 		return NULL;
+	}
 	//printf("sashi 2 \n");
 	struct dir *d = malloc(sizeof(struct dir));
 	d->fd = fd;
@@ -174,5 +238,10 @@ int closedir(void *dir){
 /*working*/
 pid_t waitpid(pid_t pid,int *status, int options){
     pid_t res = syscall_3(SYS_wait4,(uint64_t)pid,(uint64_t)status,(uint64_t)options);
+	if((int)res < 0)
+	{
+		errno = -res;	
+		return -1;
+	}
     return res;
 }

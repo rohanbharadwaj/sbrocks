@@ -8,7 +8,8 @@ void testExecve(char *envp[]);
 void testchdir();
 void getcwd1();
 void testmalloc();
-
+void fopentest();
+	
 int main(int argc, char* argv[], char* envp[]) {
 	/*char *c;
 	c = malloc(12);
@@ -19,8 +20,24 @@ int main(int argc, char* argv[], char* envp[]) {
 	//testExecve(envp);
 	//testchdir();
    	//getcwd1();
-	testmalloc();
+	//testmalloc();
+	fopentest();
 	return 0;
+}
+
+void fopentest()
+{
+	char *name = malloc(12);
+	strcpy(name, "/home/stufs1/sranjan/sbrocks/sbrocks_hw1_2/s15-w1/cse506-pubkey.txt"/*"abc"*/);
+	int fd = open(name, O_RDONLY);
+	//printf("fd no is %d error no is : %d \n", fd, errno);
+	if(fd < 0)
+		serror(errno);
+	int res = close(fd);
+	if(res < 0)
+		serror(errno);
+	//printf("res value is %d \n", res);
+	
 }
 
 void testmalloc()

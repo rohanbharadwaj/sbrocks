@@ -31,7 +31,8 @@ int main(int argc, char* argv[], char* envp[]) {
     if( cwd != NULL ) {
         printf( "My working directory is %s \n", buff );
     }*/
-	showFiles();
+	printf("argc: %d  envp[0]: %s  \n\n", argc, envp[0]);
+//	showFiles();
 
 	return 0;
 }
