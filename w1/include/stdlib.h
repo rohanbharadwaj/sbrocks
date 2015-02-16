@@ -3,7 +3,10 @@
 
 #include <sys/defs.h>
 
-
+struct timespec {
+    int64_t tv_sec;        /* seconds */
+    long   tv_nsec;       /* nanoseconds */
+};
 
 extern __thread int errno;
 

@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
-#include<string.h>
+#include <string.h>
 /*reference*/
 /*http://mirror.fsf.org/pmon2000/3.x/src/lib/libc/scanf.c*/
 
@@ -43,14 +43,20 @@ int scanf(const char *format, ...)
 				break;
 				case 'c':
 					size = read(0, data, 1);
-				
+					
 					if(size == -1)
 						return size;
 					char *c = va_arg(val, char *);
 					*c = data[0];
 					//printf("size of char is %d \n", size);
 				break;
-
+				case 'x':
+					size = read(0, data, MAXSIZE);
+					if(size == -1)
+						return size;
+					size--;	data[size] = '\0';
+					int64_t *arg1 = va_arg(val, int64_t *);
+					*arg1 = htol(data);
 				//read character
 				
 			}

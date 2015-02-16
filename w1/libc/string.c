@@ -129,3 +129,37 @@ int atoi(const char *str)
         k = (k<<3)+(k<<1)+(str[i])-'0';
     return k;
 }
+
+int64_t htol(char *str)
+{
+    int64_t res = 0;
+    int i = 0;
+    while(str[i] != '\0')
+    {
+        switch(str[i]){
+            case 'a':
+                res = res*16 + 10;
+                break;
+            case 'b':
+                res = res*16 + 11;
+                break;
+            case 'c':
+                res = res*16 + 12;
+                break;
+            case 'd':
+                res = res*16 + 13;
+                break;
+            case 'e':
+                res = res*16 + 14;
+                break;          
+            case 'f':
+                res = res*16 + 15;
+                break;  
+            default:
+                res = res*16 + (str[i] - '0');
+                break;
+            }   
+            i++;
+    }
+    return res;
+}

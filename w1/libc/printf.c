@@ -359,7 +359,7 @@ void serror(int error){
 				printf("File name too long \n"); 
 				break;	
         default : 
-			printf("Error in Opening or Executing\n");
+			printf("Something went wrong \n");
 		
     }
 }

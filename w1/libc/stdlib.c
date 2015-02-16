@@ -63,14 +63,29 @@ int execve(const char *filename, char *const argv[], char *const envp[]){
     return res;
 }
 
+int nanosleep(const struct timespec *req, struct timespec *rem)
+{
+	int res = syscall_2(SYS_nanosleep, (uint64_t)(void *)req, (uint64_t)(void *)rem);
+	if(res < 0)
+	{
+		errno = -res;
+	}
+	//printf("res is %d \n", res);
+	return res;
+}
+
 unsigned int sleep(unsigned int seconds){
-    unsigned int res = syscall_1(SYS_nanosleep, seconds);
-    return res;
+	struct timespec *req, *rem;
+	req = malloc(sizeof(struct timespec));
+	rem = malloc(sizeof(struct timespec));
+	req->tv_sec = seconds;
+	req->tv_nsec = 0;
+	return nanosleep(req, rem);
 }
 
 unsigned int alarm(unsigned int seconds){
     unsigned int res = syscall_1(SYS_alarm, seconds);
-    return res;
+  	return res;
 }
 /*working*/
 char *getcwd(char *buf, size_t size){
@@ -126,7 +141,7 @@ ssize_t write(int fd, const void *buf, size_t count){
 
 off_t lseek(int fildes, off_t offset, int whence){
     off_t res = syscall_3(SYS_lseek, (uint64_t) fildes, (uint64_t) offset, (uint64_t) whence);
-	if((int)res < 0)
+    if((int)res < 0)
 	{
 		errno = -res;
 		return -1;
@@ -199,21 +214,6 @@ void *opendir(const char *name){
     return (void *)d;
 }
 
-/*
-void *opendir(const char *name){
-	int fd = open(name, O_DIRECTORY);
-	char buf[1024];
-	struct dirent *d = NULL;
-	if(fd < 0)
-		return NULL;
-	static struct dirent dp;
-	int res = syscall_3(SYS_getdents, (uint64_t)fd, (uint64_t)buf, (uint64_t)sizeof(dp));
-	if(res == -1)
-		return NULL;
-	d = (struct dirent *)buf;
-    return (void *)d;
-}
-*/
 struct dirent *readdir(void *dir)
 {
 	struct dirent *dip = (struct dirent *)dir;

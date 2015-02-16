@@ -21,6 +21,6 @@ void reset(char str[], int len);
 void *(memcpy)(void * restrict s1, const void * restrict s2, size_t n);
 int memcmp(const void* s1, const void* s2,size_t n);
 int atoi(const char *str);
-	
+int64_t htol(char *str);
 #endif
 

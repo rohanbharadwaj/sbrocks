@@ -9,12 +9,13 @@ void testchdir();
 void getcwd1();
 void testmalloc();
 void fopentest();
-	
+void lseek_test();
+
 int main(int argc, char* argv[], char* envp[]) {
 
 	while(1)
 	{
-		printf("Enter 1 for open() and close() API test \n 2 for malloc() and free() API test \n 3 for pipe() api test \n 4 for chdir() API test \n 5 for cwd() API test \n 6 for execve() API test \n 7 for fork() API test \n 8 for exit  \n");
+		printf("Enter 1 for open() and close() API test \n 2 for malloc() and free() API test \n 3 for pipe() api test \n 4 for chdir() API test \n 5 for cwd() API test \n 6 for execve() API test \n 7 for fork() API test \n 8 for exit  \n 9 for lseek \n");
 		int c;
 		scanf("%d", &c);
 		switch(c)
@@ -42,6 +43,9 @@ int main(int argc, char* argv[], char* envp[]) {
 				break;
 			case 8:
 				exit(0);
+			case 9:
+				lseek_test();
+				break;	
 			default:
 				printf("Please enter valid option \n");
 				break;					
@@ -197,13 +201,16 @@ void testfork()
 	int pid = fork();
 	if(pid == 0)
 	{
-		
+		sleep(3);
 		printf("I am in child \n");	
+		exit(1);
+
 	}
-	else
-	{
+
+	printf("parent is sleep \n");
+	sleep(20);
 		printf("I am in parent \n");	
-	}
+waitpid(pid, NULL, 0); 
 	if(pid <0)
 	{
 		serror(errno);
@@ -211,6 +218,38 @@ void testfork()
 	}
 	printf("fork() API open succesfull \n");
 	printf("\n\n");
+}
+
+void lseek_test()
+{
+	int file=0;
+    char *name = malloc(12);
+	strcpy(name, "/home/stufs1/sranjan/sbrocks/sbrocks_hw1_2/s15-w1/cse506-pubkey.txt"/*"abc"*/);
+    if((file=open(name,O_RDONLY)) < -1)
+            return;
+
+    char buffer[19];
+    if(read(file,buffer,19) != 19)  
+    {
+    		serror(errno);
+    		return;
+    }
+    printf("shashi          %s\n",buffer);
+
+    if(lseek(file,10,SEEK_SET) < 0) 
+    	{
+    		printf("shashi %d \n", errno);
+    		serror(errno);
+    		return;
+    	}
+	char buffer1[1024];
+    if(read(file,buffer1,1024) != 1024)  
+    	{
+    		printf("error here  %d \n", errno);
+    		serror(errno);
+    		return;
+    	}
+    printf("ranjan        %s   \n\n len is :\n \n",buffer1);
 }
 
 
