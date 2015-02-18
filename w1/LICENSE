@@ -1,3 +1,21 @@
+Copyright (c)2015 "The SBUnix" by Shashi Ranjan(netID:sranjan), Rohan Bhardawaj(netID:rbhardawaj) 
+and Ashish Goel(netID:asgoel).All rights reserved.
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+
 Copyright (c) 2013-2015 by Mike Ferdman.  All rights reserved.
 	Unrestricted rights are granted to instructors and students of CSE506 class
 	at Stony Brook University.
@@ -47,3 +65,26 @@ Copyright (c) 2010, Chris Stones.  All rights reserved.
 	CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 	OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 	OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+libc/printf.c is copyright:
+
+/* -*- linux-c -*- ------------------------------------------------------- *
+ *
+ *   Copyright (C) 1991, 1992 Linus Torvalds
+ *   Copyright 2007 rPath, Inc. - All Rights Reserved
+ *
+ *   This file is part of the Linux kernel, and is made available under
+ *   the terms of the GNU General Public License version 2.
+ *
+ * ----------------------------------------------------------------------- */
+
+
+ // Web References
+
+ 	http://danluu.com/malloc-tutorial/
+    http://www.jamesmolloy.co.uk/tutorial_html/4.-The%20GDT%20and%20IDT.html
+    http://wiki.osdev.org/Main_Page
+    http://www.brokenthorn.com/Resources/OSDev23.html
+    https://www.kernel.org/
+
+

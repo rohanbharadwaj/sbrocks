@@ -1,3 +1,4 @@
+/* See COPYRIGHT for copyright Information */
 
 
 #define EPERM        1 	 	/*Operation not permitted*/

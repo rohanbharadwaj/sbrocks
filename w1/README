@@ -1,0 +1,92 @@
+@Authors
+Rohan Bharadwaj (rbharadwaj,109758985)
+Shashi Ranjan (sranjan,109974495)
+Ashish Goel (asgoel,109753528)
+
+*****************************************************************************
+WP1 Part 1 - SBUSH Version 1.0 02/13/2015
+*****************************************************************************
+##USAGE
+------------------------------------------------
+Step 1
+Make File (From top level folder)
+$make 
+
+Step 2
+Run the code 
+./rootfs/bin/sbush
+
+
+##Running Scripts
+---------------------------------------------------
+$./rootfs/bin/sbush  run.sbush
+
+or (from sbush)
+
+sbush$ run.sbush
+
+
+##Built In Commands
+----------------------------------------------------
+1. cd (Change Directory)
+
+sbush$ cd             (To go to home)
+sbudh$ cd <path>      (To change directory to given path)
+sbush$ cd .. 			(suppports other variants as well)
+
+
+2. exit - To exit from the shell
+
+sbush$ exit
+
+
+3. Setting Path 
+
+sbush$ set PATH <some-path>
+
+example :
+sbush$ set PATH /abc/bin
+
+We support adding path to the end in current version.
+
+4. PS1
+
+sbush$ set PS1 <some-string>
+
+example : 
+sbush$ set PS1 sburocks
+sbusrocks$ 
+
+
+##Some Test commands that we have run on the shell
+----------------------------------------------------------
+
+sbush$ ls -l | head -5 | tail -3
+
+sbush$ ls -l | wc
+
+*******************************************************************************
+WP1 PART 2 stdlib.c
+*******************************************************************************
+Implemented functions defined in stdlib.h
+The source files are in libc folder
+
+Test programs to test stdlib functions (source files in bin/)
+1. ls
+example:
+$ ./rootfs/bin/ls
+
+2. cat 
+example :
+$ ./rootfs/bin/cat filename
+
+3. testapi (Tests : open,malloc,free,pipe,chdir,cwd,execve,fork,exit,lseek)
+example :
+$ ./rootfs/bin/testapi
+
+
+Notes:
+1. run.sbush contained following lines.
+	#!/home/stufs1/sranjan/sbrocks/sbrocks_hw1_2/s15-w1/rootfs/bin/sbush
+	echo "hello world!"
+

@@ -1,3 +1,3 @@
-#!/home/stufs1/sranjan/experimental/new/rootfs/bin/sbush
-echo "hello"
+#!/home/stufs1/sranjan/sbrocks/sbrocks_hw1_2/s15-w1/rootfs/bin/sbush
+echo "hello world!"
 

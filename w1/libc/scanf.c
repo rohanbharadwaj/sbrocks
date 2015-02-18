@@ -2,8 +2,6 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
-/*reference*/
-/*http://mirror.fsf.org/pmon2000/3.x/src/lib/libc/scanf.c*/
 
 #define MAXSIZE 2014
 
