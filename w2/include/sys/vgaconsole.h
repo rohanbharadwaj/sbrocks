@@ -5,5 +5,6 @@
 void putch(char ch);
 void setcolor(char background, char foreground);
 void puts(const char *str);
+void puttimer(int x, int y, char *str);
 void clearscreen();
 #endif

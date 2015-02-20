@@ -121,6 +121,17 @@ void kprintf(const char *fmt, ...)
 	return;
 }
 
+void kprinttime(int x, int y, const char *fmt, ...)
+{
+	va_list val;
+	va_start(val, fmt);
+	kvsprintf(printf_buf, fmt, val);
+	va_end(val);
+	puttimer(x, y, printf_buf);
+	//puts(printf_buf);
+	return;
+}
+
 void clrscr()
 {
 	clearscreen();

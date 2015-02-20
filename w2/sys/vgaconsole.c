@@ -52,7 +52,7 @@ void adjustcursor()
 		cursor_y++;
 		
 	}
-	if(cursor_y >=MAX_Y)
+	if(cursor_y >=MAX_Y -1)
 	{
 		//screen is full scroll one line above for all the lines starting from line 1 
 		// and copy the last line content in 25th line 
@@ -60,6 +60,18 @@ void adjustcursor()
 		int empty = 0x20 | (attrib << 8);
 		memsetw((unsigned short *)vga_addr +(MAX_X* (MAX_Y -1)), empty, MAX_X);
 		cursor_y = 24;	//last line
+	}
+}
+
+void puttimer(int x, int y, char *str)
+{
+	while(*str)
+	{
+		char *dst_addr  = vga_addr + (y*80 + x) * 2;
+		*dst_addr++ = *str;
+		*dst_addr = attrib;
+		x++;
+		str++;
 	}
 }
 
@@ -71,6 +83,7 @@ void puts(const char *str)
 		str++;
 	}
 }
+
 
 void clearscreen()
 {
