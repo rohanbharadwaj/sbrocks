@@ -7,12 +7,12 @@
 *//* Defines an IDT entry */
 
 //interrupt service routines
-extern void irq0();
+extern void irq0();             //PIT irq handler
+extern void irq1();             //KB irq handler
 extern void isr0();
-
 void testdivzero();
-
 void set_irqs();
+
 struct idt_entry
 {
     uint16_t base_lo;
@@ -43,8 +43,6 @@ void reload_idt() {
     _x86_64_asm_idt(&idtr);
 }
 
-
-
 //the function to set idt table entries
 void idt_set_gate(int32_t num, uint64_t base, uint16_t sel, uint8_t flags)
 {
@@ -63,9 +61,12 @@ void idt_set_gate(int32_t num, uint64_t base, uint16_t sel, uint8_t flags)
 void idt_install()
 {
     memset(&idt, 0, sizeof(struct idt_entry) * 256);
-    
-    idt_set_gate(0, (uint64_t)isr0, 0x08, 0x8e);
+    //DIV ZERO exception
+    //idt_set_gate(0, (uint64_t)isr0, 0x08, 0x8e);
+    //PIT interrupt
     idt_set_gate(32, (uint64_t)irq0, 0x08, 0x8E);
+    //Keyboard interrupt 
+    idt_set_gate(33, (uint64_t)irq1, 0x08, 0x8E);
     reload_idt();
     //testdivzero();
 }

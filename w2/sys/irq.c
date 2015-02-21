@@ -46,8 +46,8 @@ void install_irqs()
 
 void sleepk()
 {
-    long int i = 10000000000;
-    while(i != -1000000)
+    long int i = 10000;
+    while(i != -10000000)
     {
         i--;
     }
@@ -57,13 +57,17 @@ void irq_rountine_handler(uint64_t *r)
 {
     //__asm__("cli");
 	//kprintf("irq_rountine_handler %d \n", *r);
+   // uint64_t irqNum = 32 -(*r);
     void (*handler)();
     handler =  irq_routines[0];
     handler();
+    //sleepk();
     //kprintf("backk to irq_rountine_handler \n");
     
-    __asm__("sti");
+    //
     outportb(0x20,0x20);
+    //outportb(0xa0,0x20);
+    //__asm__("sti");
     //sleepk();
-    while(1);
+    ///while(1);
 }

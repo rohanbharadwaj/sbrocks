@@ -13,6 +13,6 @@ struct regs
 };
 
 void kprintf(const char *fmt, ...);
-void kprinttime(int x, int y, const char *fmt, ...);
+void kprintat(int x, int y, const char *fmt, ...);
 void clrscr();
 #endif

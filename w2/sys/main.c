@@ -4,6 +4,7 @@
 #include <sys/idt.h>
 #include <sys/irq.h>
 #include <sys/timer.h>
+#include <sys/kb.h>
 
 void start(uint32_t* modulep, void* physbase, void* physfree)
 {
@@ -34,11 +35,6 @@ void boot(void)
 	// note: function changes rsp, local stack variables can't be practically used
 	//register char *s, *v;
 
-	/*long long i = 1000000000;
-	while(i > -100000)
-	{
-		i--;
-	}*/
 	__asm__(
 		"movq %%rsp, %0;"
 		"movq %1, %%rsp;"
@@ -50,13 +46,16 @@ void boot(void)
 	idt_install();
 	install_irqs();
 	timer_install();
+	kb_install();
 	__asm__("sti");
 	start(
 		(uint32_t*)((char*)(uint64_t)loader_stack[3] + (uint64_t)&kernmem - (uint64_t)&physbase),
 		&physbase,
 		(void*)(uint64_t)loader_stack[4]
 	);
+	clrscr();
 	//s = "!!!!! start() returned !!!!!";
 	//for(v = (char*)0xb8000; *s; ++s, v += 2) *v = *s;
+	//__asm__("sti");
 	while(1);
 }

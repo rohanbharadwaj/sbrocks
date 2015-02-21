@@ -1,0 +1,142 @@
+#include <sys/vgaconsole.h>
+#include <sys/ioport.h>
+/*
+* web reference:   http://www.osdever.net/bkerndev/Docs/printing.htm
+*/
+
+static char *vga_addr = (char*)0xb8000;
+int attrib = 0x03;
+#define MAX_Y 25  				//Max row value
+#define MAX_X 80				//Max column value
+void move_csr(void);
+void putch(char ch);
+void setcolor(char background, char foreground);
+void puts(const char *str);
+void clearscreen();
+void adjustcursor();
+
+int cursor_x = 0;
+int cursor_y = 0;
+
+void setcolor(char background, char foreground)
+{
+	attrib = (background<<4) | (foreground & 0x0F);
+}
+
+void putch(char ch)
+{
+	char *dst_addr;
+	switch(ch)
+	{
+		case '\n':
+			//new line: move cursor to new line
+			cursor_x=0;
+			cursor_y++;
+		break;
+		case '\r':
+			cursor_x = 0;
+			break;
+		/* Handle a backspace, by moving the cursor back one space */
+    	case 0x08:
+  			if(cursor_x != 0) 
+  				cursor_x--;
+ 			break;
+ 		/* Handles a tab by incrementing the cursor's x, but only
+   		 *  to a point that will make it divisible by 8 */	
+ 		case 0x09:
+ 			cursor_x = (cursor_x + 8) & ~(8 - 1);
+ 			break;
+		default:
+			dst_addr  = vga_addr + (cursor_y*80 + cursor_x) * 2;
+			*dst_addr++ = ch;
+			*dst_addr = attrib;
+			cursor_x++;
+		break;
+	}
+	adjustcursor();
+	move_csr();
+}
+
+/*
+* web reference:   http://www.osdever.net/bkerndev/Docs/printing.htm
+*/
+
+/* Updates the hardware cursor: the little blinking line
+*  on the screen under the last character pressed! */
+void move_csr(void)
+{
+    unsigned temp;
+
+    /* The equation for finding the index in a linear
+    *  chunk of memory can be represented by:
+    *  Index = [(y * width) + x] */
+    temp = cursor_y * 80 + cursor_x;
+
+    /* This sends a command to indicies 14 and 15 in the
+    *  CRT Control Register of the VGA controller. These
+    *  are the high and low bytes of the index that show
+    *  where the hardware cursor is to be 'blinking'. To
+    *  learn more, you should look up some VGA specific
+    *  programming documents. A great start to graphics:
+    *  http://www.brackeen.com/home/vga */
+    outportb(0x3D4, 14);
+    outportb(0x3D5, temp >> 8);
+    outportb(0x3D4, 15);
+    outportb(0x3D5, temp);
+}
+
+void adjustcursor()
+{
+	if(cursor_x >= MAX_X)
+	{
+		//line is filled start new line
+		cursor_x = 0;
+		cursor_y++;
+		
+	}
+	if(cursor_y >=MAX_Y -1)
+	{
+		//screen is full scroll one line above for all the lines starting from line 1 
+		// and copy the last line content in 25th line 
+		memcpy(vga_addr, vga_addr + MAX_X*2, MAX_Y * MAX_X * 2);
+		int empty = 0x20 | (attrib << 8);
+		memsetw((unsigned short *)vga_addr +(MAX_X* (MAX_Y -1)), empty, MAX_X);
+		cursor_y = 24;	//last line
+	}
+}
+
+void puttimer(int x, int y, char *str)
+{
+	while(*str)
+	{
+		char *dst_addr  = vga_addr + (y*MAX_X + x) * 2;
+		*dst_addr++ = *str;
+		*dst_addr = attrib;
+		x++;
+		str++;
+	}
+}
+
+void puts(const char *str)
+{
+	while(*str)
+	{
+		putch(*str);
+		str++;
+	}
+}
+
+void clearscreen()
+{
+	int i;
+	int empty = 0x20 | (attrib << 8);
+	for(i = 0; i < MAX_Y -1; i++)
+	{
+		//clear screen row by row all 25 rows
+		memsetw((unsigned short *)vga_addr  + (i*MAX_X), empty, MAX_X);
+	}
+	cursor_x = 0;
+	cursor_y = 0;
+    move_csr();
+}
+

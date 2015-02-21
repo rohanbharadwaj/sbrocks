@@ -121,7 +121,7 @@ void kprintf(const char *fmt, ...)
 	return;
 }
 
-void kprinttime(int x, int y, const char *fmt, ...)
+void kprintat(int x, int y, const char *fmt, ...)
 {
 	va_list val;
 	va_start(val, fmt);

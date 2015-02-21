@@ -1,8 +1,18 @@
 #include <sys/timer.h>
 
 int timer_ticks = 0;
+int prev_secs;
+
 extern void timer_handler();
 extern void shashi();
+struct time
+{
+    uint32_t hh;
+    uint32_t mm;
+    uint32_t ss;
+};
+
+struct time curr_time;
 
 void timer_phase(int hz)
 {
@@ -35,15 +45,46 @@ void timer_handler(/*struct regs *r*/)
     /* Every 18 clocks (approximately 1 second), we will
     *  display a message on the screen */
     if (timer_ticks % 18 == 0)
-    {
-       // kprintf("One second has passed\n");
+    {   
+        uint32_t secs = timer_ticks/100;
+        if(prev_secs != secs)
+        {
+            //kprintf("second : %d\n", (secs%60));
+            curr_time.ss = secs%60;
+            if(secs%60 == 0)
+            {
+                //one min passed
+                curr_time.mm++;
+                if(curr_time.mm % 60 == 0)
+                {
+                    //one hour passed
+                    curr_time.hh++;
+                    if(curr_time.hh > 24)
+                        curr_time.hh = 0;
+                    curr_time.mm = 0;
+                }
+            }
+            kprintat(40,24,"Time Since Boot %d:%d:%d", curr_time.hh,curr_time.mm,curr_time.ss);
+            prev_secs = secs;  
+        }
+        /*printf("second : %d\n", secs);
+        curr_time.ss = secs;
+        if(secs%60 == 0)
+        {
+            curr_time.ss = 0;
+            curr_time.mm++;
+            kprinttime(40, 24, "%d:%d", curr_time.mm,curr_time.ss);
+        }
+        */
+       //second++;
     }
+    outportb(0x20,0x20);
     //shashi();
     //while(1);
         //__asm__("sti");
     //__asm__("sti");
     //timer_wait(timer_ticks + 200);
-   	//while(1);
+   //	while(1);
 }
 
 /* Sets up the system clock by installing the timer handler
@@ -52,7 +93,7 @@ void timer_install()
 {
 	timer_phase(FREQUENCY);
     /* Installs 'timer_handler' to IRQ0 */
-    irq_install_handler(0, timer_handler);
+    irq_install_handler(0, &timer_handler);
     //handler();
     kprintf("timer installed .. \n");
 }
