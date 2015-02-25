@@ -1,0 +1,590 @@
+Archive member included to satisfy reference by file (symbol)
+
+lib/stdlib.c.64.o             main.c.64.o (halt)
+lib/kprintf.c.64.o            main.c.64.o (kprintf)
+lib/string.c.64.o             lib/kprintf.c.64.o (strlen)
+arch/x86_64/gdt.c.64.o        main.c.64.o (_x86_64_load_gdt)
+arch/x86_64/idt.c.64.o        main.c.64.o (_x86_64_load_idt)
+arch/x86_64/console.c.64.o    lib/kprintf.c.64.o (cons_putc)
+arch/x86_64/8259.c.64.o       main.c.64.o (_8259_disable)
+arch/x86_64/pt.c.64.o         main.c.64.o (pt_initialise)
+arch/x86_64/ticket_lock.c.64.o
+                              arch/x86_64/console.c.64.o (ticket_lock_wait_noinline)
+arch/x86_64/isr.c.64.o        arch/x86_64/idt.c.64.o (x86_64_isr_vector0)
+arch/x86_64/kbc.c.64.o        main.c.64.o (kbc_initialise)
+arch/x86_64/kbc_scancodes.c.64.o
+                              arch/x86_64/kbc.c.64.o (kbcsc_tochar)
+arch/x86_64/hpet.c.64.o       main.c.64.o (hpet_init)
+arch/x86_64/ioapic/ioapic.c.64.o
+                              main.c.64.o (ioapic_configure)
+arch/x86_64/lapic/lapic.c.64.o
+                              main.c.64.o (lapic_ipi_start)
+arch/x86_64/acpi/acpi.c.64.o  arch/x86_64/hpet.c.64.o (acpi_find_first_table)
+arch/x86_64/acpi/apic.c.64.o  arch/x86_64/ioapic/ioapic.c.64.o (acpi_find_first_ioapic_id)
+arch/x86_64/cpu/cpu.c.64.o    main.c.64.o (cpu_initialise)
+arch/x86_64/gdt.s.64.o        arch/x86_64/gdt.c.64.o (_x86_64_asm_lgdt)
+mm/virt_alloc.c.64.o          arch/x86_64/hpet.c.64.o (vmm_alloc_hw)
+mm/phy_alloc.c.64.o           main.c.64.o (mm_phy_init)
+
+Discarded input sections
+
+ .debug_info    0x0000000000000000      0x4b1 main.c.64.o
+ .debug_abbrev  0x0000000000000000      0x1eb main.c.64.o
+ .debug_loc     0x0000000000000000       0xee main.c.64.o
+ .debug_aranges
+                0x0000000000000000       0x30 main.c.64.o
+ .debug_ranges  0x0000000000000000       0x20 main.c.64.o
+ .debug_line    0x0000000000000000      0x252 main.c.64.o
+ .debug_str     0x0000000000000000      0x271 main.c.64.o
+ .debug_info    0x0000000000000000      0x3d7 lib/stdlib.c.64.o
+ .debug_abbrev  0x0000000000000000      0x1dd lib/stdlib.c.64.o
+ .debug_loc     0x0000000000000000      0x3d9 lib/stdlib.c.64.o
+ .debug_aranges
+                0x0000000000000000       0x30 lib/stdlib.c.64.o
+ .debug_ranges  0x0000000000000000       0x30 lib/stdlib.c.64.o
+ .debug_line    0x0000000000000000       0xce lib/stdlib.c.64.o
+ .debug_str     0x0000000000000000      0x1c3 lib/stdlib.c.64.o
+ .debug_info    0x0000000000000000      0x9d6 lib/kprintf.c.64.o
+ .debug_abbrev  0x0000000000000000      0x216 lib/kprintf.c.64.o
+ .debug_loc     0x0000000000000000      0xe96 lib/kprintf.c.64.o
+ .debug_aranges
+                0x0000000000000000       0x30 lib/kprintf.c.64.o
+ .debug_ranges  0x0000000000000000       0x60 lib/kprintf.c.64.o
+ .debug_line    0x0000000000000000      0x2d5 lib/kprintf.c.64.o
+ .debug_str     0x0000000000000000      0x235 lib/kprintf.c.64.o
+ .debug_info    0x0000000000000000      0x14b lib/string.c.64.o
+ .debug_abbrev  0x0000000000000000       0x95 lib/string.c.64.o
+ .debug_loc     0x0000000000000000      0x240 lib/string.c.64.o
+ .debug_aranges
+                0x0000000000000000       0x30 lib/string.c.64.o
+ .debug_line    0x0000000000000000       0x84 lib/string.c.64.o
+ .debug_str     0x0000000000000000      0x150 lib/string.c.64.o
+ .debug_info    0x0000000000000000      0x13e arch/x86_64/gdt.c.64.o
+ .debug_abbrev  0x0000000000000000       0xd6 arch/x86_64/gdt.c.64.o
+ .debug_aranges
+                0x0000000000000000       0x30 arch/x86_64/gdt.c.64.o
+ .debug_line    0x0000000000000000       0x7a arch/x86_64/gdt.c.64.o
+ .debug_str     0x0000000000000000      0x189 arch/x86_64/gdt.c.64.o
+ .debug_info    0x0000000000000000     0x1069 arch/x86_64/idt.c.64.o
+ .debug_abbrev  0x0000000000000000      0x196 arch/x86_64/idt.c.64.o
+ .debug_loc     0x0000000000000000       0x84 arch/x86_64/idt.c.64.o
+ .debug_aranges
+                0x0000000000000000       0x30 arch/x86_64/idt.c.64.o
+ .debug_ranges  0x0000000000000000      0xc90 arch/x86_64/idt.c.64.o
+ .debug_line    0x0000000000000000      0x1b2 arch/x86_64/idt.c.64.o
+ .debug_str     0x0000000000000000      0x4bb arch/x86_64/idt.c.64.o
+ .debug_info    0x0000000000000000      0x253 arch/x86_64/console.c.64.o
+ .debug_abbrev  0x0000000000000000      0x173 arch/x86_64/console.c.64.o
+ .debug_loc     0x0000000000000000       0xd4 arch/x86_64/console.c.64.o
+ .debug_aranges
+                0x0000000000000000       0x30 arch/x86_64/console.c.64.o
+ .debug_line    0x0000000000000000       0xff arch/x86_64/console.c.64.o
+ .debug_str     0x0000000000000000      0x1ff arch/x86_64/console.c.64.o
+ .debug_info    0x0000000000000000      0x27b arch/x86_64/8259.c.64.o
+ .debug_abbrev  0x0000000000000000       0xd1 arch/x86_64/8259.c.64.o
+ .debug_aranges
+                0x0000000000000000       0x30 arch/x86_64/8259.c.64.o
+ .debug_line    0x0000000000000000       0xba arch/x86_64/8259.c.64.o
+ .debug_str     0x0000000000000000      0x180 arch/x86_64/8259.c.64.o
+ .debug_info    0x0000000000000000      0x9ce arch/x86_64/pt.c.64.o
+ .debug_abbrev  0x0000000000000000      0x344 arch/x86_64/pt.c.64.o
+ .debug_loc     0x0000000000000000      0xc03 arch/x86_64/pt.c.64.o
+ .debug_aranges
+                0x0000000000000000       0x30 arch/x86_64/pt.c.64.o
+ .debug_ranges  0x0000000000000000       0xd0 arch/x86_64/pt.c.64.o
+ .debug_line    0x0000000000000000      0x27d arch/x86_64/pt.c.64.o
+ .debug_str     0x0000000000000000      0x3c5 arch/x86_64/pt.c.64.o
+ .debug_info    0x0000000000000000      0x25c arch/x86_64/ticket_lock.c.64.o
+ .debug_abbrev  0x0000000000000000      0x142 arch/x86_64/ticket_lock.c.64.o
+ .debug_loc     0x0000000000000000       0x23 arch/x86_64/ticket_lock.c.64.o
+ .debug_aranges
+                0x0000000000000000       0x30 arch/x86_64/ticket_lock.c.64.o
+ .debug_line    0x0000000000000000       0xc5 arch/x86_64/ticket_lock.c.64.o
+ .debug_str     0x0000000000000000      0x211 arch/x86_64/ticket_lock.c.64.o
+ .debug_info    0x0000000000000000      0x8ad arch/x86_64/isr.c.64.o
+ .debug_abbrev  0x0000000000000000      0x1f4 arch/x86_64/isr.c.64.o
+ .debug_loc     0x0000000000000000      0x222 arch/x86_64/isr.c.64.o
+ .debug_aranges
+                0x0000000000000000       0x30 arch/x86_64/isr.c.64.o
+ .debug_line    0x0000000000000000      0x1a8 arch/x86_64/isr.c.64.o
+ .debug_str     0x0000000000000000      0x296 arch/x86_64/isr.c.64.o
+ .debug_info    0x0000000000000000      0x6f2 arch/x86_64/kbc.c.64.o
+ .debug_abbrev  0x0000000000000000      0x240 arch/x86_64/kbc.c.64.o
+ .debug_loc     0x0000000000000000      0x300 arch/x86_64/kbc.c.64.o
+ .debug_aranges
+                0x0000000000000000       0x30 arch/x86_64/kbc.c.64.o
+ .debug_line    0x0000000000000000      0x130 arch/x86_64/kbc.c.64.o
+ .debug_str     0x0000000000000000      0x682 arch/x86_64/kbc.c.64.o
+ .debug_info    0x0000000000000000      0x370 arch/x86_64/kbc_scancodes.c.64.o
+ .debug_abbrev  0x0000000000000000       0xdd arch/x86_64/kbc_scancodes.c.64.o
+ .debug_loc     0x0000000000000000      0x1b6 arch/x86_64/kbc_scancodes.c.64.o
+ .debug_aranges
+                0x0000000000000000       0x30 arch/x86_64/kbc_scancodes.c.64.o
+ .debug_ranges  0x0000000000000000       0x90 arch/x86_64/kbc_scancodes.c.64.o
+ .debug_line    0x0000000000000000       0xc4 arch/x86_64/kbc_scancodes.c.64.o
+ .debug_str     0x0000000000000000      0x51f arch/x86_64/kbc_scancodes.c.64.o
+ .debug_info    0x0000000000000000      0xbe1 arch/x86_64/hpet.c.64.o
+ .debug_abbrev  0x0000000000000000      0x29e arch/x86_64/hpet.c.64.o
+ .debug_loc     0x0000000000000000      0x7f4 arch/x86_64/hpet.c.64.o
+ .debug_aranges
+                0x0000000000000000       0x30 arch/x86_64/hpet.c.64.o
+ .debug_ranges  0x0000000000000000       0x90 arch/x86_64/hpet.c.64.o
+ .debug_line    0x0000000000000000      0x207 arch/x86_64/hpet.c.64.o
+ .debug_str     0x0000000000000000      0x5e8 arch/x86_64/hpet.c.64.o
+ .debug_info    0x0000000000000000      0xa37 arch/x86_64/ioapic/ioapic.c.64.o
+ .debug_abbrev  0x0000000000000000      0x358 arch/x86_64/ioapic/ioapic.c.64.o
+ .debug_loc     0x0000000000000000      0x59f arch/x86_64/ioapic/ioapic.c.64.o
+ .debug_aranges
+                0x0000000000000000       0x30 arch/x86_64/ioapic/ioapic.c.64.o
+ .debug_ranges  0x0000000000000000      0x180 arch/x86_64/ioapic/ioapic.c.64.o
+ .debug_line    0x0000000000000000      0x260 arch/x86_64/ioapic/ioapic.c.64.o
+ .debug_str     0x0000000000000000      0x6ae arch/x86_64/ioapic/ioapic.c.64.o
+ .debug_info    0x0000000000000000      0x8b7 arch/x86_64/lapic/lapic.c.64.o
+ .debug_abbrev  0x0000000000000000      0x321 arch/x86_64/lapic/lapic.c.64.o
+ .debug_loc     0x0000000000000000      0x278 arch/x86_64/lapic/lapic.c.64.o
+ .debug_aranges
+                0x0000000000000000       0x30 arch/x86_64/lapic/lapic.c.64.o
+ .debug_ranges  0x0000000000000000       0x80 arch/x86_64/lapic/lapic.c.64.o
+ .debug_line    0x0000000000000000      0x1c4 arch/x86_64/lapic/lapic.c.64.o
+ .debug_str     0x0000000000000000      0x66c arch/x86_64/lapic/lapic.c.64.o
+ .debug_info    0x0000000000000000      0x974 arch/x86_64/acpi/acpi.c.64.o
+ .debug_abbrev  0x0000000000000000      0x293 arch/x86_64/acpi/acpi.c.64.o
+ .debug_loc     0x0000000000000000      0x426 arch/x86_64/acpi/acpi.c.64.o
+ .debug_aranges
+                0x0000000000000000       0x30 arch/x86_64/acpi/acpi.c.64.o
+ .debug_ranges  0x0000000000000000      0x1b0 arch/x86_64/acpi/acpi.c.64.o
+ .debug_line    0x0000000000000000      0x16a arch/x86_64/acpi/acpi.c.64.o
+ .debug_str     0x0000000000000000      0x37e arch/x86_64/acpi/acpi.c.64.o
+ .debug_info    0x0000000000000000      0x6d4 arch/x86_64/acpi/apic.c.64.o
+ .debug_abbrev  0x0000000000000000      0x1d3 arch/x86_64/acpi/apic.c.64.o
+ .debug_loc     0x0000000000000000      0x450 arch/x86_64/acpi/apic.c.64.o
+ .debug_aranges
+                0x0000000000000000       0x30 arch/x86_64/acpi/apic.c.64.o
+ .debug_ranges  0x0000000000000000       0xc0 arch/x86_64/acpi/apic.c.64.o
+ .debug_line    0x0000000000000000      0x131 arch/x86_64/acpi/apic.c.64.o
+ .debug_str     0x0000000000000000      0x4a1 arch/x86_64/acpi/apic.c.64.o
+ .debug_info    0x0000000000000000      0x318 arch/x86_64/cpu/cpu.c.64.o
+ .debug_abbrev  0x0000000000000000      0x1e7 arch/x86_64/cpu/cpu.c.64.o
+ .debug_loc     0x0000000000000000      0x10f arch/x86_64/cpu/cpu.c.64.o
+ .debug_aranges
+                0x0000000000000000       0x30 arch/x86_64/cpu/cpu.c.64.o
+ .debug_line    0x0000000000000000      0x197 arch/x86_64/cpu/cpu.c.64.o
+ .debug_str     0x0000000000000000      0x22d arch/x86_64/cpu/cpu.c.64.o
+ .debug_info    0x0000000000000000      0x19d mm/virt_alloc.c.64.o
+ .debug_abbrev  0x0000000000000000      0x104 mm/virt_alloc.c.64.o
+ .debug_loc     0x0000000000000000       0xf3 mm/virt_alloc.c.64.o
+ .debug_aranges
+                0x0000000000000000       0x30 mm/virt_alloc.c.64.o
+ .debug_line    0x0000000000000000       0xd2 mm/virt_alloc.c.64.o
+ .debug_str     0x0000000000000000      0x1d8 mm/virt_alloc.c.64.o
+ .debug_info    0x0000000000000000      0x557 mm/phy_alloc.c.64.o
+ .debug_abbrev  0x0000000000000000      0x22c mm/phy_alloc.c.64.o
+ .debug_loc     0x0000000000000000      0x477 mm/phy_alloc.c.64.o
+ .debug_aranges
+                0x0000000000000000       0x30 mm/phy_alloc.c.64.o
+ .debug_ranges  0x0000000000000000      0x210 mm/phy_alloc.c.64.o
+ .debug_line    0x0000000000000000      0x1b4 mm/phy_alloc.c.64.o
+ .debug_str     0x0000000000000000      0x2e6 mm/phy_alloc.c.64.o
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+*default*        0x0000000000000000 0xffffffffffffffff
+
+Linker script and memory map
+
+                0xffffffff80000000                . = 0xffffffff80000000
+
+.text           0xffffffff80000000     0x2f13
+ *(.start_text)
+ .start_text    0xffffffff80000000        0x5 main.c.64.o
+                0xffffffff80000000                _start
+ *(.text)
+ .text          0xffffffff80000005        0x0 main.c.64.o
+ .text          0xffffffff80000005       0xe0 lib/stdlib.c.64.o
+                0xffffffff80000005                sum
+                0xffffffff80000017                halt
+                0xffffffff80000054                atoq
+                0xffffffff800000c6                atoll
+                0xffffffff800000cb                atoi
+ .text          0xffffffff800000e5      0x64d lib/kprintf.c.64.o
+                0xffffffff800001d5                kprintf
+ .text          0xffffffff80000732       0x27 lib/string.c.64.o
+                0xffffffff80000732                memcmp
+                0xffffffff8000074b                strlen
+ .text          0xffffffff80000759       0x16 arch/x86_64/gdt.c.64.o
+                0xffffffff80000759                _x86_64_load_gdt
+ .text          0xffffffff8000076f      0xaac arch/x86_64/idt.c.64.o
+                0xffffffff8000076f                x86_64_handle_isr_vector1
+                0xffffffff8000077d                x86_64_handle_isr_vector2
+                0xffffffff8000078b                x86_64_handle_isr_vector3
+                0xffffffff80000799                x86_64_handle_isr_vector4
+                0xffffffff800007a7                x86_64_handle_isr_vector5
+                0xffffffff800007b5                x86_64_handle_isr_vector6
+                0xffffffff800007c3                x86_64_handle_isr_vector7
+                0xffffffff800007d1                x86_64_handle_isr_vector9
+                0xffffffff800007df                x86_64_handle_isr_vector10
+                0xffffffff800007ed                x86_64_handle_isr_vector12
+                0xffffffff800007fb                x86_64_handle_isr_vector15
+                0xffffffff80000809                x86_64_handle_isr_vector16
+                0xffffffff80000817                x86_64_handle_isr_vector17
+                0xffffffff80000825                x86_64_handle_isr_vector18
+                0xffffffff80000833                x86_64_handle_isr_vector19
+                0xffffffff80000841                x86_64_handle_isr_vector20
+                0xffffffff8000084f                x86_64_handle_isr_vector21
+                0xffffffff8000085d                x86_64_handle_isr_vector22
+                0xffffffff8000086b                x86_64_handle_isr_vector23
+                0xffffffff80000879                x86_64_handle_isr_vector24
+                0xffffffff80000887                x86_64_handle_isr_vector25
+                0xffffffff80000895                x86_64_handle_isr_vector26
+                0xffffffff800008a3                x86_64_handle_isr_vector27
+                0xffffffff800008b1                x86_64_handle_isr_vector28
+                0xffffffff800008bf                x86_64_handle_isr_vector29
+                0xffffffff800008cd                x86_64_handle_isr_vector30
+                0xffffffff800008db                x86_64_handle_isr_vector31
+                0xffffffff800008e9                _x86_64_load_idt
+ .text          0xffffffff8000121b      0x111 arch/x86_64/console.c.64.o
+                0xffffffff8000127b                cons_putc
+ .text          0xffffffff8000132c       0x36 arch/x86_64/8259.c.64.o
+                0xffffffff8000132c                _8259_disable
+                0xffffffff80001338                _8259_remap
+ .text          0xffffffff80001362      0x476 arch/x86_64/pt.c.64.o
+                0xffffffff800013c8                get_page_table_struct
+                0xffffffff80001412                virt_to_pde
+                0xffffffff800014ca                virt_to_phy
+                0xffffffff800014e7                mmap
+                0xffffffff80001609                munmap
+                0xffffffff800016ba                pt_initialise
+ .text          0xffffffff800017d8       0x37 arch/x86_64/ticket_lock.c.64.o
+                0xffffffff800017d8                ticket_lock_wait_noinline
+                0xffffffff80001801                ticket_lock_signal_noinline
+ .text          0xffffffff8000180f      0x7a2 arch/x86_64/isr.c.64.o
+                0xffffffff8000180f                x86_64_isr_vector0
+                0xffffffff80001837                x86_64_isr_vector1
+                0xffffffff8000185f                x86_64_isr_vector2
+                0xffffffff80001887                x86_64_isr_vector3
+                0xffffffff800018af                x86_64_isr_vector4
+                0xffffffff800018d7                x86_64_isr_vector5
+                0xffffffff800018ff                x86_64_isr_vector6
+                0xffffffff80001927                x86_64_isr_vector7
+                0xffffffff8000194f                x86_64_isr_vector8
+                0xffffffff80001977                x86_64_isr_vector9
+                0xffffffff8000199f                x86_64_isr_vector10
+                0xffffffff800019c7                x86_64_isr_vector11
+                0xffffffff800019ef                x86_64_isr_vector12
+                0xffffffff80001a17                x86_64_isr_vector13
+                0xffffffff80001a3f                x86_64_isr_vector14
+                0xffffffff80001a67                x86_64_isr_vector15
+                0xffffffff80001a8f                x86_64_isr_vector16
+                0xffffffff80001ab7                x86_64_isr_vector17
+                0xffffffff80001adf                x86_64_isr_vector18
+                0xffffffff80001b07                x86_64_isr_vector19
+                0xffffffff80001b2f                x86_64_isr_vector20
+                0xffffffff80001b57                x86_64_isr_vector21
+                0xffffffff80001b7f                x86_64_isr_vector22
+                0xffffffff80001ba7                x86_64_isr_vector23
+                0xffffffff80001bcf                x86_64_isr_vector24
+                0xffffffff80001bf7                x86_64_isr_vector25
+                0xffffffff80001c1f                x86_64_isr_vector26
+                0xffffffff80001c47                x86_64_isr_vector27
+                0xffffffff80001c6f                x86_64_isr_vector28
+                0xffffffff80001c97                x86_64_isr_vector29
+                0xffffffff80001cbf                x86_64_isr_vector30
+                0xffffffff80001ce7                x86_64_isr_vector31
+                0xffffffff80001d0f                x86_64_isr_vector64
+                0xffffffff80001d37                x86_64_handle_isr_vector64
+                0xffffffff80001d4a                x86_64_handle_isr_vector0
+                0xffffffff80001d9f                x86_64_handle_isr_vector8
+                0xffffffff80001e06                x86_64_handle_isr_vector11
+                0xffffffff80001e5c                x86_64_handle_isr_vector13
+                0xffffffff80001eb2                x86_64_handle_isr_vector14
+ .text          0xffffffff80001fb1      0x19c arch/x86_64/kbc.c.64.o
+                0xffffffff80002008                kbc_initialise
+                0xffffffff8000202e                kbc_bytes_in_buffer
+                0xffffffff80002060                kbc_readchar
+                0xffffffff80002090                kbc_read
+                0xffffffff800020dc                kbc_irq
+ .text          0xffffffff8000214d       0xb6 arch/x86_64/kbc_scancodes.c.64.o
+                0xffffffff8000214d                kbcsc_tochar
+ .text          0xffffffff80002203      0x176 arch/x86_64/hpet.c.64.o
+                0xffffffff80002203                hpet_set_register_bits
+                0xffffffff80002213                hpet_update_register_bits
+                0xffffffff80002229                hpet_clock_period
+                0xffffffff80002238                hpet_wait_femtoseconds
+                0xffffffff8000228a                hpet_wait_picoseconds
+                0xffffffff80002296                hpet_wait_nanoseconds
+                0xffffffff800022a2                hpet_wait_microseconds
+                0xffffffff800022ae                hpet_wait_milliseconds
+                0xffffffff800022c1                hpet_wait_seconds
+                0xffffffff800022d4                hpet_read_main_counter
+                0xffffffff800022e3                hpet_init
+ .text          0xffffffff80002379      0x204 arch/x86_64/ioapic/ioapic.c.64.o
+                0xffffffff80002379                ioapic_find_irq
+                0xffffffff800023d3                ioapic_detect
+                0xffffffff800023f5                ioapic_configure
+ .text          0xffffffff8000257d      0x1c6 arch/x86_64/lapic/lapic.c.64.o
+                0xffffffff8000257d                lapic_ipi_start
+                0xffffffff80002638                lapic_enable_stolen
+                0xffffffff8000269a                lapic_eoi
+                0xffffffff800026a8                lapic_id
+                0xffffffff800026b3                lapic_configure
+ .text          0xffffffff80002743      0x2d0 arch/x86_64/acpi/acpi.c.64.o
+                0xffffffff800028e6                acpi_find_next_table
+                0xffffffff80002a09                acpi_find_first_table
+ .text          0xffffffff80002a13      0x1d0 arch/x86_64/acpi/apic.c.64.o
+                0xffffffff80002ae0                acpi_get_lapic_address
+                0xffffffff80002afb                acpi_find_first_lapic_id
+                0xffffffff80002b15                acpi_find_next_lapic_id
+                0xffffffff80002b46                acpi_find_first_ioapic_id
+                0xffffffff80002b60                acpi_find_next_ioapic_id
+                0xffffffff80002b99                acpi_find_ioapic_address
+                0xffffffff80002bbe                acpi_find_ioapic_system_interrupt_base
+ .text          0xffffffff80002be3       0xcc arch/x86_64/cpu/cpu.c.64.o
+                0xffffffff80002be3                cpu_find_id
+                0xffffffff80002c12                cpu_find_this
+                0xffffffff80002c23                cpu_initialise
+ .text          0xffffffff80002caf       0x22 arch/x86_64/gdt.s.64.o
+                0xffffffff80002caf                _x86_64_asm_lgdt
+ .text          0xffffffff80002cd1       0x69 mm/virt_alloc.c.64.o
+                0xffffffff80002cd1                vmm_alloc_hw
+ .text          0xffffffff80002d3a      0x1d9 mm/phy_alloc.c.64.o
+                0xffffffff80002d5a                mm_phy_init
+                0xffffffff80002e45                mm_phy_free_page
+                0xffffffff80002e85                mm_phy_alloc_page
+
+.text.startup   0xffffffff80002f13      0x121
+ .text.startup  0xffffffff80002f13      0x121 main.c.64.o
+                0xffffffff80002f13                main
+
+.rodata.str1.1  0xffffffff80003034      0x636
+ .rodata.str1.1
+                0xffffffff80003034       0x75 main.c.64.o
+                                         0x7a (size before relaxing)
+ .rodata.str1.1
+                0xffffffff800030a9       0x13 lib/stdlib.c.64.o
+ .rodata.str1.1
+                0xffffffff800030bc      0x2ec arch/x86_64/idt.c.64.o
+ .rodata.str1.1
+                0xffffffff800033a8       0x2b arch/x86_64/pt.c.64.o
+ .rodata.str1.1
+                0xffffffff800033d3      0x16b arch/x86_64/isr.c.64.o
+                                        0x16c (size before relaxing)
+ .rodata.str1.1
+                0xffffffff8000353e       0x28 arch/x86_64/kbc_scancodes.c.64.o
+ .rodata.str1.1
+                0xffffffff80003566        0x5 arch/x86_64/hpet.c.64.o
+ .rodata.str1.1
+                0xffffffff8000356b       0x43 arch/x86_64/ioapic/ioapic.c.64.o
+ .rodata.str1.1
+                0xffffffff800035ae       0x72 arch/x86_64/acpi/acpi.c.64.o
+ .rodata.str1.1
+                0xffffffff80003620        0x5 arch/x86_64/acpi/apic.c.64.o
+ .rodata.str1.1
+                0xffffffff80003625       0x27 arch/x86_64/cpu/cpu.c.64.o
+ .rodata.str1.1
+                0xffffffff8000364c       0x1e mm/phy_alloc.c.64.o
+
+.eh_frame       0xffffffff80003670      0xdd0
+ .eh_frame      0xffffffff80003670       0x38 main.c.64.o
+ .eh_frame      0xffffffff800036a8       0x78 lib/stdlib.c.64.o
+                                         0x80 (size before relaxing)
+ .eh_frame      0xffffffff80003720       0xe8 lib/kprintf.c.64.o
+                                        0x100 (size before relaxing)
+ .eh_frame      0xffffffff80003808       0x30 lib/string.c.64.o
+                                         0x40 (size before relaxing)
+ .eh_frame      0xffffffff80003838       0x18 arch/x86_64/gdt.c.64.o
+                                         0x30 (size before relaxing)
+ .eh_frame      0xffffffff80003850      0x2a0 arch/x86_64/idt.c.64.o
+                                        0x248 (size before relaxing)
+ .eh_frame      0xffffffff80003af0       0x38 arch/x86_64/console.c.64.o
+                                         0x48 (size before relaxing)
+ .eh_frame      0xffffffff80003b28       0x30 arch/x86_64/8259.c.64.o
+                                         0x40 (size before relaxing)
+ .eh_frame      0xffffffff80003b58      0x138 arch/x86_64/pt.c.64.o
+                                        0x148 (size before relaxing)
+ .eh_frame      0xffffffff80003c90       0x30 arch/x86_64/ticket_lock.c.64.o
+                                         0x40 (size before relaxing)
+ .eh_frame      0xffffffff80003cc0       0xc8 arch/x86_64/isr.c.64.o
+                                         0xd0 (size before relaxing)
+ .eh_frame      0xffffffff80003d88       0xd0 arch/x86_64/kbc.c.64.o
+                                         0xd8 (size before relaxing)
+ .eh_frame      0xffffffff80003e58       0x18 arch/x86_64/kbc_scancodes.c.64.o
+                                         0x30 (size before relaxing)
+ .eh_frame      0xffffffff80003e70      0x128 arch/x86_64/hpet.c.64.o
+                                        0x118 (size before relaxing)
+ .eh_frame      0xffffffff80003f98       0x88 arch/x86_64/ioapic/ioapic.c.64.o
+                                         0x98 (size before relaxing)
+ .eh_frame      0xffffffff80004020       0xa8 arch/x86_64/lapic/lapic.c.64.o
+                                         0xb0 (size before relaxing)
+ .eh_frame      0xffffffff800040c8      0x110 arch/x86_64/acpi/acpi.c.64.o
+                                        0x118 (size before relaxing)
+ .eh_frame      0xffffffff800041d8      0x148 arch/x86_64/acpi/apic.c.64.o
+                                        0x150 (size before relaxing)
+ .eh_frame      0xffffffff80004320       0x50 arch/x86_64/cpu/cpu.c.64.o
+                                         0x60 (size before relaxing)
+ .eh_frame      0xffffffff80004370       0x30 mm/virt_alloc.c.64.o
+                                         0x48 (size before relaxing)
+ .eh_frame      0xffffffff800043a0       0xa0 mm/phy_alloc.c.64.o
+                                         0xb0 (size before relaxing)
+
+.data           0xffffffff80004440     0x1807
+ *(.bss)
+ .bss           0xffffffff80004440        0x4 main.c.64.o
+ .bss           0xffffffff80004444        0x0 lib/stdlib.c.64.o
+ .bss           0xffffffff80004444        0x0 lib/kprintf.c.64.o
+ .bss           0xffffffff80004444        0x0 lib/string.c.64.o
+ .bss           0xffffffff80004444        0x0 arch/x86_64/gdt.c.64.o
+ .bss           0xffffffff80004444        0x0 arch/x86_64/idt.c.64.o
+ .bss           0xffffffff80004444        0x6 arch/x86_64/console.c.64.o
+ .bss           0xffffffff8000444a        0x0 arch/x86_64/8259.c.64.o
+ *fill*         0xffffffff8000444a        0x6 
+ .bss           0xffffffff80004450       0x60 arch/x86_64/pt.c.64.o
+                0xffffffff80004450                bootloader_page_tables
+                0xffffffff80004470                kernel_page_tables
+ .bss           0xffffffff800044b0        0x0 arch/x86_64/ticket_lock.c.64.o
+ .bss           0xffffffff800044b0        0x0 arch/x86_64/isr.c.64.o
+ .bss           0xffffffff800044b0       0x48 arch/x86_64/kbc.c.64.o
+ .bss           0xffffffff800044f8        0x0 arch/x86_64/kbc_scancodes.c.64.o
+ .bss           0xffffffff800044f8        0x8 arch/x86_64/hpet.c.64.o
+                0xffffffff800044f8                hpet_base
+ .bss           0xffffffff80004500      0x180 arch/x86_64/ioapic/ioapic.c.64.o
+ .bss           0xffffffff80004680        0x8 arch/x86_64/lapic/lapic.c.64.o
+                0xffffffff80004680                lapic
+ .bss           0xffffffff80004688        0x0 arch/x86_64/acpi/acpi.c.64.o
+ .bss           0xffffffff80004688        0x0 arch/x86_64/acpi/apic.c.64.o
+ *fill*         0xffffffff80004688        0x8 
+ .bss           0xffffffff80004690      0x200 arch/x86_64/cpu/cpu.c.64.o
+ .bss           0xffffffff80004890        0x0 arch/x86_64/gdt.s.64.o
+ .bss           0xffffffff80004890        0x6 mm/virt_alloc.c.64.o
+ *fill*         0xffffffff80004896        0xa 
+ .bss           0xffffffff800048a0      0x20e mm/phy_alloc.c.64.o
+ *(.bss*)
+ *(.data)
+ *fill*         0xffffffff80004aae        0x2 
+ .data          0xffffffff80004ab0        0x4 main.c.64.o
+ .data          0xffffffff80004ab4        0x0 lib/stdlib.c.64.o
+ .data          0xffffffff80004ab4        0x0 lib/kprintf.c.64.o
+ .data          0xffffffff80004ab4        0x0 lib/string.c.64.o
+ *fill*         0xffffffff80004ab4        0xc 
+ .data          0xffffffff80004ac0       0x28 arch/x86_64/gdt.c.64.o
+ *fill*         0xffffffff80004ae8        0x8 
+ .data          0xffffffff80004af0     0x1010 arch/x86_64/idt.c.64.o
+                0xffffffff80004af0                idtr
+ .data          0xffffffff80005b00       0x10 arch/x86_64/console.c.64.o
+                0xffffffff80005b00                console
+ .data          0xffffffff80005b10        0x0 arch/x86_64/8259.c.64.o
+ .data          0xffffffff80005b10        0x0 arch/x86_64/pt.c.64.o
+ .data          0xffffffff80005b10        0x0 arch/x86_64/ticket_lock.c.64.o
+ .data          0xffffffff80005b10        0x0 arch/x86_64/isr.c.64.o
+ .data          0xffffffff80005b10        0x8 arch/x86_64/kbc.c.64.o
+ .data          0xffffffff80005b18        0x0 arch/x86_64/kbc_scancodes.c.64.o
+ .data          0xffffffff80005b18        0x0 arch/x86_64/hpet.c.64.o
+ .data          0xffffffff80005b18        0x0 arch/x86_64/ioapic/ioapic.c.64.o
+ .data          0xffffffff80005b18        0x0 arch/x86_64/lapic/lapic.c.64.o
+ .data          0xffffffff80005b18        0x0 arch/x86_64/acpi/acpi.c.64.o
+ .data          0xffffffff80005b18        0x0 arch/x86_64/acpi/apic.c.64.o
+ .data          0xffffffff80005b18        0x0 arch/x86_64/cpu/cpu.c.64.o
+ .data          0xffffffff80005b18        0x0 arch/x86_64/gdt.s.64.o
+ .data          0xffffffff80005b18        0x8 mm/virt_alloc.c.64.o
+ .data          0xffffffff80005b20        0x0 mm/phy_alloc.c.64.o
+ *(.rodata)
+ .rodata        0xffffffff80005b20        0x5 main.c.64.o
+ *fill*         0xffffffff80005b25        0xb 
+ .rodata        0xffffffff80005b30       0x16 arch/x86_64/pt.c.64.o
+ *fill*         0xffffffff80005b46        0xa 
+ .rodata        0xffffffff80005b50       0x9a arch/x86_64/isr.c.64.o
+ *fill*         0xffffffff80005bea        0x6 
+ .rodata        0xffffffff80005bf0       0x21 arch/x86_64/ioapic/ioapic.c.64.o
+ *fill*         0xffffffff80005c11        0x7 
+ .rodata        0xffffffff80005c18       0x1a arch/x86_64/acpi/acpi.c.64.o
+ *fill*         0xffffffff80005c32        0x6 
+ .rodata        0xffffffff80005c38        0xf arch/x86_64/cpu/cpu.c.64.o
+ *(.COMMON)
+LOAD main.c.64.o
+LOAD lib/lib.a
+LOAD arch/x86_64/arch.a
+LOAD mm/mm.a
+OUTPUT(shovelos.elf elf32-i386)
+
+.debug_info
+
+.debug_abbrev
+
+.debug_loc
+
+.debug_aranges
+
+.debug_ranges
+
+.debug_line
+
+.debug_str
+
+.comment        0x0000000000000000       0x24
+ .comment       0x0000000000000000       0x24 main.c.64.o
+                                         0x25 (size before relaxing)
+ .comment       0x0000000000000000       0x25 lib/stdlib.c.64.o
+ .comment       0x0000000000000000       0x25 lib/kprintf.c.64.o
+ .comment       0x0000000000000000       0x25 lib/string.c.64.o
+ .comment       0x0000000000000000       0x25 arch/x86_64/gdt.c.64.o
+ .comment       0x0000000000000000       0x25 arch/x86_64/idt.c.64.o
+ .comment       0x0000000000000000       0x25 arch/x86_64/console.c.64.o
+ .comment       0x0000000000000000       0x25 arch/x86_64/8259.c.64.o
+ .comment       0x0000000000000000       0x25 arch/x86_64/pt.c.64.o
+ .comment       0x0000000000000000       0x25 arch/x86_64/ticket_lock.c.64.o
+ .comment       0x0000000000000000       0x25 arch/x86_64/isr.c.64.o
+ .comment       0x0000000000000000       0x25 arch/x86_64/kbc.c.64.o
+ .comment       0x0000000000000000       0x25 arch/x86_64/kbc_scancodes.c.64.o
+ .comment       0x0000000000000000       0x25 arch/x86_64/hpet.c.64.o
+ .comment       0x0000000000000000       0x25 arch/x86_64/ioapic/ioapic.c.64.o
+ .comment       0x0000000000000000       0x25 arch/x86_64/lapic/lapic.c.64.o
+ .comment       0x0000000000000000       0x25 arch/x86_64/acpi/acpi.c.64.o
+ .comment       0x0000000000000000       0x25 arch/x86_64/acpi/apic.c.64.o
+ .comment       0x0000000000000000       0x25 arch/x86_64/cpu/cpu.c.64.o
+ .comment       0x0000000000000000       0x25 mm/virt_alloc.c.64.o
+ .comment       0x0000000000000000       0x25 mm/phy_alloc.c.64.o
+
+.note.GNU-stack
+                0x0000000000000000        0x0
+ .note.GNU-stack
+                0x0000000000000000        0x0 main.c.64.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 lib/stdlib.c.64.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 lib/kprintf.c.64.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 lib/string.c.64.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 arch/x86_64/gdt.c.64.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 arch/x86_64/idt.c.64.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 arch/x86_64/console.c.64.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 arch/x86_64/8259.c.64.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 arch/x86_64/pt.c.64.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 arch/x86_64/ticket_lock.c.64.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 arch/x86_64/isr.c.64.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 arch/x86_64/kbc.c.64.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 arch/x86_64/kbc_scancodes.c.64.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 arch/x86_64/hpet.c.64.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 arch/x86_64/ioapic/ioapic.c.64.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 arch/x86_64/lapic/lapic.c.64.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 arch/x86_64/acpi/acpi.c.64.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 arch/x86_64/acpi/apic.c.64.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 arch/x86_64/cpu/cpu.c.64.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 mm/virt_alloc.c.64.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 mm/phy_alloc.c.64.o

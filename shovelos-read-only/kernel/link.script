@@ -1,0 +1,23 @@
+
+ENTRY(_start);
+SECTIONS
+{    	   
+ . = 0xFFFFFFFF80000000;
+ 
+ .text : AT(0xFFFFFFFF80000000)
+	{
+		*(.start_text);
+        *(.text);
+	}
+
+ .data :
+    {
+        *(.bss);
+        *(.bss*);
+        *(.data);
+        *(.rodata);
+        *(.COMMON);
+	}
+}
+
+

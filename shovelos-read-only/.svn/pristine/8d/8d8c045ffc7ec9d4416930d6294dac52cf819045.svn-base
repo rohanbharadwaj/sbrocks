@@ -1,0 +1,90 @@
+
+/***
+    0x7c00 -> 0x7dff: Bootloader ( 512 bytes )
+        We could over-write this for an extra 512 bytes of un-initialised vars.
+
+    0x7e00 -> 0xffff: stage1.5.bin. ( 33279 bytes )
+	Bootloader software. Accessable by C and assembler.
+
+    0x10000 -> 0x7ffff: uninitialised memory. ( 458751 bytes )
+	Memory accessable by assembler only.
+        * 0x10000 -> 0x14fff 64bit page tables.
+        * 0x20000 -> 0x2ffff 64k disk buffer.
+        * 0x30000 -> 0x3ffff 64k adhoc 16bit/64bit comunication mem
+        * 0x40000 -> 0x4ffff 64k memory map ( multi-boot 1 format )
+
+***/
+
+ENTRY(main);
+SECTIONS
+{
+	. = 0x7e00;
+
+      /*** file magick, config data, hard coded GDT ***/
+	.head : AT(0x7e00)
+	{
+	    /* file magick. ascii "ShovStage1.5" */
+            LONG(0x766f6853);
+            LONG(0x67617453);
+            LONG(0x352E3165);
+
+            /*** root disk (CONFIGURED BY INSTALLER - 0ffset 0xc) (default first disk) ****/
+            _root_disk = .;
+            SHORT(0x0080); 
+
+		/*** root partition (CONFIGURED BY INSTALLER - 0ffset 0xe) (default first partition) ****/
+            _root_part = .;
+            LONG(0x0000); 
+		
+            /* 64bit GDT */
+            LONG(0x00000000); LONG(0x00000000); /* null descriptor */
+            LONG(0x0000FFFF); LONG(0x002F9A00); /* long mode code descriptor */
+            LONG(0x0000FFFF); LONG(0x000F9A00); /* compatibility mode code descriptor */
+            LONG(0x0000FFFF); LONG(0x000F9200); /* data segment descriptor */
+		
+            /***  64bit GDT register ***/
+            _gdt_reg = .;	 /*** GDT register address ***/
+            SHORT(0x20);	 /*** size of GDT (8bytes * 4 entries) ***/
+            LONG(. - 0x22);      /*** address of GDT (lsb) ***/
+            LONG(0x00000000);	 /*** address of GDT (msb) ***/
+        }
+	
+       
+	   
+    . = 0x7e40;
+	.text : AT(0x7e40)
+	{
+            *(.text);
+	}
+
+ .data :
+        {
+            *(.bss);
+            *(.bss*);
+            *(.data);
+            *(.rodata);
+            *(.COMMON);
+            *(COMMON);
+            _data_end = .;
+	    }
+	    
+        .heap : 
+        {
+	    _heap_start = .;
+            SHORT(. + 0x04);
+            SHORT(0x00000000);
+        }
+
+
+	/DISCARD/ :
+	{
+                *(.note*);
+                *(.iplt*);
+                *(.igot*);
+                *(.rel*);
+                *(.rel.text);
+                *(.comment);
+        }
+}
+
+

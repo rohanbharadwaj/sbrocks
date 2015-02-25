@@ -1,0 +1,258 @@
+Archive member included to satisfy reference by file (symbol)
+
+fs/fs.a(ext2.c.32.o)          main.c.32.o (fs_init)
+disk/disk.a(bios_disk.c.32.o)
+                              fs/fs.a(ext2.c.32.o) (partition_read)
+
+Allocating common symbols
+Common symbol       size              file
+
+superblock          0x1c              fs/fs.a(ext2.c.32.o)
+dirent              0x108             fs/fs.a(ext2.c.32.o)
+
+Discarded input sections
+
+ .comment       0x0000000000000000       0x25 main.c.32.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 main.c.32.o
+ .comment       0x0000000000000000       0x25 print.c.32.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 print.c.32.o
+ .comment       0x0000000000000000       0x25 mmap.c.32.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 mmap.c.32.o
+ .comment       0x0000000000000000       0x25 alloc.c.32.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 alloc.c.32.o
+ .comment       0x0000000000000000       0x25 pt.c.32.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 pt.c.32.o
+ .comment       0x0000000000000000       0x25 math64.c.32.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 math64.c.32.o
+ .comment       0x0000000000000000       0x25 mem.c.32.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 mem.c.32.o
+ .comment       0x0000000000000000       0x25 fs/fs.a(ext2.c.32.o)
+ .note.GNU-stack
+                0x0000000000000000        0x0 fs/fs.a(ext2.c.32.o)
+ .comment       0x0000000000000000       0x25 disk/disk.a(bios_disk.c.32.o)
+ .note.GNU-stack
+                0x0000000000000000        0x0 disk/disk.a(bios_disk.c.32.o)
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+*default*        0x0000000000000000 0xffffffffffffffff
+
+Linker script and memory map
+
+                0x0000000000007e00                . = 0x7e00
+
+.head           0x0000000000007e00       0x3c
+                0x0000000000007e00        0x4 LONG 0x766f6853
+                0x0000000000007e04        0x4 LONG 0x67617453
+                0x0000000000007e08        0x4 LONG 0x352e3165
+                0x0000000000007e0c                _root_disk = .
+                0x0000000000007e0c        0x2 SHORT 0x80
+                0x0000000000007e0e                _root_part = .
+                0x0000000000007e0e        0x4 LONG 0x0
+                0x0000000000007e12        0x4 LONG 0x0
+                0x0000000000007e16        0x4 LONG 0x0
+                0x0000000000007e1a        0x4 LONG 0xffff
+                0x0000000000007e1e        0x4 LONG 0x2f9a00
+                0x0000000000007e22        0x4 LONG 0xffff
+                0x0000000000007e26        0x4 LONG 0xf9a00
+                0x0000000000007e2a        0x4 LONG 0xffff
+                0x0000000000007e2e        0x4 LONG 0xf9200
+                0x0000000000007e32                _gdt_reg = .
+                0x0000000000007e32        0x2 SHORT 0x20
+                0x0000000000007e34        0x4 LONG 0x7e12 (. - 0x22)
+                0x0000000000007e38        0x4 LONG 0x0
+                0x0000000000007e40                . = 0x7e40
+
+.text           0x0000000000007e40     0x2cdc
+ *(.text)
+ .text          0x0000000000007e40       0x5d entry.s.32.o
+                0x0000000000007e40                main
+                0x0000000000007e91                halt
+ .text          0x0000000000007e9d      0x16f himem.s.32.o
+                0x0000000000007e9d                boot_aux_cpu
+                0x0000000000007ead                shuffle_high
+                0x0000000000007f92                call_kernel
+ .text          0x000000000000800c      0x20d mem.s.32.o
+                0x000000000000800c                memcpy
+                0x00000000000080b5                memset
+                0x0000000000008117                strlen
+                0x0000000000008171                strcmp
+ .text          0x0000000000008219      0x121 main.c.32.o
+                0x0000000000008219                call_boot_aux_cpu_begin
+                0x0000000000008222                cmain
+                0x0000000000008222                call_boot_aux_cpu_end
+ .text          0x000000000000833a      0x4f8 print.c.32.o
+                0x00000000000083a9                cls
+                0x00000000000083d6                putc
+                0x000000000000843d                puts
+                0x0000000000008484                putnhex
+                0x00000000000084fb                putndecu
+                0x00000000000085f3                putndec
+                0x000000000000863c                printf
+ .text          0x0000000000008832      0x17e mmap.c.32.o
+                0x000000000000887a                read_mmap
+ .text          0x00000000000089b0      0x16c alloc.c.32.o
+                0x00000000000089b5                alloc
+                0x0000000000008a31                zalloc
+                0x0000000000008a76                zalloc_align
+                0x0000000000008ae7                alloc_high
+ .text          0x0000000000008b1c      0x46c pt.c.32.o
+                0x0000000000008b4a                write64
+                0x0000000000008b93                read64
+                0x0000000000008bd0                pt_get_addr
+                0x0000000000008d7a                setup_pt
+ .text          0x0000000000008f88      0x367 math64.c.32.o
+                0x000000000000926f                __udivdi3
+                0x00000000000092a4                __umoddi3
+ .text          0x00000000000092ef      0x274 mem.c.32.o
+                0x00000000000092ef                peek8
+                0x0000000000009325                peek16
+                0x000000000000935b                peek32
+                0x0000000000009392                peek64
+                0x00000000000093cf                poke8
+                0x000000000000940b                memmove
+                0x00000000000094ad                poke16
+                0x00000000000094e9                poke32
+                0x000000000000951a                poke64
+ .text          0x0000000000009563     0x1123 fs/fs.a(ext2.c.32.o)
+                0x0000000000009563                read_block
+                0x00000000000095ad                inode_to_blockgroup
+                0x00000000000095bf                blockgroup_to_inode_table
+                0x000000000000962a                inode_to_blockgroup_index
+                0x000000000000963f                get_inode_phy_addr64
+                0x00000000000096c0                ext2_read_block
+                0x0000000000009730                ext2_read_block_32
+                0x000000000000977e                ext2_read_phy_32
+                0x00000000000097d5                ext2_read_phy_16
+                0x0000000000009828                ext2_read_fast_symlink
+                0x0000000000009886                ext2_filesize
+                0x00000000000098ba                ext2_get_mode
+                0x00000000000098ea                ext2_isdir
+                0x0000000000009918                ext2_isreg
+                0x0000000000009946                ext2_issym
+                0x0000000000009974                read_inode_block
+                0x0000000000009d3a                read_inode
+                0x0000000000009dbe                next_inode_name
+                0x000000000000a127                stat
+                0x000000000000a139                lstat
+                0x000000000000a14e                fopen
+                0x000000000000a1aa                fclose
+                0x000000000000a1d7                fread
+                0x000000000000a26d                ext2_shuffle_hi
+                0x000000000000a3c2                fs_init
+ .text          0x000000000000a686      0x496 disk/disk.a(bios_disk.c.32.o)
+                0x000000000000a686                extended_read_drive_parameters
+                0x000000000000a6b5                extended_read_sectors_from_drive
+                0x000000000000a6e4                bytes_per_sector
+                0x000000000000a752                disk_read_sector
+                0x000000000000a7ad                disk_read
+                0x000000000000a972                partition_read
+                0x000000000000a9c7                open_disk
+                0x000000000000aa3d                open_partition
+
+.rodata.str1.1  0x000000000000ab1c      0x1ca
+ .rodata.str1.1
+                0x000000000000ab1c       0x2d main.c.32.o
+ .rodata.str1.1
+                0x000000000000ab49       0x1c mmap.c.32.o
+ .rodata.str1.1
+                0x000000000000ab65       0x42 alloc.c.32.o
+                                         0x43 (size before relaxing)
+ .rodata.str1.1
+                0x000000000000aba7       0x61 pt.c.32.o
+ .rodata.str1.1
+                0x000000000000ac08       0xcd fs/fs.a(ext2.c.32.o)
+ .rodata.str1.1
+                0x000000000000acd5       0x11 disk/disk.a(bios_disk.c.32.o)
+
+.eh_frame       0x000000000000ace8      0x96c
+ .eh_frame      0x000000000000ace8       0x2c main.c.32.o
+ .eh_frame      0x000000000000ad14      0x128 print.c.32.o
+                                        0x140 (size before relaxing)
+ .eh_frame      0x000000000000ae3c       0x34 mmap.c.32.o
+                                         0x4c (size before relaxing)
+ .eh_frame      0x000000000000ae70       0xac alloc.c.32.o
+                                         0xc4 (size before relaxing)
+ .eh_frame      0x000000000000af1c       0xe0 pt.c.32.o
+                                         0xf8 (size before relaxing)
+ .eh_frame      0x000000000000affc       0x74 math64.c.32.o
+                                         0x8c (size before relaxing)
+ .eh_frame      0x000000000000b070      0x114 mem.c.32.o
+                                        0x12c (size before relaxing)
+ .eh_frame      0x000000000000b184      0x38c fs/fs.a(ext2.c.32.o)
+                                        0x3a4 (size before relaxing)
+ .eh_frame      0x000000000000b510      0x144 disk/disk.a(bios_disk.c.32.o)
+                                        0x15c (size before relaxing)
+
+.data           0x000000000000b654      0x180
+ *(.bss)
+ .bss           0x000000000000b654        0x0 entry.s.32.o
+ .bss           0x000000000000b654        0x0 himem.s.32.o
+ .bss           0x000000000000b654        0x0 mem.s.32.o
+ .bss           0x000000000000b654        0x0 main.c.32.o
+ .bss           0x000000000000b654        0x2 print.c.32.o
+ *fill*         0x000000000000b656        0x2 
+ .bss           0x000000000000b658        0x8 mmap.c.32.o
+                0x000000000000b658                mem
+ .bss           0x000000000000b660        0x0 alloc.c.32.o
+ .bss           0x000000000000b660        0x0 pt.c.32.o
+ .bss           0x000000000000b660        0x0 math64.c.32.o
+ .bss           0x000000000000b660        0x0 mem.c.32.o
+ .bss           0x000000000000b660       0x2f fs/fs.a(ext2.c.32.o)
+ *fill*         0x000000000000b68f        0x1 
+ .bss           0x000000000000b690       0x18 disk/disk.a(bios_disk.c.32.o)
+ *(.bss*)
+ *(.data)
+ .data          0x000000000000b6a8        0x0 entry.s.32.o
+ .data          0x000000000000b6a8        0x0 himem.s.32.o
+ .data          0x000000000000b6a8        0x0 mem.s.32.o
+ .data          0x000000000000b6a8        0x0 main.c.32.o
+ .data          0x000000000000b6a8        0x0 print.c.32.o
+ .data          0x000000000000b6a8        0x0 mmap.c.32.o
+ .data          0x000000000000b6a8        0x4 alloc.c.32.o
+ .data          0x000000000000b6ac        0x4 pt.c.32.o
+ .data          0x000000000000b6b0        0x0 math64.c.32.o
+ .data          0x000000000000b6b0        0x0 mem.c.32.o
+ .data          0x000000000000b6b0        0x0 fs/fs.a(ext2.c.32.o)
+ .data          0x000000000000b6b0        0x0 disk/disk.a(bios_disk.c.32.o)
+ *(.rodata)
+ *(.COMMON)
+ *(COMMON)
+ COMMON         0x000000000000b6b0      0x124 fs/fs.a(ext2.c.32.o)
+                0x000000000000b6b0                superblock
+                0x000000000000b6cc                dirent
+                0x000000000000b7d4                _data_end = .
+
+.heap           0x000000000000b7d4        0x4
+                0x000000000000b7d4                _heap_start = .
+                0x000000000000b7d4        0x2 SHORT 0xb7d8 (. + 0x4)
+                0x000000000000b7d6        0x2 SHORT 0x0
+
+/DISCARD/
+ *(.note*)
+ *(.iplt*)
+ *(.igot*)
+ *(.rel*)
+ *(.rel.text)
+ *(.comment)
+LOAD entry.s.32.o
+LOAD himem.s.32.o
+LOAD mem.s.32.o
+LOAD main.c.32.o
+LOAD print.c.32.o
+LOAD mmap.c.32.o
+LOAD alloc.c.32.o
+LOAD pt.c.32.o
+LOAD math64.c.32.o
+LOAD mem.c.32.o
+LOAD fs/fs.a
+LOAD disk/disk.a
+OUTPUT(stage1.5.ext2.elf elf32-i386)
