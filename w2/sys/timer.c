@@ -1,5 +1,7 @@
 #include <sys/timer.h>
-
+/* 
+* web reference : http://www.osdever.net/bkerndev/Docs/pit.htm
+*/
 int timer_ticks = 0;
 int prev_secs;
 
@@ -31,17 +33,12 @@ void timer_wait(int ticks)
     eticks = timer_ticks + ticks;
     while(timer_ticks < eticks);
 }
-void shashi()
-{
-	kprintf("shashi called \n");
-	while(1);
-}
+
 void timer_handler(/*struct regs *r*/)
 {
 	//kprintf("timer_handler reached %d \n", timer_ticks);
     /* Increment our 'tick count' */
     timer_ticks++;
-    //outportb(0x20,0x20);
     /* Every 18 clocks (approximately 1 second), we will
     *  display a message on the screen */
     if (timer_ticks % 18 == 0)
@@ -67,24 +64,8 @@ void timer_handler(/*struct regs *r*/)
             kprintat(40,24,"Time Since Boot %d:%d:%d", curr_time.hh,curr_time.mm,curr_time.ss);
             prev_secs = secs;  
         }
-        /*printf("second : %d\n", secs);
-        curr_time.ss = secs;
-        if(secs%60 == 0)
-        {
-            curr_time.ss = 0;
-            curr_time.mm++;
-            kprinttime(40, 24, "%d:%d", curr_time.mm,curr_time.ss);
-        }
-        */
-       //second++;
     }
     outportb(0x20,0x20);
-    //shashi();
-    //while(1);
-        //__asm__("sti");
-    //__asm__("sti");
-    //timer_wait(timer_ticks + 200);
-   //	while(1);
 }
 
 /* Sets up the system clock by installing the timer handler
@@ -95,5 +76,4 @@ void timer_install()
     /* Installs 'timer_handler' to IRQ0 */
     irq_install_handler(0, &timer_handler);
     //handler();
-    kprintf("timer installed .. \n");
 }

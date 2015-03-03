@@ -1,3 +1,5 @@
+/* See COPYRIGHT for copyright Information */
+
 #include <sys/sbunix.h>
 #include <sys/vgaconsole.h>
 #include <stdarg.h>

@@ -53,7 +53,7 @@ void boot(void)
 		&physbase,
 		(void*)(uint64_t)loader_stack[4]
 	);
-	clrscr();
+	//clrscr();
 	//s = "!!!!! start() returned !!!!!";
 	//for(v = (char*)0xb8000; *s; ++s, v += 2) *v = *s;
 	//__asm__("sti");

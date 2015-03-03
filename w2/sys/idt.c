@@ -82,6 +82,4 @@ void testdivzero()
 void fault_handler()
 {
     kprintf("exception_messages[r->int_no] \n");
-    //puts(" Exception. System Halted!\n");
-    //for (;;);
 }

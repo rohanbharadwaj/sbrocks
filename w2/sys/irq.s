@@ -54,7 +54,7 @@
 .endm
 
 .text
-
+#TODO push irq number in timer_handler
 .global irq0
 .global irq1
 .global timer_handler

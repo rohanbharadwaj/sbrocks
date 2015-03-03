@@ -1,5 +1,8 @@
 #include <sys/irq.h>
 
+/*
+* web reference : osdev :: http://www.osdever.net/bkerndev/Docs/irqs.htm
+*/
 
 /* This array is actually an array of function pointers. We use
 *  this to handle custom IRQ handlers for a given IRQ */
@@ -41,7 +44,6 @@ void pic_remap(void)
 void install_irqs()
 {
     pic_remap();
-
 }
 
 void sleepk()
@@ -69,5 +71,4 @@ void irq_rountine_handler(uint64_t *r)
     //outportb(0xa0,0x20);
     //__asm__("sti");
     //sleepk();
-    ///while(1);
 }
