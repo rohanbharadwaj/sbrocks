@@ -1,6 +1,11 @@
 #ifndef _TARFS_H
 #define _TARFS_H
 
+#include <sys/sbunix.h>
+
+void initialize_tarfs();
+uint64_t find_offset_for_file(char *fname);
+
 extern char _binary_tarfs_start;
 extern char _binary_tarfs_end;
 

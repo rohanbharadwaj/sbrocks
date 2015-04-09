@@ -2,6 +2,7 @@
 #include <sys/sbunix.h>
 #include <sys/ioport.h>
 #include <sys/idt.h>
+#include <sys/mmu/assemblyutil.h>
 /*
 *	http://www.osdever.net/bkerndev/Docs/idt.htm
 *//* Defines an IDT entry */
@@ -10,8 +11,12 @@
 extern void irq0();             //PIT irq handler
 extern void irq1();             //KB irq handler
 extern void isr0();
+extern void isr14();
 void testdivzero();
+void page_fault_handler();
+void test_page_fault();
 void set_irqs();
+void syscall_handler();
 
 struct idt_entry
 {
@@ -62,13 +67,34 @@ void idt_install()
 {
     memset(&idt, 0, sizeof(struct idt_entry) * 256);
     //DIV ZERO exception
-    //idt_set_gate(0, (uint64_t)isr0, 0x08, 0x8e);
+    idt_set_gate(0, (uint64_t)isr0, 0x08, 0x8e);
+	idt_set_gate(14, (uint64_t)isr14, 0x08, 0x8E);
     //PIT interrupt
     idt_set_gate(32, (uint64_t)irq0, 0x08, 0x8E);
+	idt_set_gate(0x80, (uint64_t)syscall_handler, 0x08, 0xEE);
     //Keyboard interrupt 
     idt_set_gate(33, (uint64_t)irq1, 0x08, 0x8E);
     reload_idt();
     //testdivzero();
+}
+
+void syscall_handler()
+{
+	//kprintf("inside this \n");
+	uint64_t syscall_num;
+	uint64_t buf;
+	__asm__(
+		"movq %%rax, %0;"
+		:"=g"(syscall_num)
+		:);
+	__asm__(
+		"movq %%rsi, %0;"
+		:"=g"(buf)
+		:);
+	char *b = (char *)buf;
+	kprintf("system call no is %d \n", syscall_num);
+	kprintf("%s \n", b);
+	__asm__ __volatile__("iretq;");
 }
 
 void testdivzero()
@@ -79,7 +105,41 @@ void testdivzero()
     kprintf("%d \n", k);
 }
 
+
+
+void test_page_fault()
+{
+	//TODO: access some memory that is not yet mapped to physical memory
+	*(uint64_t *)10= 50;
+}
+
+void divide_by_zero_handler()
+{
+	kprintf("divide_by_zero_handler reached.... \n");	
+	__asm__( "hlt" );
+}
+void page_fault_handler()
+{
+	uint64_t addr;
+	addr = read_cr2();
+	clrscr();
+	kprintf("page fault  handler reached.... \n");
+	kprintf("fault is at address %p \n",addr);
+	__asm__( "hlt" );
+}
+//TODO: pass the interrupt numner from assembly
 void fault_handler()
 {
-    kprintf("exception_messages[r->int_no] \n");
+    kprintf("ashish \n");
+/*	int int_no = 10;
+	switch (int_no) {
+        case 0:
+            divide_by_zero_handler();
+            break;
+		case 14:
+			page_fault_handler();
+			break;
+		default:
+			break;
+	}*/
 }

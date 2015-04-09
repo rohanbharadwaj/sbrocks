@@ -103,15 +103,18 @@ static char *number(char *str, long num, int base, int size, int precision,
 	return str;
 }
 
-static char printf_buf[1024];
+//static char printf_buf[1024];
 
 int printf(const char *format, ...) {
 	va_list val;
 	int printed = 0;
-	reset(printf_buf,1024);
+	char printf_buf[1024];
+	//reset(printf_buf,1024);
 	va_start(val, format);
 	printed = vsprintf(printf_buf, format, val);
 	write(1, printf_buf, printed);
+	//write(1, format, printed);
+	
 	va_end(val);
 	return printed;
 }

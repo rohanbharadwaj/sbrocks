@@ -8,5 +8,7 @@
 void idt_set_gate(int32_t num, uint64_t base, uint16_t sel, uint8_t flags);
 void idt_install();
 void irq_remap();
+void testdivzero();
+void test_page_fault();
 
 #endif

@@ -50,7 +50,7 @@ static __inline uint64_t syscall_3(uint64_t n, uint64_t a1, uint64_t a2, uint64_
                         "movq %2 , %%rdi;"
                         "movq %3, %%rsi;"
 						"movq %4, %%rdx;"
-                        "syscall;"
+                        "int $0x80;"
                         "movq %%rax, %0;":
                         "=a" (ret):
                         "a" (n),"b" ((uint64_t)(a1)),"c" ((uint64_t)(a2)),"d" ((uint64_t)(a3)):

@@ -1,5 +1,5 @@
-
 #include <sys/gdt.h>
+#include <sys/mmu/assemblyutil.h>
 
 /* adapted from Chris Stones, shovelos */
 
@@ -51,8 +51,10 @@ static struct gdtr_t gdtr = {
 	sizeof(gdt),
 	(uint64_t)gdt,
 };
+//extern _x86_64_asm_ltss();
 
 void _x86_64_asm_lgdt(struct gdtr_t* gdtr, uint64_t cs_idx, uint64_t ds_idx);
+void _x86_64_asm_ltss();
 
 void reload_gdt() {
 	_x86_64_asm_lgdt(&gdtr, 8, 16);
@@ -68,4 +70,13 @@ void setup_tss() {
 	sd->sd_hilimit = 0;
 	sd->sd_gran = 0;
 	sd->sd_hibase = ((uint64_t)&tss) >> 24;
+	//TODO load tss from assembly
+	uint64_t rsp = read_rsp();
+	set_tss_rsp0(rsp);
+	_x86_64_asm_ltss();
+}
+
+void set_tss_rsp0(uint64_t rsp)
+{
+	tss.rsp0 = rsp;	
 }

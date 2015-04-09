@@ -44,15 +44,16 @@ void timer_handler(/*struct regs *r*/)
     if (timer_ticks % 18 == 0)
     {   
         uint32_t secs = timer_ticks/100;
-        if(prev_secs != secs)
+        if(prev_secs != secs)			//second change
         {
             //kprintf("second : %d\n", (secs%60));
             curr_time.ss = secs%60;
+			//schedule_process();
             if(secs%60 == 0)
             {
                 //one min passed
                 curr_time.mm++;
-                if(curr_time.mm % 60 == 0)
+                if(curr_time.mm % 60 == 0)  //hour change
                 {
                     //one hour passed
                     curr_time.hh++;

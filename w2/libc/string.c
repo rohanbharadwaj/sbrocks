@@ -86,7 +86,8 @@ char *strstr(const char *s1, const char *s2)
                  s1++;
          }
          return NULL;
- }
+}
+
 char *strcat(char *dest, const char *src)
 {
          char *tmp = dest; 
@@ -96,6 +97,7 @@ char *strcat(char *dest, const char *src)
                  ;
          return tmp;
 }
+
 int isspace(char c)
 {
     return (c == ' ' || c == '\t' || c == '\n' || c == '\12');

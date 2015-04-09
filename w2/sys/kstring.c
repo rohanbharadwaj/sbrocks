@@ -1,6 +1,6 @@
 #include <sys/kstring.h>
-
-void *(memcpy)(void * restrict s1, const void * restrict s2, size_t n)
+#if 0
+void *(memcpy)(void * s1, const void * s2, size_t n)
 {
      char *dst = s1;
      const char *src = s2;
@@ -9,6 +9,17 @@ void *(memcpy)(void * restrict s1, const void * restrict s2, size_t n)
          *dst++ = *src++;
      return s1;
  }
+#endif
+//todo change memcpy function
+void *memcpy(void *destination, void *source, uint64_t num)
+{
+	uint8_t *dest = (uint8_t *)destination;
+	uint8_t *src = (uint8_t *)source;
+	while(num--) {
+		*dest++ = *src++;
+	}
+	return destination;
+}
 
  size_t strlen(const char * str)
 {
@@ -17,15 +28,59 @@ void *(memcpy)(void * restrict s1, const void * restrict s2, size_t n)
     return(s - str);
 }
 
-unsigned short *memsetw(unsigned short *dest, unsigned short val, int count)
+char *kstrcpy(char *dest, const char *src)
+ {
+         char *tmp = dest; 
+         while ((*dest++ = *src++) != '\0');
+         return tmp;
+ }
+
+uint64_t power(uint64_t x, uint64_t y)
+{
+    if( y == 0)
+        return 1;
+    else if (y%2 == 0)
+        return power(x, y/2)*power(x, y/2);
+    else
+        return x*power(x, y/2)*power(x, y/2);
+ 
+}
+
+// from stack overflow
+const char *byte_to_binary(uint64_t x)
+{
+    static char b[65];
+    b[0] = '\0';
+
+    uint64_t z;
+    for (z = power(2,63); z > 0; z >>= 1)
+    {
+        strcat(b, ((x & z) == z) ? "1" : "0");
+    }
+
+    return b;
+}
+
+void *memsetw(void *s1, unsigned short val, uint64_t count)
 {
 	int i;
+	char *dest = s1;
     for(i = 0; i < count; i++)
     {
     	*dest = val;
     	dest++;
     }
     return dest;
+}
+
+char *strcat(char *dest, const char *src)
+{
+         char *tmp = dest; 
+         while (*dest)
+                 dest++;
+         while ((*dest++ = *src++) != '\0')
+                 ;
+         return tmp;
 }
 
 void *memset(void *str, int c, size_t n)
@@ -36,4 +91,39 @@ void *memset(void *str, int c, size_t n)
         *dst++ = c;
     }
     return str;
+}
+
+int atoi(const char *str)
+{
+    int k = 0;
+    for (int i = 0; str[i] != '\0'; ++i)
+        k = (k<<3)+(k<<1)+(str[i])-'0';
+    return k;
+}
+
+uint64_t octal_to_decimal(int oct)
+{
+	uint64_t res = 0;
+	int i = 0;
+	while(oct!=0){
+		int digit = oct%10;
+		oct = oct/10;
+		res = res + digit*power(8, i);
+		i++;
+	}
+	return res;
+}
+
+int kstrcmp(const char *cs, const char *ct)
+ {
+         unsigned char c1, c2;
+         while (1) {
+                 c1 = *cs++;
+                 c2 = *ct++;
+                 if (c1 != c2)
+                         return c1 < c2 ? -1 : 1;
+                 if (!c1)
+                         break;
+         }
+         return 0;
 }

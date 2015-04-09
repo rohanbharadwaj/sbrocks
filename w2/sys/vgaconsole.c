@@ -4,8 +4,8 @@
 * web reference:   http://www.osdever.net/bkerndev/Docs/printing.htm
 */
 
-static char *vga_addr = (char*)0xb8000;
-int attrib = 0x03;
+static char *vga_addr = (char*)0xFFFFFFFF800B8000;
+uint64_t attrib = 0x03;
 #define MAX_Y 25  				//Max row value
 #define MAX_X 80				//Max column value
 void scroll(void);
@@ -17,8 +17,8 @@ void clearscreen();
 void adjustcursor();
 void handle_backspace();
 
-int cursor_x = 0;
-int cursor_y = 0;
+uint64_t cursor_x = 0;
+uint64_t cursor_y = 0;
 
 void setcolor(char background, char foreground)
 {
@@ -91,23 +91,24 @@ void putch(char ch)
 /* Scrolls the screen */
 void scroll(void)
 {
-    unsigned blank, temp;
+    //unsigned blank, temp;
+	uint64_t blank, temp;
 
     /* A blank is defined as a space... we need to give it
     *  backcolor too */
-    blank = 0x20 | (attrib << 8);
+    blank = /*0x20 | */(attrib << 8);
 
     /* Row 24 is the end, this means we need to scroll up */
     if(cursor_y >= 24)
     {
         /* Move the current text chunk that makes up the screen
         *  back in the buffer by a line */
-        temp = cursor_y - 24 + 1;
+        temp = cursor_y - 24;
         memcpy (vga_addr, vga_addr + temp * 80*2, (24 - temp) * 80 * 2);
 
         /* Finally, we set the chunk of memory that occupies
         *  the last line of text to our 'blank' character */
-        memsetw ((unsigned short *)vga_addr + (24 - temp) * 80*2, blank, 80*2);
+        memsetw (vga_addr + (24 - temp) * 80*2, blank, 80*2);
         cursor_y = 24 - 1;
     }
 }
@@ -173,8 +174,8 @@ void adjustcursor()
 		//screen is full scroll one line above for all the lines starting from line 1 
 		// and copy the last line content in 25th line 
 		memcpy(vga_addr, vga_addr + MAX_X*2, MAX_Y * MAX_X * 2);
-		int empty = 0x20 | (attrib << 8);
-		memsetw((unsigned short *)vga_addr +(MAX_X* (MAX_Y -1)), empty, MAX_X);
+		int empty = /*0x20 | */(attrib << 8);
+		memsetw(vga_addr +(2*MAX_X* (MAX_Y -1)), empty, 2*MAX_X);
 		cursor_y = 24;	//last line
 	}
 }
@@ -182,16 +183,16 @@ void adjustcursor()
 void clearscreen()
 {
     unsigned blank;
-    int i;
+    uint64_t i;
 
     /* Again, we need the 'short' that will be used to
     *  represent a space with color */
-    blank = 0x20 | (attrib << 8);
+    blank = (attrib << 8);
 
     /* Sets the entire screen to spaces in our current
     *  color */
     for(i = 0; i < 24; i++)
-        memsetw ((unsigned short*)vga_addr + i * 80, blank, 80);
+        memsetw (vga_addr + 2*i * MAX_X, blank, 2*MAX_X);
 
     /* Update out virtual cursor, and then move the
     *  hardware cursor */

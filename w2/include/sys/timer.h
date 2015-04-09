@@ -4,6 +4,7 @@
 #include <sys/ioport.h>
 #include <sys/sbunix.h>
 #include <sys/irq.h>
+#include <sys/process/process_manager.h>
 
 #define FREQUENCY 100
 
