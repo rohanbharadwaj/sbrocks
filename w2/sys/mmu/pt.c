@@ -335,6 +335,46 @@ void setup_paging(uint64_t base, uint64_t physfree, uint64_t pbase, uint64_t pfr
 	//enable_paging();
 }
 
+void free_page_tables(uint64_t pml4e){
+
+	uint64_t *pdpe,*pde,*pte;
+	uint64_t *pml4e_t = (uint64_t *)pml4e;
+	for (int i = 0; i < 512; ++i)
+	{
+		if(isPresent(pml4e_t[i]))
+		{
+			pdpe = (uint64_t *)KADDR(pml4e_t[i]);
+			for (int j = 0; j < 512; ++j)
+			{
+				if(isPresent(pdpe[j]))
+					{
+						pde = (uint64_t *)KADDR(pdpe[j]);
+						for (int k = 0; k < 512; ++k)
+						{
+							if(isPresent(pde[k])){
+								pte = (uint64_t *)KADDR(pde[k]);
+								if(isPresent(pte[k])){
+									for (int n = 0; n < 512; ++n)
+									{
+										if(isPresent(pte[n])){
+											mm_phy_free_page(pte[n]);
+											pte[n]=0;
+
+										}
+									}
+								}
+								pde[k]=0;
+							}
+							
+						}
+						pdpe[j]=0;
+					} 
+			}
+			pml4e_t[i] = 0;
+		}
+	}
+}
+
 void map_all_phy(uint64_t k_cr3)
 {
 	uint64_t start = 0 /*+ 0x400000*/;

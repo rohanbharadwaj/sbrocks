@@ -42,7 +42,7 @@ struct task_struct {
 	pid_t ppid;
 	char name[16];
 	uint64_t  state;	/* -1 unrunnable, 0 runnable, >0 stopped */
-	uint64_t  counter;
+	//uint64_t  counter;
 	struct task_struct *next;
 	
 	/* memory management info */
@@ -80,4 +80,10 @@ struct task_struct *get_next_task();
 void initialise_process();
 struct task_struct *create_new_task();
 struct mm_struct * create_new_mmstruct();
+void add_to_free_task_list(struct task_struct *task);
+struct task_struct* get_free_task();
+void add_to_free_vma_list(struct vm_area_struct *vma);
+struct vm_area_struct* get_free_vma();
+void free_task_struct(struct task_struct *task);
+void free_task_mm_struct(struct mm_struct *mm);
 #endif

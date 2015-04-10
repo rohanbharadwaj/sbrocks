@@ -54,6 +54,15 @@ uint64_t alloc_pages_at_virt(uint64_t virt, uint64_t size, uint64_t flags)
 	return addr;
 }
 
+void reset_page_tables(uint64_t pml4e){
+
+	//TODO :  Load CR3 of process before calling free_page_tables
+	uint64_t old_cr3 = read_cr3();
+	write_cr3(virt_to_phy(pml4e, 0));
+	free_page_tables(pml4e);
+	write_cr3(old_cr3);
+}
+
 void free_pages(uint64_t addr)
 {
 	

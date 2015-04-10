@@ -41,4 +41,5 @@ void map_virt_to_phy(uint64_t virt, uint64_t phy, uint64_t flags);
 void setup_paging(uint64_t base, uint64_t physfree, uint64_t pbase, uint64_t pfree);
 void initialize_new_pml4e(uint64_t pml4e);
 uint64_t env_setup_vm();
+void free_page_tables(uint64_t pml4e);
 #endif

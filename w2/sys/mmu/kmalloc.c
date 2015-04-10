@@ -1,4 +1,5 @@
 #include <sys/mmu/kmalloc.h>
+#include <sys/mmu/phy_alloc.h>
 
 void init_kmalloc()
 {
@@ -14,6 +15,22 @@ void *addr;
 	kprintf("addr is %p \n", (uint64_t)addr);
 	return addr;
 }
+
+void kfree(uint64_t vaddr, uint64_t size)
+{
+	uint64_t phyaddr;
+	uint64_t num_pages = size/PAGE_SIZE;
+    if(size%PAGE_SIZE > 0)
+    	num_pages = num_pages + 1;
+    for(int i = 0; i < num_pages; i++)
+    {
+    	phyaddr = virt_to_phy(vaddr,0);
+        mm_phy_free_page(phyaddr);
+        vaddr = vaddr + PAGE_SIZE;
+    }
+}
+
+
 void test_malloc()
 {
 	//char *ptr = (char*) kmalloc(4096);
@@ -25,3 +42,4 @@ void test_malloc()
 	addr = "shashi";
 	kprintf("main1 %p\t%s", addr, addr);
 }
+

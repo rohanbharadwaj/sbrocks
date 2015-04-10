@@ -8,5 +8,6 @@
 #define no_of_pages 512;
 void init_kmalloc();
 void *kmalloc(uint64_t size);
+void kfree(uint64_t vaddr, uint64_t size);
 void test_malloc();
 #endif
