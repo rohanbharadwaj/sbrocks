@@ -170,6 +170,8 @@ struct task_struct *create_new_task(char *taskname)
 	task->sleep_time = 0;
 	task->parent = NULL;
 	task->child_count = 0;
+	task->write_redirection_fd = 0;
+	task->read_redirection_fd = 0;
 	task->wait_for_child_pid = 0;
 	kstrcpy(task->name, taskname);
 	task->mm = create_new_mmstruct();
@@ -215,6 +217,8 @@ void free_task_struct(struct task_struct *task)
   task->rip = 0;
   task->rsp = 0;
   task->ppid = 0;
+  task->write_redirection_fd = -1;
+  task->read_redirection_fd = -1;
   task->parent = NULL;
   task->child_count = 0;
   task->wait_for_child_pid = 0;
@@ -283,9 +287,14 @@ void update_time_slices()
 void remove_from_parent(struct task_struct *child)
 {
 	struct task_struct *parent = child->parent;
+//	if(parent == NULL)
+//		return;
 	parent->child_count--;
 	if(parent->state == TASK_WAITING && parent->wait_for_child_pid == child->pid)
 	{
 		parent->state = TASK_RUNNABLE;
 	}
 }
+#if 0
+
+#endif

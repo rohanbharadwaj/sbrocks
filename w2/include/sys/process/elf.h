@@ -78,5 +78,5 @@ typedef struct
 
 
 //void readElf(char *filename);
-struct task_struct *readElf(char *filename, char *argv[], int argc);
+struct task_struct *readElf(char *filename, char *argv[], int argc, char *envp[], int envc);
 #endif

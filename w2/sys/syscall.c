@@ -14,6 +14,20 @@ void increament_heap_vma(struct task_struct *task, uint64_t end_brk);
 void setup_memory(struct task_struct *c, struct task_struct *p);
 void copy_stack(struct task_struct *c, struct task_struct *p);
 void save_regs(struct task_struct *task);
+void add_pipe_to_task(struct task_struct *task, struct file *pipe);
+void remove_pipe_from_task(struct task_struct *task, uint64_t fd);
+uint64_t is_file_pipe(struct task_struct *task, uint64_t fd);
+void print_pipe_from_task(struct task_struct *task);
+void write_to_pipe(struct task_struct *task, uint64_t fd, char *buf, int nbytes);
+void read_from_pipe(struct task_struct *task, uint64_t fd, char *outbuf, int nbytes);
+
+void copy_pipe(struct file *dst, struct file *src);
+struct task_struct *pipe_read_wait_queue = NULL;
+static char *str;
+static volatile uint64_t count;
+void wake_up_waiting_task();
+void add_to_pipe_read_waiting_queue(struct task_struct *task);
+static int pipe_write_flag = 0;
 
 uint64_t switch_handler( uint64_t syscall_num,uint64_t first_arg,uint64_t sec_arg,uint64_t third_arg, struct regs *r)
 {
@@ -65,7 +79,7 @@ uint64_t switch_handler( uint64_t syscall_num,uint64_t first_arg,uint64_t sec_ar
 				 system_chdir(first_arg);
 				 break;
 		case 8 : 
-				 system_lseek(first_arg,sec_arg,third_arg); 
+				 ret = system_lseek(first_arg,sec_arg,third_arg);
 				 break;
 		case 3 : 
 				 system_close(first_arg);
@@ -78,7 +92,7 @@ uint64_t switch_handler( uint64_t syscall_num,uint64_t first_arg,uint64_t sec_ar
 				 break;
 		case 78: ret = system_getdents(first_arg,sec_arg,third_arg);
 		         break;
-		case 81: system_readdir(first_arg);
+		case 81: system_readdir(first_arg,sec_arg);
 		         break;
 		default: break;
 	}
@@ -87,13 +101,30 @@ uint64_t switch_handler( uint64_t syscall_num,uint64_t first_arg,uint64_t sec_ar
 
 uint64_t system_write(uint64_t fd,uint64_t buf,uint64_t nbytes)
 {
-	if(fd==1)//stdout
+	struct task_struct *task = get_current_task();
+	if(is_file_pipe(task, fd))
 	{
+		//remove pipe
+		char *input = (char *)buf;
+		write_to_pipe(task, fd, input, nbytes);
+	}
+	else if(fd==1)//stdout
+	{
+		if(task->write_redirection_fd != 0)
+		{
+			//redirect data to redirected fd	
+			char *input = (char *)buf;
+			write_to_pipe(task, task->write_redirection_fd, input, nbytes);
+			pipe_write_flag = 1;
+			wake_up_waiting_task();
+		}
+		else
+			puts((char *)buf);
 		//clrscr();
 		//char *b = (char *)(*sec_arg);
 		//kprintf("system call no is %d \n", syscall_num);
 		//kprintf("%s", buf);
-		puts((char *)buf);
+		
 	}
 	else if(fd == 2)
 	{
@@ -117,7 +148,9 @@ void system_exit(uint64_t first_arg)
 	if(task->ppid > 0)	//this is child process
 	{
 		//remote this child from parent process	
+		task->parent->state = TASK_RUNNABLE;
 		remove_from_parent(task);
+		
 	}
 	//free_task_struct(task);
 	task->state = TASK_STOPPED;
@@ -199,12 +232,14 @@ uint64_t system_fork(){
 	child->ppid = parent->pid;
 	child->r = parent->r;
 	child->r.rax = 0;
+	//child->pipe = parent->pipe;
 	//child->rip = parent->kstack[KSTACK_SIZE-6];
 	//__asm__ __volatile__("movq %%rsp, %[next_rsp]" :[next_rsp] "=m" (child->rsp): );
 	child->mm->brk_end = parent->mm->brk_end;
 	child->e_entry = parent->kstack[KSTACK_SIZE - 6];
 	child->mm->stack_vm = USER_STACK - 0x8;
 	setup_memory(child, parent);
+	//copy_pipe(child, parent);
 	child->parent = parent;
 	parent->child_count++;
 	//copy_stack(child, parent);
@@ -216,12 +251,53 @@ uint64_t system_fork(){
 	//print_task_list();
 	//__asm__ __volatile__("sti");
 	//__asm__ __volatile__("int $0x20;" : :);
+	child->write_redirection_fd = parent->write_redirection_fd;
+	child->read_redirection_fd = parent->read_redirection_fd;
+	struct file *temp, *pipe;
+	if(parent->pipe != NULL)
+	{
+		temp = parent->pipe;
+		while(temp != NULL)
+		{
+			pipe = kmalloc(sizeof(struct file));
+			copy_pipe(pipe, temp);
+			//memcpy((void *)pipe, (void *)temp, sizeof(struct file));
+			//kprintf2("adding fd = %d \n", pipe->fd);
+			add_pipe_to_task(child, pipe);
+			temp = temp->next;
+		}
+		//kprintf2("shashi \n");
+		//while(1);
+	}
+	//pipe = kmalloc(sizeof(struct file));
+	//temp = parent->pipe;
+	//copy_pipe(pipe, temp);
+	//kprintf2("adding fd = %d \n", pipe->fd);
+	parent->r.rax =  child->pid;
+	parent->state = TASK_WAITING;
+	set_current_task(NULL);
+	//kprintf2("reached exit end \n");
+	__asm__ __volatile__("sti");
+	__asm__ __volatile__("int $0x20;" : :);
+	//while(1);
 	return child->pid;
 	//return 0;
 	//copy stack
 	//map other vmas
 }
 extern void irq0();
+#if 0
+void copy_pipe(struct task_struct *c, struct task_struct *p)
+{
+	if(parent->pipe == NULL)
+		return;
+	struct file *temp = parent->pipe;
+	while(temp != NULL)
+	{
+		file 	
+	}
+}
+#endif
 
 void copy_stack(struct task_struct *c, struct task_struct *p)
 {
@@ -287,8 +363,10 @@ void setup_memory(struct task_struct *c, struct task_struct *p)
 					//remove dummy page entry from parent
 					//unmap_phy(dummy_vaddr);
 					write_cr3(virt_to_phy(c->pml4e, 0));     //load child process cr3 to map vma
-					//alloc_pages_at_virt(vaddr, phy_addr, PT_PRESENT_FLAG | PT_USER | PT_WRITABLE_FLAG);
+					//alloc_pages_at_virt(vaddr, PAGE_SIZE, PT_PRESENT_FLAG | PT_USER | PT_WRITABLE_FLAG);
+					//kprintf2("before \n\n");
 					map_virt_to_phy(vaddr, phy_addr, PT_PRESENT_FLAG | PT_USER | PT_WRITABLE_FLAG);
+					//kprintf2("after \n\n");
 					write_cr3(virt_to_phy(p->pml4e, 0));
 					//kprintf2("mapped vaddr = %p \n", vaddr);
 				}
@@ -309,17 +387,25 @@ void setup_memory(struct task_struct *c, struct task_struct *p)
 				paddr = virt_to_phy(vaddr, 0);      // get physical page from parent process page table
 				//TODO:remove write permission and set cow bit
 				uint64_t *pte = get_pte_entry(vaddr);
-				
-				kprintf("pte entry is %p \n", pte);
 				//reset_writable_bit(pte);
-				//uint64_t flags = *pte & 0xFFF0000000000FFF;
-				//set_cow_bit(pte);
-				kprintf("pte entry is %p \n", pte);
+				set_cow_bit(pte);
+				//uint64_t flags = *pte & 0xFFF000000000000F;				
+				//kprintf("pte entry is %p \n", pte);
 				//uint64_t flags = paddr & 0xFFF0000000000FFFUL;
 				write_cr3(virt_to_phy(c->pml4e, 0));     //load child process cr3 to map vma
 				//alloc_pages_at_virt(vaddr, paddr, PT_PRESENT_FLAG | PT_WRITABLE_FLAG | PT_USER);  //map that page into child's process page table
+				//kprintf2("before \n\n");
+				//map_virt_to_phy(vaddr, paddr, PT_PRESENT_FLAG | PT_WRITABLE_FLAG | PT_USER);
+				
 				map_virt_to_phy(vaddr, paddr, PT_PRESENT_FLAG | PT_WRITABLE_FLAG | PT_USER);
-				pte = get_pte_entry(vaddr);
+				//pte = get_pte_entry(vaddr);
+				//reset_writable_bit(pte);
+				//set_cow_bit(pte);
+				//kprintf2("paddr: %p \n", paddr);
+				//kprintf2("between \n\n");
+				inc_ref_count(paddr);
+				//kprintf2("after \n\n");
+				//pte = get_pte_entry(vaddr);
 			//	kprintf2("mapped vaddr:%p pte:%p \n", vaddr, *pte);
 				//reset_writable_bit(pte);
 				write_cr3(virt_to_phy(p->pml4e, 0));   //load parent process cr3
@@ -333,8 +419,9 @@ void setup_memory(struct task_struct *c, struct task_struct *p)
 }
 
 int system_open(uint64_t filepath,uint64_t perm){
+	
 	int fd = fopen((char *)filepath);
-	kprintf("fd inside system_open %d \n",fd);
+	//kprintf2("fd inside system_open filename is %s and fd %d \n",(char *)filepath, fd);
 	/*__asm__(
 		"movq %0,%%rax;"
 		:"=g"(fd)
@@ -345,30 +432,70 @@ int system_open(uint64_t filepath,uint64_t perm){
 }
 void system_execve(uint64_t filename, uint64_t argv_addr, uint64_t envp_addr)
 {
-	//char *argv1[10];
-	//char *a = (char *)((char *)argv_addr);
-	//char **argv1[10];
-	//argv1 = argv_addr;
-	//argv1[0] = (char *)argv_addr;
-	//argv1[1] = (char *)argv_addr;
-	//argv1[2] = (char *)argv_addr;
-	//char *argv1[] = (char *)argv_addr;
-	//argv1 = argv_addr;
-	//kprintf("filename is %s \n", argv1[0]);
-	char *fname = (char *)filename;
-	kprintf("filename is %s \n", fname);
- 	char *argv[10];
 	
+	char *argv[10];
+	int i = 0;
+	while(((char **)argv_addr)[i] != NULL)
+	{
+		argv[i] = kmalloc(strlen(((char **)argv_addr)[i]));
+		//kprintf2("%s \n", ((char **)argv_addr)[i]);
+		//argv[i] = 
+		//argv[i] = kmalloc(strlen(((char **)argv_addr)[i]));
+		kstrcpy(argv[i], ((char **)argv_addr)[i]);
+		//strcat(argv[i], "\0");
+		//memcpy(argv[i], ((char **)argv_addr)[i], strlen(((char **)argv_addr)[i]));
+		//kprintf2("%s \n", ((char **)argv_addr)[0]);
+		//kprintf2("%s \n", argv[i]);
+		i++;
+	}
+	
+	char *envp[10];
+	//envp[0] = "PATH=bin:\0";
+	envp[0] = ((char **)envp_addr) [0];
+
+	/*char *argv[10];
 	argv[0] = "abc\0";
-	argv[1] = "def\0";
-	struct task_struct *task = readElf(fname, argv, 2);
-	kprintf("id is %d \n", task->pid);
-	task = get_current_task();
-	free_task_struct(task);
-	set_current_task(NULL);
-	__asm__ __volatile__("sti");
-	__asm__ __volatile__("int $0x20;" : :);
-	while(1);
+	argv[1] = "shashi.txt\0";
+	argv[2] = "shashi\0";
+	char *envp[10];
+	//kstrcpy(envp[0], "PATH=");
+	envp[0] = "PATH=bin:\0";
+	envp[1] = "shashi";
+	*/
+	char *fname = (char *)filename;
+	struct task_struct *curr_task = get_current_task();
+	struct task_struct *task = readElf(fname, argv, i, envp, 1);
+	task->pid = curr_task->pid;
+	task->ppid = curr_task->ppid;
+	curr_task->ppid = 0;
+	task->parent = curr_task->parent;
+	task->write_redirection_fd = curr_task->write_redirection_fd;
+	task->read_redirection_fd = curr_task->read_redirection_fd;
+	
+	struct file *temp, *pipe;
+	if(curr_task->pipe != NULL)
+	{
+		temp = curr_task->pipe;
+		while(temp != NULL)
+		{
+			pipe = kmalloc(sizeof(struct file));
+			copy_pipe(pipe, temp);
+			//memcpy((void *)pipe, (void *)temp, sizeof(struct file));
+			//kprintf2("adding fd = %d \n", pipe->fd);
+			add_pipe_to_task(task, pipe);
+			temp = temp->next;
+		}
+		//kprintf2("shashi \n");
+		//while(1);
+	}
+	
+	//readElf("bin/cat", argv, 2, envp,1);
+	//task = get_current_task();
+	//free_task_struct(task);
+	//set_current_task(NULL);
+	//__asm__ __volatile__("sti");
+	//__asm__ __volatile__("int $0x20;" : :);
+	//while(1);
 }
 
 uint64_t system_waitpid(uint64_t child_pid, uint64_t status , uint64_t options)
@@ -396,18 +523,49 @@ uint64_t system_read(uint64_t fd,uint64_t buf,uint64_t nbytes)
 {
 	//uint64_t nbytes =0;
 	//kprintf2("system read \n");
-	if(fd==0) //stdin
+	struct task_struct *task = get_current_task();
+	if(is_file_pipe(task, fd))
 	{
+		//remove pipe
+		char *outbuf = (char *)buf;
+		read_from_pipe(task,fd, outbuf, nbytes);
+	}
+	
+	else if(fd==0) //stdin
+	{
+		if(task->read_redirection_fd != 0)
+		{
+			//read from redirected fd	
+			
+			//char *outbuf = (char *)buf;
+			if(pipe_write_flag == 1)
+			{
+				pipe_write_flag = 0;
+				read_from_pipe(task, task->read_redirection_fd, (char *)buf, nbytes);
+			}
+			else
+			{
+				str = (char *)buf;
+				count = nbytes;
+				add_to_pipe_read_waiting_queue(task);
+				__asm__ __volatile__("sti");
+				__asm__ __volatile__("int $0x20;" : :);
+			}
+			
+		}
 		//__asm__ __volatile__("sti");
-		struct task_struct *task = get_current_task();
-		set_flag();
-		task->state = TASK_WAITING;
-		set_current_task(NULL);
-		set_waiting_task(task);
-		//kprintf2("reached \n");
-		gets(buf, nbytes);
-		__asm__ __volatile__("sti");
-		__asm__ __volatile__("int $0x20;" : :);
+		else
+		{
+			set_flag();
+			task->state = TASK_WAITING;
+			set_current_task(NULL);
+			set_waiting_task(task);
+			//kprintf2("reached \n");
+			gets(buf, nbytes);
+			__asm__ __volatile__("sti");
+			__asm__ __volatile__("int $0x20;" : :);	
+		}
+		
 		//while(get_flag() == 1);
 		//{
 		 	//__asm__ __volatile__("int $0x20;" : :);
@@ -459,42 +617,81 @@ uint64_t system_getcwd(uint64_t buf, uint64_t size_t){
 void system_chdir(uint64_t path){
 	set_cwd((char*)path);
 }
-void system_lseek(uint64_t first_arg,uint64_t sec_arg,uint64_t third_arg){
-	
+uint64_t system_lseek(uint64_t fd,uint64_t offset,uint64_t whence){
+	return fseek(fd,offset,whence);
 }	
 void system_close(uint64_t fd){
-	fclose(fd);
+	struct task_struct *task = get_current_task();
+	if(is_file_pipe(task, fd))
+	{
+		//remove pipe
+		remove_pipe_from_task(task,fd);
+		if(task->write_redirection_fd == fd)
+			task->write_redirection_fd = 0;
+		else if(task->read_redirection_fd == fd)
+			task->read_redirection_fd = 0;
+		print_pipe_from_task(task);
+	}
+	else
+		fclose(fd);
 }
-void system_pipe(uint64_t first_arg){
-	#if 0
-	//struct task_struct *task = get_current_task();
-	struct file *f = NULL;
-	f = kmalloc(sizeof(struct file)); 
-	kstrcpy(f->name,"pipe"); 
-	f->addr = 1;//allocate 1 page in user environment for this pipe
-	f->fd = get_fdcount();
-	fd_count++;
+
+void copy_pipe(struct file *dst, struct file *src)
+{
+	kstrcpy(dst->name, src->name); 	
+	dst->addr = src->addr ;
+	dst->fd = src->fd;
+	dst->size = src->size;
+	dst->offset = src->offset;
+	dst->next = NULL;	
+}
+
+void system_pipe(uint64_t fds){
+//	int fd[] = (int)fds;
+	struct task_struct *task = get_current_task();
+	struct file *p1 = NULL;
+	struct file *p2 = NULL;
+	p1 = kmalloc(sizeof(struct file)); 
+	p2 = kmalloc(sizeof(struct file)); 
+	
+	
+	kstrcpy(p1->name,"pipe1"); 
+	kstrcpy(p2->name,"pipe2"); 
+	
+	uint64_t addr = alloc_pages(1, PT_PRESENT_FLAG | PT_WRITABLE_FLAG | PT_USER);
+	p1->addr = p2->addr = addr;//allocate 1 page in user environment for this pipe
+	
+	p1->fd = get_fdcount();
+	set_fdcount(get_fdcount() + 1);
+	p2->fd = get_fdcount();
+	set_fdcount(get_fdcount() + 1);
+	
 	//f->type = atoi(ustart->typeflag);
-	f->size = PAGE_SIZE;
-	f->offset=0;
-	f->next = NULL;
-	#endif
+	p1->size = p2->size = PAGE_SIZE;
+	p1->offset = p2->offset = 0;
+	p1->next = p2->next = NULL;
+	add_pipe_to_task(task, p1);
+	add_pipe_to_task(task, p2);
+	//kprintf2("system_fork: fd1= %d and fd2= %d \n", p1->fd, p2->fd);
+	((int *)fds)[0] = p1->fd;
+	((int *)fds)[1] = p2->fd;
 }
 void system_dup(uint64_t first_arg){
 	
 }
-void system_dup2(uint64_t first_arg,uint64_t sec_arg){
-	
-}
-#if 0
-struct dirent
+void system_dup2(uint64_t dstfd,uint64_t srcfd)
 {
-	long d_ino;					/* file number of entry */
-	off_t d_off;				
-	unsigned short d_reclen;	/* length of this record */
-	char d_name [NAME_MAX+1];	/* name must be no longer than this */
-};
-#endif
+	struct task_struct * task = get_current_task();
+	if(srcfd == 1)
+	{
+		task->write_redirection_fd = dstfd;	
+	}
+	else if(srcfd == 0)
+	{
+		//stdin redirection to new fds
+		task->read_redirection_fd = dstfd;
+	}
+}
 
 uint64_t system_getdents(uint64_t fd,uint64_t buf,uint64_t size){
 	//clrscr();
@@ -520,21 +717,164 @@ uint64_t system_getdents(uint64_t fd,uint64_t buf,uint64_t size){
 	write_cr3(k_cr3);
 	//write_cr3(k_cr3);
 	return 0;	
-	//kprintf("return from tarfs %p \n",r);
-	//buf = r;
-	/*__asm__(
-		"movq %0,%%rax;"
-		:"=g"(fd)
-		:);*/
-	//__asm__ __volatile__("iretq;");
-//	buf = dopen(fd);
-/* 	return fd;	 */
+
 }
 
-void system_readdir(uint64_t addr){
+void system_readdir(uint64_t addr,uint64_t buf){
 /* 	dread(addr); */
+	struct dirent *temp = (struct dirent *)addr;
+	struct file *dir = kmalloc(sizeof(struct file));
+	kstrcpy(dir->name, temp->d_name);
+	dir->fd = temp->d_ino;
+	//kprintf2("fd %d",dir->fd);
+    struct file *r = dread(dir);
+	temp->d_ino = r->fd;
+	temp->d_off = r->offset;
+	temp->d_reclen = r->size;
+	kstrcpy(temp->d_name, r->name);
+	memcpy((void *)buf, (void *) temp, sizeof(struct dirent));
+	
 }
 
+void add_pipe_to_task(struct task_struct *task, struct file *pipe)
+{
+	struct file *temp;
+	if(task->pipe == NULL)
+	{	
+		task->pipe = pipe;
+		task->pipe->next = NULL;
+		return;
+	}
+	else
+	{
+		temp = task->pipe;
+		while(temp->next != NULL)
+			temp = temp->next;
+		temp->next = pipe;
+	}
+	temp->next->next = NULL;
+}
 
+uint64_t is_file_pipe(struct task_struct *task, uint64_t fd)
+{
+	struct file *temp;
+	if(task->pipe == NULL)
+		return 0;
+	else
+	{
+		temp = task->pipe;
+		while(temp != NULL)
+		{
+			if(temp->fd == fd)
+				return 1;
+			temp = temp->next;
+		}
+	}
+	return 0;
+}
+void print_pipe_from_task(struct task_struct *task)
+{
+	struct file *temp = NULL;
+	temp = task->pipe;
+	while(temp != NULL)
+	{
+		//kprintf2("inside syscall: fd:%d \n",temp->fd);
+		temp=temp->next;
+	}
+}
+void remove_pipe_from_task(struct task_struct *task, uint64_t fd)
+{
+	
+	if(task == NULL)
+		return;
+	if(task->pipe == NULL)
+		return;
+	if(task->pipe->fd == fd)
+	{
+		
+		task->pipe = task->pipe->next;
+		//kfree((uint64_t)temp, sizeof(struct file));
+		return;
+	}
+	else
+	{
+		struct file *prev = task->pipe;
+		struct file *curr = task->pipe->next;
+		
+		while(curr != NULL)
+		{
+			if(curr->fd == fd)
+			{
+				prev->next = curr->next;
+				//kfree((uint64_t)curr, sizeof(struct file));
+				return;
+			}
+			prev = curr;
+			curr = curr->next;
+		}
+	}
+}
 
+void write_to_pipe(struct task_struct *task, uint64_t fd, char *buf, int nbytes)
+{
+	//kprintf2("Writing to pipe \n");
+	struct file *temp;
+	if(task->pipe == NULL)
+		return;
+	else
+	{
+		temp = task->pipe;
+		while(temp != NULL)
+		{
+			if(temp->fd == fd)
+			{
+				uint64_t addr = temp->addr + temp->offset;
+				memcpy((void *)addr, (void *) buf, nbytes);
+				//kprintf2("data in pipe written is %s \n", (char *)addr);
+				temp->offset = temp->offset+nbytes;
+			}	
+			temp = temp->next;
+		}
+	}
+	return;
+}
 
+void read_from_pipe(struct task_struct *task, uint64_t fd, char *outbuf, int nbytes)
+{
+	//kprintf2("reading from pipe \n");
+	struct file *temp;
+	if(task->pipe == NULL)
+		return;
+	else
+	{
+		temp = task->pipe;
+		while(temp != NULL)
+		{
+			if(temp->fd == fd)
+			{
+				memcpy((void *)outbuf, (void *) (temp->addr+temp->offset), nbytes);
+		   		temp->offset = temp->offset+nbytes;
+				kprintf("read data is : %s \n", outbuf);
+			}	
+			temp = temp->next;
+		}
+	}
+	return;
+}
+
+void add_to_pipe_read_waiting_queue(struct task_struct *task)
+{
+	task->state = TASK_WAITING;
+	set_current_task(NULL);
+	pipe_read_wait_queue = task;
+}
+
+void wake_up_waiting_task()
+{
+	if(pipe_read_wait_queue != NULL)
+	{
+		pipe_read_wait_queue->state = TASK_RUNNABLE;
+		read_from_pipe(pipe_read_wait_queue, pipe_read_wait_queue->read_redirection_fd, str, count);
+		pipe_write_flag = 0;
+	}
+}

@@ -23,43 +23,53 @@ void start(uint32_t* modulep, void* physbase, void* physfree)
 		uint64_t base, length;
 		uint32_t type;
 	}__attribute__((packed)) *smap;
-
+	mm_phy_init();
 	while(modulep[0] != 0x9001) modulep += modulep[1]+2;
 	for(smap = (struct smap_t*)(modulep+2); smap < (struct smap_t*)((char*)modulep+modulep[1]+2*4); ++smap) {
 		if (smap->type == 1 /* memory */ && smap->length != 0) {
 			base = smap->base;
 			length = smap->length;
 			type = 	smap->type;
-			kprintf("Available Physical Memory [%x-%x]\n", smap->base, smap->base + smap->length);
+			kprintf2("Available Physical Memory [%x-%x]\n", smap->base, smap->base + smap->length);
+			mm_phy_map((uint64_t) base, length);
 		}
 	}
+	mark_kernel_pages((uint64_t)physbase, (uint64_t)physfree);
 	
-	kprintf("physbase and  physfree [%x-%x]\n", physbase, physfree);
+	kprintf2("physbase and  physfree [%x-%x]\n", physbase, physfree);
 	
 	kprintf("smapbase and  smap length [%x-%x] % type %d \n", base, length, type);
 	//mm_phy_init(base, length, type);
 	//clrscr();
-	mm_phy_init((uint64_t)physfree, length, type);
-	setup_paging((uint64_t)physfree, (uint64_t)physfree,(uint64_t) physbase, (uint64_t)physfree);
+	//mm_phy_init((uint64_t)physfree, length, type);
+	//setup_paging((uint64_t)physfree, (uint64_t)physfree,(uint64_t) physbase, (uint64_t)physfree);
+	setup_paging((uint64_t)physbase, (uint64_t)physfree);
 	//
 	initialize_tarfs();
-	//clrscr();
-	/*char buf[100];
-	int fd =fopen("bin/");
-	int f= dopen(fd,(uint64_t)buf);
-	dread(f);*/
-	
-	//dread(10);
-	//clrscr();
+
 	char *argv[10];
 	argv[0] = "abc\0";
-	argv[1] = "def\0";
-	//readElf("bin/malloctest", argv, 2);
+	argv[1] = "shashi.txt\0";
+	argv[2] = "shashi\0";
+	char *envp[10];
+	//kstrcpy(envp[0], "PATH=");
+	envp[0] = "PATH=bin:\0";
+	envp[1] = "shashi";
+	//envp[0] = "/PATH=";
+	//kprintf2("loading binaries \n");
+	//readElf("bin/cat", argv, 2, envp,1);
+	readElf("bin/hello", argv, 0, envp,2);
+	readElf("bin/sbush", argv, 0, envp,1);
+	//readElf("bin/sbush", argv, 0, envp, 1);
+	//readElf("bin/printtest", NULL, 0);
+	//readElf("bin/file", argv, 2);
+	//readElf("bin/testexec", argv, 2);
+//	readElf("bin/malloctest", argv, 2);
 	//readElf("bin/test", argv, 2);
 	//readElf("bin/hello", argv, 2);
 	//readElf("bin/testexec", argv, 2);
 	__asm__("sti");
-	readElf("bin/filetest", argv, 2);
+	//readElf("bin/filetest", argv, 2);
 	//testdivzero();
 	//test_page_fault();
 	//test_malloc();

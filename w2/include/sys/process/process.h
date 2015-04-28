@@ -3,11 +3,12 @@ web references: http://www.brokenthorn.com/Resources/OSDev24.html
 */
 #ifndef _PROCESS_H
 #define _PROCESS_H
-
+//#include <sys/tarfs.h>
 #include <sys/sbunix.h>
 #include <stdlib.h>
 #include <sys/kstring.h>
 #include <sys/mmu/virtual_mm.h>
+
 
 enum task_states{
 	TASK_RUNNING,		
@@ -73,6 +74,9 @@ struct task_struct {
 	uint64_t child_count;
 	uint64_t wait_for_child_pid;
 	struct mm_struct *mm;
+	struct file *pipe;
+	uint64_t write_redirection_fd;
+	uint64_t read_redirection_fd;
 };
 
 
@@ -114,4 +118,5 @@ void add_to_vma_list(struct mm_struct *mm, struct  vm_area_struct *vma);
 void update_time_slices();
 void print_task_list();
 void remove_from_parent(struct task_struct *child);
+//void add_pipe_to_task(struct task_struct *task, struct file *pipe);
 #endif

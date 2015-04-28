@@ -77,6 +77,7 @@ unsigned int alarm(unsigned int seconds){
 }
 /*working*/
 char *getcwd(char *buf, size_t size){
+	memset(buf, 0, size);
     uint64_t res = syscall_2(SYS_getcwd, (uint64_t) buf, (uint64_t) size);
 	if((char *)res == NULL)
 	{
@@ -107,6 +108,7 @@ int open(const char *pathname, int flags){
 
 /*working*/
 ssize_t read(int fd, void *buf, size_t count){
+	memset(buf, 0, count);
     ssize_t res = syscall_3(SYS_read, (uint64_t) fd, (uint64_t) buf, (uint64_t) count);
 	if((int)res < 0)
 	{
@@ -148,6 +150,8 @@ int close(int fd){
 }
 /*working*/
 int pipe(int filedes[2]){
+	filedes[0] = -1;
+	filedes[1] = -1;
     int res = syscall_1(SYS_pipe, (uint64_t)filedes);
 	if(res < 0)
 	{
@@ -181,6 +185,7 @@ void *opendir(const char *name){
 	int fd = open(name, O_DIRECTORY);
 	//char buf[1024];
 	struct dirent *buf = malloc(sizeof(struct dirent));
+	memset(buf, 0, sizeof(struct dirent));
 	//printf("%d \n", fd);
 	//struct dirent *d = NULL;
 	//if(fd < 0)
@@ -195,21 +200,21 @@ void *opendir(const char *name){
 	//printf("%p \n", buf);
 	//printf("%p \n", &f);
 	
-	printf("d_ino =  %d \n",buf->d_ino);
+	/*printf("d_ino =  %d \n",buf->d_ino);
 	printf("d_off = %d\n",buf->d_off);
 	//printf("inside opendir addr %x \n",(uint64_t)buf->addr);
 	printf("d_reclen %d\n",buf->d_reclen);
 	printf("d_name %s \n",buf->d_name);
-	printf("End of opendir\n");
+	printf("End of opendir\n");*/
 	//printf("inside opendir %d\n",fd);
 	//printf("buf in stdlib %p\n",res);
 	if(res < 0)
 	{
 		errno = -res;	
-		//return -1;
+		return NULL;
 	}
-	printf("shashi1 \n");
-	printf("shashi2 \n");
+	//printf("shashi1 \n");
+	//printf("shashi2 \n");
 	//printf("sashi 2 \n");
 	//struct dir *d = malloc(sizeof(struct dir));
 	//d->fd = fd;
@@ -237,17 +242,29 @@ void *opendir(const char *name){
     return (void *)d;
 }
 */
-void readdir(void *dir)
+struct dirent * readdir(struct dirent *dir)
 {
-	struct dir *d = (struct dir *)dir; 
-	syscall_1(SYS_readdir, (uint64_t)d->addr);
+/*	struct dir *d = (struct dir *)dir; 
+	syscall_1(SYS_readdir, (uint64_t)d);
 	
-/*   struct dirent *dip = (struct dirent *)dir;
+  struct dirent *dip = (struct dirent *)dir;
 	struct dirent *next;
 	next = (struct dirent *)(dir + dip->d_reclen);
 	if(next->d_reclen == 0)
 		return NULL;
 	return next; */
+	struct dirent *buf = malloc(sizeof(struct dirent));
+	memset(buf, 0, sizeof(struct dirent));
+	syscall_2(SYS_readdir, (uint64_t)dir,(uint64_t)buf);
+	
+	//printf("d_ino =  %d \n",buf->d_ino);
+	//printf("d_off = %d\n",buf->d_off);
+	//printf("d_reclen %d\n",buf->d_reclen);
+	//printf("d_name %s \n",buf->d_name);
+	printf("End of readdir\n");
+	return (struct dirent *)buf;
+	//printf("dir inside readdir%s",dir->d_name);
+
 }
 
 int closedir(void *dir){
@@ -263,6 +280,7 @@ int closedir(void *dir){
 
 /*working*/
 pid_t waitpid(pid_t pid,int *status, int options){
+	*status = -1;
     pid_t res = syscall_3(SYS_wait4,(uint64_t)pid,(uint64_t)status,(uint64_t)options);
 	if((int)res < 0)
 	{

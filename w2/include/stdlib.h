@@ -74,7 +74,7 @@ struct File
 
 
 void *opendir(const char *name);
-void readdir(void *dir);
+struct dirent * readdir(struct dirent *dir);
 int closedir(void *dir);
 
 #endif

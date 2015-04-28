@@ -4,11 +4,11 @@
 int main(int argc, char* argv[], char* envp[]) {
 	
 	//char c[1024];
-	char *c = malloc(1024);
+	//char *c = malloc(1024);
 	//printf("address is: %p !\n", &c);
-	printf("Enter the string !\n");
-	scanf("%s", c);
-	printf("read char : %s \n", c);
+	printf("Writing to pipe !\n");
+	//scanf("%s", c);
+	//printf("read char : %s \n", c);
 	/*
 	int i = 0;
 	while(1)

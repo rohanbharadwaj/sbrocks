@@ -17,9 +17,12 @@ static inline uint64_t mm_page_to_phy(uint64_t page) {
         return page * 4096;
 }
 
-void mm_phy_init(uint64_t base, uint64_t length, uint64_t type);
-
+void mm_phy_init();
+void mm_phy_map(uint64_t base, uint64_t length);
+void mark_kernel_pages(uint64_t startaddr, uint64_t endaddr);
 uint64_t mm_phy_alloc_page();
 void mm_phy_free_page(uint64_t page);
+void dec_ref_count(uint64_t phy);
+void inc_ref_count(uint64_t phy);
 
 #endif

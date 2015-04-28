@@ -6,8 +6,13 @@ void fopentest();
 void getcwd1();	
 int main(int argc, char* argv[], char* envp[]) {
 	struct dirent *buf = (struct dirent *)opendir("bin/");
+	//printf("in main after opendir %s \n", buf->d_name);
+	while (buf!=NULL)
+	{
+	buf = (struct dirent *)readdir(buf);
+	if (buf != NULL)
 	printf("in main after opendir %s \n", buf->d_name);
-	printf("shashi final \n");
+	}
 /* 	char buf[100];
 	int fd =fopen("bin/");
 	kprintf2("bin fd %d\n",fd);

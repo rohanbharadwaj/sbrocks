@@ -245,8 +245,8 @@ struct file *dopen(uint64_t fd, uint64_t buf)
 					{
 					   int len = strlen(t->name); 
 					   char* name = t->name;
-				    if(t->next !=NULL && kstrncmp(t->next->name, name,len)==0){
-							kprintf2("name of next file %s\n",t->next->name);
+				    if(t->next != NULL && kstrncmp(t->next->name, name,len)==0){
+							//kprintf2("name of next file %s\n",t->name);
 						  return t->next;
 						}
 						else{
@@ -257,6 +257,7 @@ struct file *dopen(uint64_t fd, uint64_t buf)
 			}			
 			return NULL;
 }
+
 
 
 /* int dopen(uint64_t fd, uint64_t buf)
@@ -295,7 +296,7 @@ struct file *dread(struct file* f)
 			 //int len = strlen(t->name); 
 			 //char* name = t->name;
 			  if(t->next !=NULL && kstrncmp(t->next->name, temp_name,len)==0){
-							kprintf2("name of next file %s\n",t->next->name);
+							//kprintf2("name of next file %s\n",t->next->name);
 						  return t->next;
 						}
 						else{
@@ -315,6 +316,16 @@ void set_cwd(char *dpath)
 char *get_cwd()
 {
 	return cwd;	
+}
+
+uint64_t get_fdcount()
+{
+	return fd_count;
+}
+	
+void set_fdcount(uint64_t c)
+{
+	fd_count = c;	
 }
 
 /*void dread(uint64_t fd)
@@ -346,3 +357,25 @@ char *get_cwd()
 	return ;
 }
 */
+
+uint64_t fseek(uint64_t fd,uint64_t offset,uint64_t whence)
+{
+	struct file *t =filelist;
+	while(t->next != NULL)
+	{	
+		if(t->fd == fd)
+		{	
+			if (whence==0)
+				t->offset = offset;
+			else if(whence == 1)
+				t->offset = t->offset + offset;
+			else if(whence == 2)
+				t->offset = t->size + offset;
+			else
+				t->offset = -1;
+		   return t->offset;	
+		}
+		t = t->next;
+	}
+	return -1;
+}

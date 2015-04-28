@@ -5,9 +5,7 @@ void testmalloc();
 void testfork();
 int main(int argc, char* argv[], char* envp[]) {
 	//testmalloc();
-	/*printf("argc %d \n", argc);
-	for(int i = 0; i < argc; i++)
-		printf("argv %s \n", argv[i]);*/
+	
 	/*int i = 10;
 	while(1)
 	{
@@ -17,6 +15,7 @@ int main(int argc, char* argv[], char* envp[]) {
 		if(i == 15)
 			break;
 	}*/
+	#if 0
 	int i = 0;
 	while(1)
 	{
@@ -26,7 +25,15 @@ int main(int argc, char* argv[], char* envp[]) {
 		sleep(1);
 		printf("shashi %d \n", i);
 	}
-	//testfork();
+	
+	
+	
+	printf("Enter String ... \n");
+	char c[1024];
+	scanf("%s", c);
+	printf("read string : %s \n", c);
+	#endif
+	testfork();
 	return 0;
 }
 
@@ -62,7 +69,8 @@ void testmalloc()
 
 void testfork()
 {
-	//printf("*********************************************\n");
+	printf("*********************************************\n");
+	printf("Testing fork, waitpid, sleep system calls \n \n");
 	//char *c =(char*) malloc(10);
 	//char c[1024];
 	//strcpy(c, "shashi");
@@ -75,7 +83,9 @@ void testfork()
 	strcpy(c, "shashi");
 	//strcat(c, d);
 	//printf("%p \n", &c);
-	printf("parent: %s \n", c);
+	//printf("parent: %s \n", c);
+	printf("parent::string is : %s \n", c);
+	printf("I am in parent \n \n");
 	//free(c);
 	//printf("%s \n", c);
 	
@@ -83,10 +93,18 @@ void testfork()
 	int pid = fork();
 	if(pid == 0)
 	{
+		printf("I am in child \n");
+		printf("child::string is : %s \n", c);
 		//printf("%p \n", &c);
-		printf("child process is %s \n", c);
+		//printf("child process is %s \n", c);
 		strcpy(c, "ranjan");
-		printf("after modification: %s \n", c);
+		printf("child::after modification: %s \n", c);
+		char *d =(char*) malloc(20);	
+		strcpy(d, "ashish");
+		printf("child::string d is : %s \n", d);
+		c =(char*) malloc(20);	
+		strcpy(c, "goel");
+		printf("child::string d is : %s \n", c);
 		/*char *d =(char*) malloc(10);
 		strcpy(d, "ranjan");
 		strcpy(c, "ashish");
@@ -96,16 +114,20 @@ void testfork()
 		//c = (char *)0x100;
 		sleep(5);
 		printf("child: after sleep \n");
+		printf("child: Dying!!! \n");
+		
 		exit(1);
 	}
 	//
 	int status;
 	//printf("testing  fork() API %s \n", c);
+	printf("waiting for child to finish \n");
 	waitpid(pid,&status,0);
-	printf("status : %d \n", status);
+	
+	//printf("status : %d \n", status);
 	//sleep(10);
 	//while(1);
 	//printf("parent pid is %d \n", pid);
 	
-	printf("I am in parent \n");
+	printf("Parent: Dying!!!!! \n");
 }

@@ -15,6 +15,7 @@ uint64_t read_cr0()
 }
 void write_cr0(uint64_t cr0)
 {
+	#if 0
 	__asm__ __volatile__(
 /*		
 		"movq %0, %%rax;"
@@ -23,6 +24,7 @@ void write_cr0(uint64_t cr0)
 		"movq %0, %%cr0;"		
 		:
 		:"g"(cr0));
+	#endif
 }
 uint64_t read_cr3()
 {
@@ -51,7 +53,7 @@ uint64_t read_cr2()
 
 void write_cr3(uint64_t cr3)
 {
-	__asm__(
+	__asm__ __volatile__(
 //		"movq %0, %%rax;"
 //		"movq %%rax, %%cr3;"
 		"movq %0, %%cr3;"

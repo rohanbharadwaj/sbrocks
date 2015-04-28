@@ -10,9 +10,9 @@ web references:  http://www.brokenthorn.com/Resources/OSDev24.html
 
 void print_vma_list(struct mm_struct *mm);
 void test(uint64_t start);
-void setup_stack(struct task_struct *task, char *argv[], int argc);
+void setup_stack(struct task_struct *task, char *argv[], int argc, char *envp[], int envc);
 
-struct task_struct *readElf(char *filename, char *argv[], int argc)
+struct task_struct *readElf(char *filename, char *argv[], int argc, char *envp[], int envc)
 {
 	//Elf64_Ehdr	
 	uint64_t start, end, flags, fd;
@@ -80,6 +80,7 @@ struct task_struct *readElf(char *filename, char *argv[], int argc)
 			//memset((void*)start, 0, phdr->p_memsz);
 			write_cr3(virt_to_phy(task->pml4e, 0));
 			kprintf("loadable start %p and end %p \n", start, start+ phdr->p_memsz);
+			//kprintf2("shashi \n\n\n");
 			if(phdr->p_flags == 0)   //text
 			//todo check for flag permissions if text then read,execute,user flags
 				alloc_pages_at_virt(start, phdr->p_memsz, PT_PRESENT_FLAG | PT_USER);
@@ -113,7 +114,7 @@ struct task_struct *readElf(char *filename, char *argv[], int argc)
 	vma = create_vma(task->mm, USER_STACK, USER_STACK - USER_STACK_SIZE, VMA_STACK, VM_RW, 0);
 	add_to_vma_list(task->mm, vma);
 	task->mm->total_vm_size += USER_STACK_SIZE;
-	setup_stack(task, argv, argc);
+	setup_stack(task, argv, argc, envp, envc);
 	write_cr3(old_cr3);
 	task->r.rsp = task->mm->stack_vm;
 	task->r.rip = task->e_entry;
@@ -128,15 +129,29 @@ struct task_struct *readElf(char *filename, char *argv[], int argc)
 }
 
 
-void setup_stack(struct task_struct *task, char *argv[], int argc)
+void setup_stack(struct task_struct *task, char *argv[], int argc, char *envp[], int envc)
 {
 	task->mm->stack_vm = USER_STACK - 0x8;
 	write_cr3(virt_to_phy(task->pml4e, 0));
-	task->rip = task->e_entry;
-	task->rsp = task->mm->stack_vm;
+	//task->rip = task->e_entry;
+	//task->rsp = task->mm->stack_vm;
 	alloc_pages_at_virt(USER_STACK - PAGE_SIZE, PAGE_SIZE, PT_PRESENT_FLAG | PT_USER | PT_WRITABLE_FLAG);
-	uint64_t addr[argc];
+	
 	uint64_t *ustackptr = (uint64_t*) task->mm->stack_vm;
+	
+	uint64_t addr1[envc];
+	//ustackptr--;
+	for(int i = envc-1; i >=0; i--)
+	{
+		uint64_t length = strlen(envp[i]) + 1;
+		ustackptr = (uint64_t*)((void*)ustackptr - length);
+		memcpy((void *)ustackptr, (void *) envp[i], length);
+		addr1[i] = (uint64_t) ustackptr;
+	}
+	//if(argc > 0)
+	//ustackptr--;
+    //*ustackptr = (uint64_t)envc;
+	uint64_t addr[argc];
 	for(int i = argc-1; i >=0; i--)
 	{
 		uint64_t length = strlen(argv[i]) + 1;
@@ -144,11 +159,40 @@ void setup_stack(struct task_struct *task, char *argv[], int argc)
 		memcpy((void *)ustackptr, (void *) argv[i], length);
 		addr[i] = (uint64_t) ustackptr;
 	}
+	if(argc > 0)
+		ustackptr--;
+	//else
+		
+	for(int i = envc-1; i >= 0; i--)
+	{
+		ustackptr--;
+   		*ustackptr = addr1[i];
+	}
+	//if(argc > 0)
+	//ustackptr--;
+	if(argc > 0)
+		ustackptr--;
+	else
+	{
+		ustackptr--;
+		ustackptr--;
+	}
 	for(int i = argc-1; i >= 0; i--)
 	{
 		ustackptr--;
    		*ustackptr = addr[i];
 	}
+	//if(argc > 0)
+	//	ustackptr--;
+	//ustackptr--;
+	//ustackptr--;
+	
+	ustackptr--;
+    *ustackptr = (uint64_t)argc;
+	
+	
+	//ustackptr--;
+    //*ustackptr = (uint64_t)envc;
 	
 	/*uint64_t length = strlen(argv[0]);
 	uint64_t *addr;
@@ -160,9 +204,9 @@ void setup_stack(struct task_struct *task, char *argv[], int argc)
 	//ustackptr--;
     //*ustackptr = (uint64_t)addr;
 	//int argc = 10;
-	ustackptr--;
-    *ustackptr = (uint64_t)argc;
-	task->rsp = (uint64_t)ustackptr;
+	
+	//task->r.rsp = (uint64_t)ustackptr;
+	task->mm->stack_vm = (uint64_t)ustackptr;
 }
 
 void test(uint64_t start)

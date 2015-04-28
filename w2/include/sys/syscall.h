@@ -39,13 +39,13 @@ void system_sleep(uint64_t first_arg);
 void system_alarm(uint64_t first_arg);
 uint64_t system_getcwd(uint64_t first_arg,uint64_t sec_arg);
 void system_chdir(uint64_t first_arg);
-void system_lseek(uint64_t first_arg,uint64_t sec_arg,uint64_t third_arg);	
+uint64_t system_lseek(uint64_t first_arg,uint64_t sec_arg,uint64_t third_arg);	
 void system_close(uint64_t first_arg);
 void system_pipe(uint64_t first_arg);
 void system_dup(uint64_t first_arg);
 void system_dup2(uint64_t first_arg,uint64_t sec_arg);
 uint64_t system_getdents(uint64_t first_arg,uint64_t sec_arg,uint64_t third_arg);
-void system_readdir(uint64_t first_arg);
+void system_readdir(uint64_t first_arg,uint64_t sec_arg);
 
 					
 					

@@ -16,7 +16,9 @@ struct file *dread(struct file* f);
 void print_files();
 void set_cwd(char *);
 char* get_cwd();
-
+uint64_t get_fdcount();
+void set_fdcount(uint64_t c);
+uint64_t fseek(uint64_t fd,uint64_t offset,uint64_t whence);
 //current working directory
 char cwd[1024];// = "rootfs/";
 

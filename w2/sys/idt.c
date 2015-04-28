@@ -17,10 +17,41 @@ extern void irq0();             //PIT irq handler
 extern void irq1();             //KB irq handler
 
 extern void isr0();
+extern void isr1();
+extern void isr2();
+extern void isr3();
+extern void isr4();
+extern void isr5();
+extern void isr6();
+extern void isr7();
+extern void isr8();
+extern void isr9();
+extern void isr10();
+extern void isr11();
+extern void isr12();
+extern void isr13();
 extern void isr14();
+extern void isr15();
+extern void isr16();
+extern void isr17();
+extern void isr18();
+extern void isr19();
+extern void isr20();
+extern void isr21();
+extern void isr22();
+extern void isr23();
+extern void isr24();
+extern void isr25();
+extern void isr26();
+extern void isr27();
+extern void isr28();
+extern void isr29();
+extern void isr30();
+extern void isr31();
 extern void isr128();
 
 void testdivzero();
+void gpf_fault_handler();
 void page_fault_handler();
 void test_page_fault();
 void set_irqs();
@@ -76,7 +107,37 @@ void idt_install()
     memset(&idt, 0, sizeof(struct idt_entry) * 256);
     //DIV ZERO exception
     idt_set_gate(0, (uint64_t)isr0, 0x08, 0x8e);
+	idt_set_gate(1, (uint64_t)isr1, 0x08, 0x8e);
+	idt_set_gate(2, (uint64_t)isr2, 0x08, 0x8e);
+	idt_set_gate(3, (uint64_t)isr3, 0x08, 0x8e);
+	idt_set_gate(4, (uint64_t)isr4, 0x08, 0x8e);
+	idt_set_gate(5, (uint64_t)isr5, 0x08, 0x8e);
+	idt_set_gate(6, (uint64_t)isr6, 0x08, 0x8e);
+	idt_set_gate(7, (uint64_t)isr7, 0x08, 0x8e);
+	idt_set_gate(8, (uint64_t)isr8, 0x08, 0x8e);
+	idt_set_gate(9, (uint64_t)isr9, 0x08, 0x8e);
+	idt_set_gate(10, (uint64_t)isr10, 0x08, 0x8e);
+	idt_set_gate(11, (uint64_t)isr11, 0x08, 0x8e);
+	idt_set_gate(12, (uint64_t)isr12, 0x08, 0x8e);
+	idt_set_gate(13, (uint64_t)isr13, 0x08, 0x8E);
 	idt_set_gate(14, (uint64_t)isr14, 0x08, 0x8E);
+	idt_set_gate(15, (uint64_t)isr15, 0x08, 0x8e);
+	idt_set_gate(16, (uint64_t)isr16, 0x08, 0x8e);
+	idt_set_gate(17, (uint64_t)isr17, 0x08, 0x8e);
+	idt_set_gate(18, (uint64_t)isr18, 0x08, 0x8e);
+	idt_set_gate(19, (uint64_t)isr19, 0x08, 0x8e);
+	idt_set_gate(20, (uint64_t)isr20, 0x08, 0x8e);
+	idt_set_gate(21, (uint64_t)isr21, 0x08, 0x8e);
+	idt_set_gate(22, (uint64_t)isr22, 0x08, 0x8e);
+	idt_set_gate(23, (uint64_t)isr23, 0x08, 0x8E);
+	idt_set_gate(24, (uint64_t)isr24, 0x08, 0x8E);
+	idt_set_gate(25, (uint64_t)isr25, 0x08, 0x8e);
+	idt_set_gate(26, (uint64_t)isr26, 0x08, 0x8e);
+	idt_set_gate(27, (uint64_t)isr27, 0x08, 0x8e);
+	idt_set_gate(28, (uint64_t)isr28, 0x08, 0x8e);
+	idt_set_gate(29, (uint64_t)isr29, 0x08, 0x8e);
+	idt_set_gate(30, (uint64_t)isr30, 0x08, 0x8e);
+	idt_set_gate(31, (uint64_t)isr31, 0x08, 0x8e);
     //PIT interrupt
     idt_set_gate(32, (uint64_t)irq0, 0x08, 0x8E);
 	idt_set_gate(0x80, (uint64_t)isr128, 0x08, 0xEE);
@@ -165,21 +226,66 @@ void divide_by_zero_handler()
 	kprintf("divide_by_zero_handler reached.... \n");	
 	__asm__( "hlt" );
 }
+
+void gpf_fault_handler(struct regs *r)
+{
+	//clrscr();
+	kprintf2("Inside gpf");
+}
+
 void page_fault_handler(struct regs *r)
 {
 	clrscr();
-	kprintf("error code %p \n", r->err_code);
+	//kprintf2("error code %p \n", r->err_code);
 	struct task_struct *task = get_current_task();
 	if(task)
 		task->r = *r;
-	uint64_t addr;
-	addr = read_cr2();
+	uint64_t vaddr;
+	vaddr = read_cr2();
 	//puts("shashi \n");
 	//__asm__ __volatile__("cli;" : :);
 	kprintf("page fault  handler reached.... \n");
-	kprintf2("fault is at address %p \n",addr);
+	//kprintf2("fault is at address %p \n",vaddr);
+	if(r->err_code & 0x1)
+	{
+		//page protectio voilation	
+		//write_cr3(virt_to_phy(task->pml4e, 0)); 
+		uint64_t *pte = get_pte_entry(vaddr);
+		uint64_t paddr = *pte & 0x000FFFFFFFFFF000;
+		if(pte != 0)
+		{
+			if(is_cow_set(pte) && !is_writable_page(pte))
+			{
+				//for fork
+				//kprintf2("cow page \n");
+				uint64_t start_addr = ALIGN_DOWN(vaddr);
+				//allocate a new physical page at dummy virtual address
+				uint64_t dummy_vaddr = alloc_pages(1, PT_PRESENT_FLAG | PT_USER | PT_WRITABLE_FLAG);
+				uint64_t phy_addr = virt_to_phy(dummy_vaddr, 0);
+				//copy alll the contents from faulting address to new dummy page
+				memcpy((void *)dummy_vaddr, (void *) start_addr, PAGE_SIZE);
+				//then map this page in child process
+				//remove dummy page entry from parent
+				//unmap_phy(dummy_vaddr);
+				//alloc_pages_at_virt(vaddr, phy_addr, PT_PRESENT_FLAG | PT_USER | PT_WRITABLE_FLAG);
+				//kprintf2("before \n\n");
+				map_virt_to_phy(start_addr, phy_addr, PT_PRESENT_FLAG | PT_USER | PT_WRITABLE_FLAG);
+				dec_ref_count(paddr);
+				uint64_t *pte = get_pte_entry(start_addr);
+				set_cow_bit(pte);
+				//kprintf2("page allocated \n");
+				//kprintf2("after \n\n");
+			}
+		}
+	}
+	else
+	{
+		//page is not present demand paging
+		demand_paging(vaddr);
+	}
+	
 	//save_task_registers();
-	demand_paging(addr);
+	
 	task = get_current_task();
 	if(task)
 	{
@@ -193,12 +299,12 @@ void demand_paging(uint64_t addr)
 	//save_current_task_regs();
 	struct task_struct *task = get_current_task();
 	struct vm_area_struct *temp_vma = task->mm->vma_list;
-	while(temp_vma->next != NULL)
+	while(temp_vma != NULL)
 	{
 		//clrscr();
 		if(temp_vma->vma_type == VMA_HEAP)
 		{
-			kprintf("start: %p end %p \n", temp_vma->vm_start, temp_vma->vm_end);	
+		//	kprintf2("start: %p end %p \n", temp_vma->vm_start, temp_vma->vm_end);	
 			if(temp_vma->vm_start <= addr && temp_vma->vm_end > addr)
 			{
 				//allocate pages for this vma	
@@ -224,6 +330,17 @@ void demand_paging(uint64_t addr)
 				//__asm__ __volatile__("sti");
 				//	while(1);
 				//return;
+			}
+		}
+		else if(temp_vma->vma_type == VMA_STACK)
+		{
+			//kprintf2("start: %p, end: %p \n", temp_vma->vm_start, temp_vma->vm_end);
+			//kprintf2("fault addr: %p \n", addr);
+			if(temp_vma->vm_start >= addr && temp_vma->vm_end < addr)
+			{
+				write_cr3(virt_to_phy(task->pml4e, 0));
+				uint64_t vaddr = ALIGN_UP(addr) - 4096;
+				alloc_pages_at_virt(vaddr, PAGE_SIZE , PT_PRESENT_FLAG | PT_WRITABLE_FLAG | PT_USER);
 			}
 		}
 		temp_vma = temp_vma->next;
@@ -260,3 +377,180 @@ void fault_handler()
 			break;
 	}*/
 }
+void isr1_handler(struct regs *r)
+{
+	//clrscr();
+	kprintf2("Inside isr1 handler\n");
+}
+
+void isr2_handler(struct regs *r)
+{
+	//clrscr();
+	kprintf2("Inside isr2 handler\n");
+}
+
+void isr3_handler(struct regs *r)
+{
+	//clrscr();
+	kprintf2("Inside isr3 handler\n");
+}
+
+void isr4_handler(struct regs *r)
+{
+	//clrscr();
+	kprintf2("Inside isr4 handler\n");
+}
+
+void isr5_handler(struct regs *r)
+{
+	//clrscr();
+	kprintf2("Inside isr5 handler\n");
+}
+
+void isr6_handler(struct regs *r)
+{
+	//clrscr();
+	kprintf2("Inside isr6 handler\n");
+}
+
+void isr7_handler(struct regs *r)
+{
+	//clrscr();
+	kprintf2("Inside isr7 handler\n");
+}
+
+void isr8_handler(struct regs *r)
+{
+	//clrscr();
+	kprintf2("Inside isr8 handler\n");
+}
+
+void isr9_handler(struct regs *r)
+{
+	//clrscr();
+	kprintf2("Inside isr9 handler\n");
+}
+
+void isr10_handler(struct regs *r)
+{
+	//clrscr();
+	kprintf2("Inside isr10 handler\n");
+}
+
+void isr11_handler(struct regs *r)
+{
+	//clrscr();
+	kprintf2("Inside isr11 handler\n");
+}
+
+void isr12_handler(struct regs *r)
+{
+	//clrscr();
+	kprintf2("Inside isr12 handler\n");
+}
+
+void isr15_handler(struct regs *r)
+{
+	//clrscr();
+	kprintf2("Inside isr15 handler\n");
+}
+
+void isr16_handler(struct regs *r)
+{
+	//clrscr();
+	kprintf2("Inside isr16 handler\n");
+}
+
+void isr17_handler(struct regs *r)
+{
+	//clrscr();
+	kprintf2("Inside isr17 handler\n");
+}
+
+void isr18_handler(struct regs *r)
+{
+	//clrscr();
+	kprintf2("Inside isr18 handler\n");
+}
+
+void isr19_handler(struct regs *r)
+{
+	//clrscr();
+	kprintf2("Inside isr19 handler\n");
+}
+
+void isr20_handler(struct regs *r)
+{
+	//clrscr();
+	kprintf2("Inside isr20 handler\n");
+}
+
+void isr21_handler(struct regs *r)
+{
+	//clrscr();
+	kprintf2("Inside isr21 handler\n");
+}
+
+void isr22_handler(struct regs *r)
+{
+	//clrscr();
+	kprintf2("Inside isr22 handler\n");
+}
+
+void isr23_handler(struct regs *r)
+{
+	//clrscr();
+	kprintf2("Inside isr23 handler\n");
+}
+
+void isr24_handler(struct regs *r)
+{
+	//clrscr();
+	kprintf2("Inside isr24 handler\n");
+}
+
+void isr25_handler(struct regs *r)
+{
+	//clrscr();
+	kprintf2("Inside isr25 handler\n");
+}
+
+void isr26_handler(struct regs *r)
+{
+	//clrscr();
+	kprintf2("Inside isr26 handler\n");
+}
+
+void isr27_handler(struct regs *r)
+{
+	//clrscr();
+	kprintf2("Inside isr27 handler\n");
+}
+
+void isr28_handler(struct regs *r)
+{
+	//clrscr();
+	kprintf2("Inside isr28 handler\n");
+}
+
+void isr29_handler(struct regs *r)
+{
+	//clrscr();
+	kprintf2("Inside isr29 handler\n");
+}
+
+void isr30_handler(struct regs *r)
+{
+	//clrscr();
+	kprintf2("Inside isr30 handler\n");
+}
+
+void isr31_handler(struct regs *r)
+{
+	//clrscr();
+	kprintf2("Inside isr31 handler\n");
+}
+
+
+
+
