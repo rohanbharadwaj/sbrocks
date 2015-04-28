@@ -1,4 +1,5 @@
 #include <sys/timer.h>
+#include <sys/process/process_manager.h>
 /* 
 * web reference : http://www.osdever.net/bkerndev/Docs/pit.htm
 */
@@ -15,6 +16,10 @@ struct time
 };
 
 struct time curr_time;
+
+
+
+
 
 void timer_phase(int hz)
 {
@@ -34,11 +39,15 @@ void timer_wait(int ticks)
     while(timer_ticks < eticks);
 }
 
-void timer_handler(/*struct regs *r*/)
+void timer_handler(struct regs *r)
 {
+	struct task_struct *task = get_current_task();
+	if(task)
+		task->r = *r;
 	//kprintf("timer_handler reached %d \n", timer_ticks);
     /* Increment our 'tick count' */
     timer_ticks++;
+	//schedule_process();
     /* Every 18 clocks (approximately 1 second), we will
     *  display a message on the screen */
     if (timer_ticks % 18 == 0)
@@ -46,8 +55,12 @@ void timer_handler(/*struct regs *r*/)
         uint32_t secs = timer_ticks/100;
         if(prev_secs != secs)			//second change
         {
+			//update_time_slices();
+				
             //kprintf("second : %d\n", (secs%60));
             curr_time.ss = secs%60;
+			
+			update_time_slices();
 			//schedule_process();
             if(secs%60 == 0)
             {
@@ -63,10 +76,18 @@ void timer_handler(/*struct regs *r*/)
                 }
             }
             kprintat(40,24,"Time Since Boot %d:%d:%d", curr_time.hh,curr_time.mm,curr_time.ss);
+			
             prev_secs = secs;  
         }
     }
     outportb(0x20,0x20);
+	schedule_process();
+	task = get_current_task();
+	if(task)
+	{
+		*r = task->r;	
+	}
+	//
 }
 
 /* Sets up the system clock by installing the timer handler

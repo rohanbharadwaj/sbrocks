@@ -1,5 +1,5 @@
 #include <sys/kstring.h>
-#if 0
+
 void *(memcpy)(void * s1, const void * s2, size_t n)
 {
      char *dst = s1;
@@ -9,17 +9,6 @@ void *(memcpy)(void * s1, const void * s2, size_t n)
          *dst++ = *src++;
      return s1;
  }
-#endif
-//todo change memcpy function
-void *memcpy(void *destination, void *source, uint64_t num)
-{
-	uint8_t *dest = (uint8_t *)destination;
-	uint8_t *src = (uint8_t *)source;
-	while(num--) {
-		*dest++ = *src++;
-	}
-	return destination;
-}
 
  size_t strlen(const char * str)
 {
@@ -127,3 +116,30 @@ int kstrcmp(const char *cs, const char *ct)
          }
          return 0;
 }
+int kstrncmp(const char *cs, const char *ct,uint64_t size)
+ {
+         unsigned char c1, c2;
+         while (size != 0) {
+                 c1 = *cs++;
+                 c2 = *ct++;
+                 if (c1 != c2)
+                         return c1 < c2 ? -1 : 1;
+                 if (!c1)
+                         break;
+			 size--;
+         }
+         return 0;
+}
+
+
+char *kstrncpy(char *dest, const char *src, size_t count)
+ {
+         char *tmp = dest; 
+         while (count) {
+                 if ((*tmp = *src) != 0)
+                         src++;
+                 tmp++;
+                 count--;
+         }
+         return dest;
+ }

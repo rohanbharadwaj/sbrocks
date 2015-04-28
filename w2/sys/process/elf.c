@@ -7,11 +7,12 @@ web references:  http://www.brokenthorn.com/Resources/OSDev24.html
 #include <sys/mmu/assemblyutil.h>
 #include <sys/process/process_manager.h>
 
-void addto_vma_list(struct mm_struct *mm, struct  vm_area_struct *vma);
+
 void print_vma_list(struct mm_struct *mm);
 void test(uint64_t start);
+void setup_stack(struct task_struct *task, char *argv[], int argc);
 
-void readElf(char *filename)
+struct task_struct *readElf(char *filename, char *argv[], int argc)
 {
 	//Elf64_Ehdr	
 	uint64_t start, end, flags, fd;
@@ -45,10 +46,12 @@ void readElf(char *filename)
 	Elf64_Phdr *phdr = (Elf64_Phdr *)((void*)elf_header + elf_header->e_phoff);
 	//kprintf("p_vaddr in program header is %p \n",phdr->p_vaddr);
 	kprintf("program headers are %d \n", pgm_hdr_num);
+	//clrscr();
 	for(int i = 0; i < pgm_hdr_num; i++)
 	{
 		//kprintf("phdr type %p \n", phdr->p_type);
 		kprintf("phdr type \n");
+		kprintf("start %p and end %p \n",  phdr->p_vaddr, phdr->p_vaddr + phdr->p_memsz);
 		if(phdr->p_type == PT_LOAD)
 		{
 			
@@ -71,17 +74,20 @@ void readElf(char *filename)
 			//kprintf("physical address is %p \n", phy);
 			//*dest = 'c';
 			
-			vma = create_vma(task->mm, start, end, flags, fd);
-			addto_vma_list(task->mm, vma);
+			vma = create_vma(task->mm, start, end, VMA_NORMAL, flags, fd);
+			add_to_vma_list(task->mm, vma);
 			//kprintf("phdr type %c \n", *dest);
 			//memset((void*)start, 0, phdr->p_memsz);
 			write_cr3(virt_to_phy(task->pml4e, 0));
-			if(phdr->p_flags == 5)
+			kprintf("loadable start %p and end %p \n", start, start+ phdr->p_memsz);
+			if(phdr->p_flags == 0)   //text
 			//todo check for flag permissions if text then read,execute,user flags
 				alloc_pages_at_virt(start, phdr->p_memsz, PT_PRESENT_FLAG | PT_USER);
 			else
 				//TODO: read write user flags
 				alloc_pages_at_virt(start, phdr->p_memsz, PT_PRESENT_FLAG | PT_WRITABLE_FLAG | PT_USER);
+			//uint64_t vad = 0x602190UL;
+			//kprintf("0x602190UL => %p \n", virt_to_phy(vad, 0));
 			memcpy((void *)start, (void *) elf_header + phdr->p_offset, phdr->p_filesz);
 			//kprintf("shahsi %c\n", *addr);
 			//kprintf("phdr type \n");
@@ -97,22 +103,66 @@ void readElf(char *filename)
 		phdr = (Elf64_Phdr *)((void*)phdr + elf_header->e_phentsize);
 		//kprintf("p_vaddr in program header is %p \n",phdr->p_vaddr);
 	}
+	//process heap vma
+	task->mm->brk_start = USER_HEAP;
+	task->mm->brk_end = USER_HEAP;
+	vma = create_vma(task->mm, USER_HEAP, USER_HEAP, VMA_HEAP, VM_RW, 0);
+	add_to_vma_list(task->mm, vma);
 	
-	vma = create_vma(task->mm, USER_STACK, USER_STACK - USER_STACK_SIZE, VM_RW, 0);
-	addto_vma_list(task->mm, vma);
+	//process stack vma
+	vma = create_vma(task->mm, USER_STACK, USER_STACK - USER_STACK_SIZE, VMA_STACK, VM_RW, 0);
+	add_to_vma_list(task->mm, vma);
 	task->mm->total_vm_size += USER_STACK_SIZE;
-	task->mm->stack_vm = USER_STACK - 0x8;
-	write_cr3(virt_to_phy(task->pml4e, 0));
-	alloc_pages_at_virt(USER_STACK - PAGE_SIZE, PAGE_SIZE, PT_PRESENT_FLAG | PT_USER | PT_WRITABLE_FLAG);
+	setup_stack(task, argv, argc);
 	write_cr3(old_cr3);
+	task->r.rsp = task->mm->stack_vm;
+	task->r.rip = task->e_entry;
 	//stack initialize
 	//print_vma_list(task->mm);
-	add_to_task_list(task);
+	//add_to_task_list(task);
 	/*struct task_struct *t = get_current_task();
-	if(t == NULL)
-		load_process(task, elf_header->e_entry, task->mm->stack_vm);
-	*/
+	if(t == NULL)*/
+	//load_process(task, elf_header->e_entry, task->mm->stack_vm);
 	kprintf("Process loaded successfully \n");
+	return task;
+}
+
+
+void setup_stack(struct task_struct *task, char *argv[], int argc)
+{
+	task->mm->stack_vm = USER_STACK - 0x8;
+	write_cr3(virt_to_phy(task->pml4e, 0));
+	task->rip = task->e_entry;
+	task->rsp = task->mm->stack_vm;
+	alloc_pages_at_virt(USER_STACK - PAGE_SIZE, PAGE_SIZE, PT_PRESENT_FLAG | PT_USER | PT_WRITABLE_FLAG);
+	uint64_t addr[argc];
+	uint64_t *ustackptr = (uint64_t*) task->mm->stack_vm;
+	for(int i = argc-1; i >=0; i--)
+	{
+		uint64_t length = strlen(argv[i]) + 1;
+		ustackptr = (uint64_t*)((void*)ustackptr - length);
+		memcpy((void *)ustackptr, (void *) argv[i], length);
+		addr[i] = (uint64_t) ustackptr;
+	}
+	for(int i = argc-1; i >= 0; i--)
+	{
+		ustackptr--;
+   		*ustackptr = addr[i];
+	}
+	
+	/*uint64_t length = strlen(argv[0]);
+	uint64_t *addr;
+	//uint64_t *ustackptr = (uint64_t*) task->mm->stack_vm;
+	ustackptr = (uint64_t*)((void*)ustackptr - length);
+	memcpy((void *)ustackptr, (void *) argv[0], length);
+	addr = ustackptr;*/
+	
+	//ustackptr--;
+    //*ustackptr = (uint64_t)addr;
+	//int argc = 10;
+	ustackptr--;
+    *ustackptr = (uint64_t)argc;
+	task->rsp = (uint64_t)ustackptr;
 }
 
 void test(uint64_t start)
@@ -124,21 +174,6 @@ void test(uint64_t start)
 	/*char *addr= (char *)start;
 	addr = "shashi";
 	kprintf("main1 %p\t%s\n", addr, addr);*/
-}
-
-void addto_vma_list(struct mm_struct *mm, struct  vm_area_struct *vma)
-{
-	if(mm->vma_list == NULL)
-		mm->vma_list = vma;
-	else
-	{
-		struct vm_area_struct *temp_vma = mm->vma_list;
-		while(temp_vma->next != NULL)
-		{
-			temp_vma = temp_vma->next;
-		}
-		temp_vma->next = vma;
-	}
 }
 
 void print_vma_list(struct mm_struct *mm)

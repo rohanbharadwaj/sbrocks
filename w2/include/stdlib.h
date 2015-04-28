@@ -13,7 +13,7 @@ void exit(int status);
 typedef uint64_t size_t;
 void *malloc(size_t size);
 void free(void *ptr);
-int brk(void *end_data_segment);
+uint64_t brk(void *end_data_segment);
 void *sbrk(size_t increment);
 // processes
 typedef uint32_t pid_t;
@@ -61,8 +61,20 @@ struct dir
 	char d_name[NAME_MAX+1];
 };
 
+struct File
+{
+	char name[1024];
+	uint64_t fd;
+	uint64_t addr;
+	uint64_t type;
+	uint64_t size;
+	uint64_t offset;
+	struct File *next;
+};
+
+
 void *opendir(const char *name);
-struct dirent *readdir(void *dir);
+void readdir(void *dir);
 int closedir(void *dir);
 
 #endif

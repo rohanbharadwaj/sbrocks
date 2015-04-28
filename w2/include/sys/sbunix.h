@@ -4,6 +4,7 @@
 #include <sys/defs.h>
 
 /* This defines what the stack looks like after an ISR was running */
+#if 0
 struct regs
 {
     unsigned int gs, fs, es, ds;      /* pushed the segs last */
@@ -11,8 +12,9 @@ struct regs
     unsigned int int_no, err_code;    /* our 'push byte #' and ecodes do this */
     unsigned int eip, cs, eflags, useresp, ss;   /* pushed by the processor automatically */ 
 };
-
+#endif
 void kprintf(const char *fmt, ...);
 void kprintat(int x, int y, const char *fmt, ...);
+void kprintf2(const char *fmt, ...);
 void clrscr();
 #endif

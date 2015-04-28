@@ -54,10 +54,11 @@
 
 .extern divide_by_zero_handler
 .extern  page_fault_handler
+.extern  syscall_handler
 
 .global isr0
 .global isr14
-
+.global isr128
 isr0:
 	cli
 	pushq $0
@@ -70,9 +71,21 @@ isr0:
 	sti
 	iretq
 
+isr128:
+	cli
+	pushq $80
+	pushq $80
+	PUSHA
+	movq %rsp, %rdi
+	callq syscall_handler
+	POPA
+	add $0x10, %rsp
+	sti
+	iretq
+
+
 isr14:
 	cli
-	pushq $14
 	pushq $14
 	PUSHA
 	movq %rsp, %rdi

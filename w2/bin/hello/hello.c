@@ -1,10 +1,9 @@
 #include <stdio.h>
-
+#include <stdlib.h>
 int main(int argc, char* argv[], char* envp[]) {
-	printf("Hello World!\n");
-	//while(1);
-	/*int i = 50;
-    int j = 0;
-    int k = i/j;*/
+	//int a = 10;
+	while(1);
+	printf("shashi ranjan \n");
+	while(1);
 	return 0;
 }

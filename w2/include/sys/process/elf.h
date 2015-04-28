@@ -77,5 +77,6 @@ typedef struct
 } Elf64_Phdr;
 
 
-void readElf(char *filename);
+//void readElf(char *filename);
+struct task_struct *readElf(char *filename, char *argv[], int argc);
 #endif

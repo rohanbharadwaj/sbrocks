@@ -103,7 +103,7 @@ void scroll(void)
     {
         /* Move the current text chunk that makes up the screen
         *  back in the buffer by a line */
-        temp = cursor_y - 24;
+        temp = cursor_y - 24 + 1;
         memcpy (vga_addr, vga_addr + temp * 80*2, (24 - temp) * 80 * 2);
 
         /* Finally, we set the chunk of memory that occupies

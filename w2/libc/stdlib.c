@@ -6,21 +6,24 @@
 #include <stdio.h>
 #include <error.h>
 
-static void *breakPtr;
+//static void *breakPtr;
 __thread int errno;
 /*working*/
 void exit(int status){
     syscall_1(SYS_exit, status);
 }
 /*working*/
-int brk(void *end_data_segment){
+uint64_t brk(void *end_data_segment){
     return syscall_1(SYS_brk, (uint64_t)end_data_segment);
 }
 
 /*working*/
+/*working*/
 void *sbrk(size_t increment){
-	if(breakPtr == NULL)
-		breakPtr = (void *)((uint64_t)brk(0));
+	void *breakPtr;
+	//if(breakPtr == NULL)
+	//printf("size %p \n", increment);
+	breakPtr = (void *)((uint64_t)brk(0));
 	if(increment == 0)
 	{
 		return breakPtr;
@@ -176,27 +179,47 @@ int dup2(int oldfd, int newfd){
 
 void *opendir(const char *name){
 	int fd = open(name, O_DIRECTORY);
-	char buf[1024];
+	//char buf[1024];
+	struct dirent *buf = malloc(sizeof(struct dirent));
+	//printf("%d \n", fd);
 	//struct dirent *d = NULL;
-	if(fd < 0)
-		return NULL;
+	//if(fd < 0)
+	//	return -1;
 	//static struct dirent dp;
 	//printf("sashi 1 \n");
-	int res = syscall_3(SYS_getdents, (uint64_t)fd, (uint64_t)buf, (uint64_t)sizeof(struct dirent));
+	//int res = 0;
+	uint64_t res = syscall_3(SYS_getdents, (uint64_t)fd, (uint64_t)buf, (uint64_t)sizeof(struct dirent));
+	//printf("%p \n", res);
+	
+	//struct File *f = (struct File *)res;
+	//printf("%p \n", buf);
+	//printf("%p \n", &f);
+	
+	printf("d_ino =  %d \n",buf->d_ino);
+	printf("d_off = %d\n",buf->d_off);
+	//printf("inside opendir addr %x \n",(uint64_t)buf->addr);
+	printf("d_reclen %d\n",buf->d_reclen);
+	printf("d_name %s \n",buf->d_name);
+	printf("End of opendir\n");
+	//printf("inside opendir %d\n",fd);
+	//printf("buf in stdlib %p\n",res);
 	if(res < 0)
 	{
 		errno = -res;	
-		return NULL;
+		//return -1;
 	}
+	printf("shashi1 \n");
+	printf("shashi2 \n");
 	//printf("sashi 2 \n");
-	struct dir *d = malloc(sizeof(struct dir));
-	d->fd = fd;
-	d->addr = (void *)buf;
+	//struct dir *d = malloc(sizeof(struct dir));
+	//d->fd = fd;
+	//d->addr = (void *)res;
 	//printf("sashi 1 \n");
-	strcpy(d->d_name, name);
+	//strcpy(d->d_name, name);
 	//printf("sashi 2 \n");
 	//d = (struct dirent *)buf;
-    return (void *)d;
+    //return (uint64_t)f;
+	return (void *)buf;
 }
 
 /*
@@ -214,14 +237,17 @@ void *opendir(const char *name){
     return (void *)d;
 }
 */
-struct dirent *readdir(void *dir)
+void readdir(void *dir)
 {
-	struct dirent *dip = (struct dirent *)dir;
+	struct dir *d = (struct dir *)dir; 
+	syscall_1(SYS_readdir, (uint64_t)d->addr);
+	
+/*   struct dirent *dip = (struct dirent *)dir;
 	struct dirent *next;
 	next = (struct dirent *)(dir + dip->d_reclen);
 	if(next->d_reclen == 0)
 		return NULL;
-	return next;
+	return next; */
 }
 
 int closedir(void *dir){

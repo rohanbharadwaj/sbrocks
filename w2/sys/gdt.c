@@ -71,8 +71,9 @@ void setup_tss() {
 	sd->sd_gran = 0;
 	sd->sd_hibase = ((uint64_t)&tss) >> 24;
 	//TODO load tss from assembly
-	uint64_t rsp = read_rsp();
-	set_tss_rsp0(rsp);
+	__asm__ __volatile__("movq %%rsp, %[tss_rsp0];" : [tss_rsp0] "=m" (tss.rsp0));
+	//uint64_t rsp = read_rsp();
+	//set_tss_rsp0(rsp);
 	_x86_64_asm_ltss();
 }
 

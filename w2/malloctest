@@ -1,0 +1,2985 @@
+
+rootfs/bin/malloctest:     file format elf64-x86-64
+
+
+Disassembly of section .text:
+
+00000000004000f0 <_start>:
+#include <stdio.h>
+#include <sys/defs.h>
+#include <sys/syscall.h>
+#include <string.h>
+
+void _start() {
+  4000f0:	48 83 ec 08          	sub    $0x8,%rsp
+	uint64_t *rsp = 0;
+	uint64_t *argc;
+	char **argv = NULL;
+	char **envp = NULL;
+	__asm __volatile("movq %%rsp, %0;":
+  4000f4:	48 89 e0             	mov    %rsp,%rax
+					 	"=a" (rsp):
+					 	:
+					 	"cc","memory");
+	
+	argc = ((uint64_t *)rsp + 1);
+	argv = ((char **)rsp + 0x2);
+  4000f7:	48 8d 70 10          	lea    0x10(%rax),%rsi
+	if(*argc > 1)
+  4000fb:	48 8b 78 08          	mov    0x8(%rax),%rdi
+  4000ff:	48 83 ff 01          	cmp    $0x1,%rdi
+  400103:	76 07                	jbe    40010c <_start+0x1c>
+		envp = argv + (*argc - 1) + 0x2;
+  400105:	48 8d 54 fe 08       	lea    0x8(%rsi,%rdi,8),%rdx
+  40010a:	eb 04                	jmp    400110 <_start+0x20>
+	else
+		envp = argv + 0x2;
+  40010c:	48 8d 50 20          	lea    0x20(%rax),%rdx
+	exit(main(*argc, argv, envp));
+  400110:	e8 c1 00 00 00       	callq  4001d6 <main>
+  400115:	89 c7                	mov    %eax,%edi
+  400117:	e8 6c 0c 00 00       	callq  400d88 <exit>
+}
+  40011c:	48 83 c4 08          	add    $0x8,%rsp
+  400120:	c3                   	retq   
+  400121:	66 2e 0f 1f 84 00 00 	nopw   %cs:0x0(%rax,%rax,1)
+  400128:	00 00 00 
+  40012b:	0f 1f 44 00 00       	nopl   0x0(%rax,%rax,1)
+
+0000000000400130 <testmalloc>:
+	return 0;
+}
+
+
+void testmalloc()
+{
+  400130:	53                   	push   %rbx
+	//printf("*********************************************\n");
+	//printf("testing  malloc() and free() API \n");
+	char *c =(char*) malloc(10);
+  400131:	bf 0a 00 00 00       	mov    $0xa,%edi
+  400136:	e8 35 01 00 00       	callq  400270 <malloc>
+  40013b:	48 89 c3             	mov    %rax,%rbx
+	strcpy(c, "shashi");
+  40013e:	48 8d 35 9b 12 00 00 	lea    0x129b(%rip),%rsi        # 4013e0 <atoi+0x33>
+  400145:	48 89 c7             	mov    %rax,%rdi
+  400148:	e8 b3 10 00 00       	callq  401200 <strcpy>
+	
+	printf("%s \n", c);
+  40014d:	48 89 de             	mov    %rbx,%rsi
+  400150:	48 8d 3d 90 12 00 00 	lea    0x1290(%rip),%rdi        # 4013e7 <atoi+0x3a>
+  400157:	b8 00 00 00 00       	mov    $0x0,%eax
+  40015c:	e8 62 09 00 00       	callq  400ac3 <printf>
+	//printf("shashi \n");
+	printf("%s \n", e);
+	printf("malloc API succesfull \n");
+	printf("free API open succesfull \n");
+	#endif
+	printf("\n\n");
+  400161:	48 8d 3d 84 12 00 00 	lea    0x1284(%rip),%rdi        # 4013ec <atoi+0x3f>
+  400168:	b8 00 00 00 00       	mov    $0x0,%eax
+  40016d:	e8 51 09 00 00       	callq  400ac3 <printf>
+}
+  400172:	5b                   	pop    %rbx
+  400173:	c3                   	retq   
+
+0000000000400174 <testfork>:
+
+void testfork()
+{
+  400174:	48 83 ec 18          	sub    $0x18,%rsp
+	//printf("*********************************************\n");
+	char *c =(char*) malloc(10);
+  400178:	bf 0a 00 00 00       	mov    $0xa,%edi
+  40017d:	e8 ee 00 00 00       	callq  400270 <malloc>
+  400182:	48 89 44 24 08       	mov    %rax,0x8(%rsp)
+	strcpy(c, "shashi");
+  400187:	48 8d 35 52 12 00 00 	lea    0x1252(%rip),%rsi        # 4013e0 <atoi+0x33>
+  40018e:	48 89 c7             	mov    %rax,%rdi
+  400191:	e8 6a 10 00 00       	callq  401200 <strcpy>
+	printf("testing  fork() API %p \n", &c);
+  400196:	48 8d 74 24 08       	lea    0x8(%rsp),%rsi
+  40019b:	48 8d 3d 4d 12 00 00 	lea    0x124d(%rip),%rdi        # 4013ef <atoi+0x42>
+  4001a2:	b8 00 00 00 00       	mov    $0x0,%eax
+  4001a7:	e8 17 09 00 00       	callq  400ac3 <printf>
+	int pid = fork();
+  4001ac:	e8 31 0c 00 00       	callq  400de2 <fork>
+	if(pid == 0)
+  4001b1:	85 c0                	test   %eax,%eax
+  4001b3:	74 02                	je     4001b7 <testfork+0x43>
+  4001b5:	eb 1d                	jmp    4001d4 <testfork+0x60>
+		/*char *d =(char*) malloc(10);
+		strcpy(d, "ranjan");
+		strcpy(c, "ashish");
+		printf("value inside  fork() API %s \n", d);
+		printf("new value is %s \n", c);*/
+		printf("I am in child \n");	
+  4001b7:	48 8d 3d 4a 12 00 00 	lea    0x124a(%rip),%rdi        # 401408 <atoi+0x5b>
+  4001be:	b8 00 00 00 00       	mov    $0x0,%eax
+  4001c3:	e8 fb 08 00 00       	callq  400ac3 <printf>
+		exit(1);
+  4001c8:	bf 01 00 00 00       	mov    $0x1,%edi
+  4001cd:	e8 b6 0b 00 00       	callq  400d88 <exit>
+  4001d2:	eb e1                	jmp    4001b5 <testfork+0x41>
+  4001d4:	eb fe                	jmp    4001d4 <testfork+0x60>
+
+00000000004001d6 <main>:
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+void testmalloc();
+void testfork();
+int main(int argc, char* argv[], char* envp[]) {
+  4001d6:	48 83 ec 08          	sub    $0x8,%rsp
+	//testmalloc();
+	/*printf("argc %d \n", argc);
+	for(int i = 0; i < argc; i++)
+		printf("argv %s \n", argv[i]);*/
+	testfork();
+  4001da:	b8 00 00 00 00       	mov    $0x0,%eax
+  4001df:	e8 90 ff ff ff       	callq  400174 <testfork>
+	return 0;
+}
+  4001e4:	b8 00 00 00 00       	mov    $0x0,%eax
+  4001e9:	48 83 c4 08          	add    $0x8,%rsp
+  4001ed:	c3                   	retq   
+  4001ee:	66 90                	xchg   %ax,%ax
+
+00000000004001f0 <free>:
+}
+
+void free(void *ptr)
+{
+	//printf("freed \n");
+	if(ptr == NULL)
+  4001f0:	48 85 ff             	test   %rdi,%rdi
+  4001f3:	74 07                	je     4001fc <free+0xc>
+		return;
+	struct mem_block *block = (struct mem_block *)ptr -1 ;
+	block->free = FREE;
+  4001f5:	c7 47 f0 01 00 00 00 	movl   $0x1,-0x10(%rdi)
+  4001fc:	f3 c3                	repz retq 
+
+00000000004001fe <find_free_mem_block>:
+
+//our code
+struct mem_block *find_free_mem_block(struct mem_block **last, size_t size)
+{
+	//printf("find_free_mem_block called %d \n \n\n\n ", size);
+	struct mem_block *temp = head;
+  4001fe:	48 8d 05 7b 1f 20 00 	lea    0x201f7b(%rip),%rax        # 602180 <head>
+  400205:	48 8b 00             	mov    (%rax),%rax
+	while(temp && !(temp->free == FREE && temp->size >= size))
+  400208:	48 85 c0             	test   %rax,%rax
+  40020b:	75 0e                	jne    40021b <find_free_mem_block+0x1d>
+  40020d:	f3 c3                	repz retq 
+	{
+		*last = temp;
+  40020f:	48 89 07             	mov    %rax,(%rdi)
+		temp = temp->next;	
+  400212:	48 8b 40 10          	mov    0x10(%rax),%rax
+//our code
+struct mem_block *find_free_mem_block(struct mem_block **last, size_t size)
+{
+	//printf("find_free_mem_block called %d \n \n\n\n ", size);
+	struct mem_block *temp = head;
+	while(temp && !(temp->free == FREE && temp->size >= size))
+  400216:	48 85 c0             	test   %rax,%rax
+  400219:	74 0b                	je     400226 <find_free_mem_block+0x28>
+  40021b:	83 78 08 01          	cmpl   $0x1,0x8(%rax)
+  40021f:	75 ee                	jne    40020f <find_free_mem_block+0x11>
+  400221:	48 39 30             	cmp    %rsi,(%rax)
+  400224:	72 e9                	jb     40020f <find_free_mem_block+0x11>
+	{
+		*last = temp;
+		temp = temp->next;	
+	}
+	return temp;
+}
+  400226:	f3 c3                	repz retq 
+
+0000000000400228 <allocateMemory>:
+
+/* allocate memory of size  */
+struct mem_block *allocateMemory(size_t size)
+{
+  400228:	55                   	push   %rbp
+  400229:	53                   	push   %rbx
+  40022a:	48 83 ec 08          	sub    $0x8,%rsp
+  40022e:	48 89 fd             	mov    %rdi,%rbp
+	struct mem_block *current;
+	current = sbrk(0);
+  400231:	bf 00 00 00 00       	mov    $0x0,%edi
+  400236:	e8 79 0b 00 00       	callq  400db4 <sbrk>
+  40023b:	48 89 c3             	mov    %rax,%rbx
+	void *addr = sbrk(size + BLOCK_SIZE);
+  40023e:	48 8d 7d 18          	lea    0x18(%rbp),%rdi
+  400242:	e8 6d 0b 00 00       	callq  400db4 <sbrk>
+	
+	if (addr == (void*) -1) {
+  400247:	48 83 f8 ff          	cmp    $0xffffffffffffffff,%rax
+  40024b:	74 17                	je     400264 <allocateMemory+0x3c>
+		/* memory allocation failed */
+		return NULL; 
+  	}
+	current->size = size;  //by removing memory block size
+  40024d:	48 89 2b             	mov    %rbp,(%rbx)
+	current->next = NULL;
+  400250:	48 c7 43 10 00 00 00 	movq   $0x0,0x10(%rbx)
+  400257:	00 
+	current->free = USED;
+  400258:	c7 43 08 00 00 00 00 	movl   $0x0,0x8(%rbx)
+	return current;
+  40025f:	48 89 d8             	mov    %rbx,%rax
+  400262:	eb 05                	jmp    400269 <allocateMemory+0x41>
+	current = sbrk(0);
+	void *addr = sbrk(size + BLOCK_SIZE);
+	
+	if (addr == (void*) -1) {
+		/* memory allocation failed */
+		return NULL; 
+  400264:	b8 00 00 00 00       	mov    $0x0,%eax
+  	}
+	current->size = size;  //by removing memory block size
+	current->next = NULL;
+	current->free = USED;
+	return current;
+}
+  400269:	48 83 c4 08          	add    $0x8,%rsp
+  40026d:	5b                   	pop    %rbx
+  40026e:	5d                   	pop    %rbp
+  40026f:	c3                   	retq   
+
+0000000000400270 <malloc>:
+struct mem_block *allocateMemory(size_t size);
+struct mem_block *find_free_mem_block(struct mem_block **last, size_t size);
+void *malloc(size_t size);
+
+void *malloc(size_t size)
+{
+  400270:	53                   	push   %rbx
+  400271:	48 83 ec 10          	sub    $0x10,%rsp
+  400275:	48 89 fb             	mov    %rdi,%rbx
+	//printf("malloc start \n");
+	struct mem_block *block;
+	if(size <= 0)
+  400278:	48 85 ff             	test   %rdi,%rdi
+  40027b:	74 61                	je     4002de <malloc+0x6e>
+		return NULL;
+	
+	if(head == NULL)
+  40027d:	48 8d 05 fc 1e 20 00 	lea    0x201efc(%rip),%rax        # 602180 <head>
+  400284:	48 8b 00             	mov    (%rax),%rax
+  400287:	48 85 c0             	test   %rax,%rax
+  40028a:	75 16                	jne    4002a2 <malloc+0x32>
+	{
+		//printf("first time allocation %d \n",size);
+		block = allocateMemory(size);
+  40028c:	e8 97 ff ff ff       	callq  400228 <allocateMemory>
+		if(block == NULL)
+  400291:	48 85 c0             	test   %rax,%rax
+  400294:	74 4f                	je     4002e5 <malloc+0x75>
+		{
+			/*memory allocation failed */
+			return NULL;	
+		}
+		head = block;
+  400296:	48 8d 15 e3 1e 20 00 	lea    0x201ee3(%rip),%rdx        # 602180 <head>
+  40029d:	48 89 02             	mov    %rax,(%rdx)
+  4002a0:	eb 36                	jmp    4002d8 <malloc+0x68>
+	}
+	else
+	{
+		//search for free block
+		struct mem_block *last = head;
+  4002a2:	48 89 44 24 08       	mov    %rax,0x8(%rsp)
+		block = find_free_mem_block(&last, size);
+  4002a7:	48 8d 7c 24 08       	lea    0x8(%rsp),%rdi
+  4002ac:	48 89 de             	mov    %rbx,%rsi
+  4002af:	e8 4a ff ff ff       	callq  4001fe <find_free_mem_block>
+		//printf("found free memory block \n");
+		if(block == NULL)
+  4002b4:	48 85 c0             	test   %rax,%rax
+  4002b7:	75 18                	jne    4002d1 <malloc+0x61>
+		{
+			//printf("added at the end %d \n", size);
+			block = allocateMemory(size);
+  4002b9:	48 89 df             	mov    %rbx,%rdi
+  4002bc:	e8 67 ff ff ff       	callq  400228 <allocateMemory>
+			if(block == NULL)
+  4002c1:	48 85 c0             	test   %rax,%rax
+  4002c4:	74 24                	je     4002ea <malloc+0x7a>
+				return NULL;
+			last->next = block;
+  4002c6:	48 8b 54 24 08       	mov    0x8(%rsp),%rdx
+  4002cb:	48 89 42 10          	mov    %rax,0x10(%rdx)
+  4002cf:	eb 07                	jmp    4002d8 <malloc+0x68>
+		}
+		else{
+			//use free block found
+			//printf("using free block \n");
+			block->free = USED;
+  4002d1:	c7 40 08 00 00 00 00 	movl   $0x0,0x8(%rax)
+		}
+	}
+	//printf("malloc end \n");
+ 	return(block+1); 
+  4002d8:	48 83 c0 18          	add    $0x18,%rax
+  4002dc:	eb 0c                	jmp    4002ea <malloc+0x7a>
+void *malloc(size_t size)
+{
+	//printf("malloc start \n");
+	struct mem_block *block;
+	if(size <= 0)
+		return NULL;
+  4002de:	b8 00 00 00 00       	mov    $0x0,%eax
+  4002e3:	eb 05                	jmp    4002ea <malloc+0x7a>
+		//printf("first time allocation %d \n",size);
+		block = allocateMemory(size);
+		if(block == NULL)
+		{
+			/*memory allocation failed */
+			return NULL;	
+  4002e5:	b8 00 00 00 00       	mov    $0x0,%eax
+	}
+	//printf("malloc end \n");
+ 	return(block+1); 
+	//added 1 because block is a pointer of type struct and 
+	//plus 1 increments the address by one sizeof(struct)
+}
+  4002ea:	48 83 c4 10          	add    $0x10,%rsp
+  4002ee:	5b                   	pop    %rbx
+  4002ef:	c3                   	retq   
+
+00000000004002f0 <number>:
+        return i;
+}
+
+static char *number(char *str, long num, int base, int size, int precision,
+		    int type)
+{
+  4002f0:	41 57                	push   %r15
+  4002f2:	41 56                	push   %r14
+  4002f4:	41 55                	push   %r13
+  4002f6:	41 54                	push   %r12
+  4002f8:	55                   	push   %rbp
+  4002f9:	53                   	push   %rbx
+  4002fa:	48 83 ec 55          	sub    $0x55,%rsp
+  4002fe:	41 89 d6             	mov    %edx,%r14d
+	char c, sign, locase;
+	int i;
+
+	/* locase = 0 or 0x20. ORing digits or letters with 'locase'
+	 * produces same digits or (maybe lowercased) letters */
+	locase = (type & SMALL);
+  400301:	45 89 cd             	mov    %r9d,%r13d
+  400304:	41 83 e5 20          	and    $0x20,%r13d
+	if (type & LEFT)
+  400308:	44 89 ca             	mov    %r9d,%edx
+  40030b:	83 e2 10             	and    $0x10,%edx
+		type &= ~ZEROPAD;
+  40030e:	44 89 c8             	mov    %r9d,%eax
+  400311:	83 e0 fe             	and    $0xfffffffe,%eax
+  400314:	85 d2                	test   %edx,%edx
+  400316:	44 0f 45 c8          	cmovne %eax,%r9d
+	if (base < 2 || base > 16)
+  40031a:	41 8d 46 fe          	lea    -0x2(%r14),%eax
+  40031e:	83 f8 0e             	cmp    $0xe,%eax
+  400321:	0f 87 ee 01 00 00    	ja     400515 <number+0x225>
+  400327:	45 89 f2             	mov    %r14d,%r10d
+		return NULL;
+	c = (type & ZEROPAD) ? '0' : ' ';
+  40032a:	44 89 c8             	mov    %r9d,%eax
+  40032d:	83 e0 01             	and    $0x1,%eax
+  400330:	83 f8 01             	cmp    $0x1,%eax
+  400333:	45 19 ff             	sbb    %r15d,%r15d
+  400336:	41 83 e7 f0          	and    $0xfffffff0,%r15d
+  40033a:	41 83 c7 30          	add    $0x30,%r15d
+	sign = 0;
+  40033e:	c6 04 24 00          	movb   $0x0,(%rsp)
+	if (type & SIGN) {
+  400342:	41 f6 c1 02          	test   $0x2,%r9b
+  400346:	74 2e                	je     400376 <number+0x86>
+		if (num < 0) {
+  400348:	48 85 f6             	test   %rsi,%rsi
+  40034b:	79 0b                	jns    400358 <number+0x68>
+			sign = '-';
+			num = -num;
+  40034d:	48 f7 de             	neg    %rsi
+			size--;
+  400350:	ff c9                	dec    %ecx
+		return NULL;
+	c = (type & ZEROPAD) ? '0' : ' ';
+	sign = 0;
+	if (type & SIGN) {
+		if (num < 0) {
+			sign = '-';
+  400352:	c6 04 24 2d          	movb   $0x2d,(%rsp)
+  400356:	eb 1e                	jmp    400376 <number+0x86>
+			num = -num;
+			size--;
+		} else if (type & PLUS) {
+  400358:	41 f6 c1 04          	test   $0x4,%r9b
+  40035c:	74 08                	je     400366 <number+0x76>
+			sign = '+';
+			size--;
+  40035e:	ff c9                	dec    %ecx
+		if (num < 0) {
+			sign = '-';
+			num = -num;
+			size--;
+		} else if (type & PLUS) {
+			sign = '+';
+  400360:	c6 04 24 2b          	movb   $0x2b,(%rsp)
+  400364:	eb 10                	jmp    400376 <number+0x86>
+	if (type & LEFT)
+		type &= ~ZEROPAD;
+	if (base < 2 || base > 16)
+		return NULL;
+	c = (type & ZEROPAD) ? '0' : ' ';
+	sign = 0;
+  400366:	c6 04 24 00          	movb   $0x0,(%rsp)
+			num = -num;
+			size--;
+		} else if (type & PLUS) {
+			sign = '+';
+			size--;
+		} else if (type & SPACE) {
+  40036a:	41 f6 c1 08          	test   $0x8,%r9b
+  40036e:	74 06                	je     400376 <number+0x86>
+			sign = ' ';
+			size--;
+  400370:	ff c9                	dec    %ecx
+			size--;
+		} else if (type & PLUS) {
+			sign = '+';
+			size--;
+		} else if (type & SPACE) {
+			sign = ' ';
+  400372:	c6 04 24 20          	movb   $0x20,(%rsp)
+			size--;
+		}
+	}
+	if (type & SPECIAL) {
+  400376:	44 89 c8             	mov    %r9d,%eax
+  400379:	83 e0 40             	and    $0x40,%eax
+  40037c:	89 44 24 01          	mov    %eax,0x1(%rsp)
+  400380:	74 17                	je     400399 <number+0xa9>
+		if (base == 16)
+  400382:	41 83 fe 10          	cmp    $0x10,%r14d
+  400386:	75 05                	jne    40038d <number+0x9d>
+			size -= 2;
+  400388:	83 e9 02             	sub    $0x2,%ecx
+  40038b:	eb 0c                	jmp    400399 <number+0xa9>
+		else if (base == 8)
+			size--;
+  40038d:	41 83 fe 08          	cmp    $0x8,%r14d
+  400391:	0f 94 c0             	sete   %al
+  400394:	0f b6 c0             	movzbl %al,%eax
+  400397:	29 c1                	sub    %eax,%ecx
+	}
+	i = 0;
+	if (num == 0)
+  400399:	48 85 f6             	test   %rsi,%rsi
+  40039c:	75 0d                	jne    4003ab <number+0xbb>
+		tmp[i++] = '0';
+  40039e:	c6 44 24 13 30       	movb   $0x30,0x13(%rsp)
+  4003a3:	41 bc 01 00 00 00    	mov    $0x1,%r12d
+  4003a9:	eb 4c                	jmp    4003f7 <number+0x107>
+  4003ab:	4c 8d 5c 24 13       	lea    0x13(%rsp),%r11
+			size -= 2;
+		else if (base == 8)
+			size--;
+	}
+	i = 0;
+	if (num == 0)
+  4003b0:	41 bc 00 00 00 00    	mov    $0x0,%r12d
+		tmp[i++] = '0';
+	else
+		while (num != 0)
+			tmp[i++] = (digits[__do_div(num, base)] | locase);
+  4003b6:	45 89 d2             	mov    %r10d,%r10d
+  4003b9:	41 ff c4             	inc    %r12d
+  4003bc:	48 89 f5             	mov    %rsi,%rbp
+  4003bf:	48 89 f0             	mov    %rsi,%rax
+  4003c2:	ba 00 00 00 00       	mov    $0x0,%edx
+  4003c7:	49 f7 f2             	div    %r10
+  4003ca:	48 89 c3             	mov    %rax,%rbx
+  4003cd:	48 89 c6             	mov    %rax,%rsi
+  4003d0:	48 89 e8             	mov    %rbp,%rax
+  4003d3:	ba 00 00 00 00       	mov    $0x0,%edx
+  4003d8:	49 f7 f2             	div    %r10
+  4003db:	48 63 d2             	movslq %edx,%rdx
+  4003de:	48 8d 05 7b 12 00 00 	lea    0x127b(%rip),%rax        # 401660 <digits.1221>
+  4003e5:	44 89 ed             	mov    %r13d,%ebp
+  4003e8:	40 0a 2c 10          	or     (%rax,%rdx,1),%bpl
+  4003ec:	41 88 2b             	mov    %bpl,(%r11)
+  4003ef:	49 ff c3             	inc    %r11
+	}
+	i = 0;
+	if (num == 0)
+		tmp[i++] = '0';
+	else
+		while (num != 0)
+  4003f2:	48 85 db             	test   %rbx,%rbx
+  4003f5:	75 c2                	jne    4003b9 <number+0xc9>
+  4003f7:	45 39 c4             	cmp    %r8d,%r12d
+  4003fa:	45 0f 4d c4          	cmovge %r12d,%r8d
+			tmp[i++] = (digits[__do_div(num, base)] | locase);
+	if (i > precision)
+		precision = i;
+	size -= precision;
+  4003fe:	44 29 c1             	sub    %r8d,%ecx
+	if (!(type & (ZEROPAD + LEFT)))
+  400401:	41 f6 c1 11          	test   $0x11,%r9b
+  400405:	75 2d                	jne    400434 <number+0x144>
+		while (size-- > 0)
+  400407:	8d 71 ff             	lea    -0x1(%rcx),%esi
+  40040a:	85 c9                	test   %ecx,%ecx
+  40040c:	7e 24                	jle    400432 <number+0x142>
+  40040e:	ff c9                	dec    %ecx
+  400410:	48 8d 54 0f 01       	lea    0x1(%rdi,%rcx,1),%rdx
+  400415:	48 89 f8             	mov    %rdi,%rax
+			*str++ = ' ';
+  400418:	48 ff c0             	inc    %rax
+  40041b:	c6 40 ff 20          	movb   $0x20,-0x1(%rax)
+			tmp[i++] = (digits[__do_div(num, base)] | locase);
+	if (i > precision)
+		precision = i;
+	size -= precision;
+	if (!(type & (ZEROPAD + LEFT)))
+		while (size-- > 0)
+  40041f:	48 39 d0             	cmp    %rdx,%rax
+  400422:	75 f4                	jne    400418 <number+0x128>
+  400424:	b9 ff ff ff ff       	mov    $0xffffffff,%ecx
+  400429:	89 f6                	mov    %esi,%esi
+  40042b:	48 8d 7c 37 01       	lea    0x1(%rdi,%rsi,1),%rdi
+  400430:	eb 02                	jmp    400434 <number+0x144>
+  400432:	89 f1                	mov    %esi,%ecx
+			*str++ = ' ';
+	if (sign)
+  400434:	80 3c 24 00          	cmpb   $0x0,(%rsp)
+  400438:	74 0a                	je     400444 <number+0x154>
+		*str++ = sign;
+  40043a:	0f b6 04 24          	movzbl (%rsp),%eax
+  40043e:	88 07                	mov    %al,(%rdi)
+  400440:	48 8d 7f 01          	lea    0x1(%rdi),%rdi
+	if (type & SPECIAL) {
+  400444:	83 7c 24 01 00       	cmpl   $0x0,0x1(%rsp)
+  400449:	74 24                	je     40046f <number+0x17f>
+		if (base == 8)
+  40044b:	41 83 fe 08          	cmp    $0x8,%r14d
+  40044f:	75 09                	jne    40045a <number+0x16a>
+			*str++ = '0';
+  400451:	c6 07 30             	movb   $0x30,(%rdi)
+  400454:	48 8d 7f 01          	lea    0x1(%rdi),%rdi
+  400458:	eb 15                	jmp    40046f <number+0x17f>
+		else if (base == 16) {
+  40045a:	41 83 fe 10          	cmp    $0x10,%r14d
+  40045e:	75 0f                	jne    40046f <number+0x17f>
+			*str++ = '0';
+  400460:	c6 07 30             	movb   $0x30,(%rdi)
+			*str++ = ('X' | locase);
+  400463:	41 83 cd 58          	or     $0x58,%r13d
+  400467:	44 88 6f 01          	mov    %r13b,0x1(%rdi)
+  40046b:	48 8d 7f 02          	lea    0x2(%rdi),%rdi
+		}
+	}
+	if (!(type & LEFT))
+  40046f:	41 f6 c1 10          	test   $0x10,%r9b
+  400473:	75 2d                	jne    4004a2 <number+0x1b2>
+		while (size-- > 0)
+  400475:	8d 71 ff             	lea    -0x1(%rcx),%esi
+  400478:	85 c9                	test   %ecx,%ecx
+  40047a:	7e 24                	jle    4004a0 <number+0x1b0>
+  40047c:	ff c9                	dec    %ecx
+  40047e:	48 8d 54 0f 01       	lea    0x1(%rdi,%rcx,1),%rdx
+  400483:	48 89 f8             	mov    %rdi,%rax
+			*str++ = c;
+  400486:	48 ff c0             	inc    %rax
+  400489:	44 88 78 ff          	mov    %r15b,-0x1(%rax)
+			*str++ = '0';
+			*str++ = ('X' | locase);
+		}
+	}
+	if (!(type & LEFT))
+		while (size-- > 0)
+  40048d:	48 39 d0             	cmp    %rdx,%rax
+  400490:	75 f4                	jne    400486 <number+0x196>
+  400492:	89 f6                	mov    %esi,%esi
+  400494:	48 8d 7c 37 01       	lea    0x1(%rdi,%rsi,1),%rdi
+  400499:	b9 ff ff ff ff       	mov    $0xffffffff,%ecx
+  40049e:	eb 02                	jmp    4004a2 <number+0x1b2>
+  4004a0:	89 f1                	mov    %esi,%ecx
+			*str++ = c;
+	while (i < precision--)
+  4004a2:	45 39 c4             	cmp    %r8d,%r12d
+  4004a5:	7d 1a                	jge    4004c1 <number+0x1d1>
+  4004a7:	45 29 e0             	sub    %r12d,%r8d
+  4004aa:	41 8d 40 ff          	lea    -0x1(%r8),%eax
+  4004ae:	4c 8d 44 07 01       	lea    0x1(%rdi,%rax,1),%r8
+		*str++ = '0';
+  4004b3:	48 ff c7             	inc    %rdi
+  4004b6:	c6 47 ff 30          	movb   $0x30,-0x1(%rdi)
+		}
+	}
+	if (!(type & LEFT))
+		while (size-- > 0)
+			*str++ = c;
+	while (i < precision--)
+  4004ba:	4c 39 c7             	cmp    %r8,%rdi
+  4004bd:	75 f4                	jne    4004b3 <number+0x1c3>
+  4004bf:	eb 03                	jmp    4004c4 <number+0x1d4>
+  4004c1:	49 89 f8             	mov    %rdi,%r8
+		*str++ = '0';
+	while (i-- > 0)
+  4004c4:	41 8d 7c 24 ff       	lea    -0x1(%r12),%edi
+  4004c9:	45 85 e4             	test   %r12d,%r12d
+  4004cc:	7e 21                	jle    4004ef <number+0x1ff>
+  4004ce:	4c 89 c2             	mov    %r8,%rdx
+  4004d1:	89 f8                	mov    %edi,%eax
+		*str++ = tmp[i];
+  4004d3:	48 63 f0             	movslq %eax,%rsi
+  4004d6:	0f b6 74 34 13       	movzbl 0x13(%rsp,%rsi,1),%esi
+  4004db:	40 88 32             	mov    %sil,(%rdx)
+	if (!(type & LEFT))
+		while (size-- > 0)
+			*str++ = c;
+	while (i < precision--)
+		*str++ = '0';
+	while (i-- > 0)
+  4004de:	ff c8                	dec    %eax
+  4004e0:	48 ff c2             	inc    %rdx
+  4004e3:	83 f8 ff             	cmp    $0xffffffff,%eax
+  4004e6:	75 eb                	jne    4004d3 <number+0x1e3>
+  4004e8:	89 ff                	mov    %edi,%edi
+  4004ea:	4d 8d 44 38 01       	lea    0x1(%r8,%rdi,1),%r8
+		*str++ = tmp[i];
+	while (size-- > 0)
+  4004ef:	8d 71 ff             	lea    -0x1(%rcx),%esi
+  4004f2:	85 c9                	test   %ecx,%ecx
+  4004f4:	7e 26                	jle    40051c <number+0x22c>
+  4004f6:	ff c9                	dec    %ecx
+  4004f8:	49 8d 54 08 01       	lea    0x1(%r8,%rcx,1),%rdx
+  4004fd:	4c 89 c0             	mov    %r8,%rax
+		*str++ = ' ';
+  400500:	48 ff c0             	inc    %rax
+  400503:	c6 40 ff 20          	movb   $0x20,-0x1(%rax)
+			*str++ = c;
+	while (i < precision--)
+		*str++ = '0';
+	while (i-- > 0)
+		*str++ = tmp[i];
+	while (size-- > 0)
+  400507:	48 39 d0             	cmp    %rdx,%rax
+  40050a:	75 f4                	jne    400500 <number+0x210>
+  40050c:	89 f6                	mov    %esi,%esi
+		*str++ = ' ';
+  40050e:	49 8d 44 30 01       	lea    0x1(%r8,%rsi,1),%rax
+  400513:	eb 0a                	jmp    40051f <number+0x22f>
+	 * produces same digits or (maybe lowercased) letters */
+	locase = (type & SMALL);
+	if (type & LEFT)
+		type &= ~ZEROPAD;
+	if (base < 2 || base > 16)
+		return NULL;
+  400515:	b8 00 00 00 00       	mov    $0x0,%eax
+  40051a:	eb 03                	jmp    40051f <number+0x22f>
+			*str++ = c;
+	while (i < precision--)
+		*str++ = '0';
+	while (i-- > 0)
+		*str++ = tmp[i];
+	while (size-- > 0)
+  40051c:	4c 89 c0             	mov    %r8,%rax
+		*str++ = ' ';
+	return str;
+}
+  40051f:	48 83 c4 55          	add    $0x55,%rsp
+  400523:	5b                   	pop    %rbx
+  400524:	5d                   	pop    %rbp
+  400525:	41 5c                	pop    %r12
+  400527:	41 5d                	pop    %r13
+  400529:	41 5e                	pop    %r14
+  40052b:	41 5f                	pop    %r15
+  40052d:	c3                   	retq   
+
+000000000040052e <skip_atoi>:
+n = ((unsigned long) n) / (unsigned) base; \
+__res; })
+
+
+static int skip_atoi(const char **s)
+{
+  40052e:	55                   	push   %rbp
+  40052f:	53                   	push   %rbx
+  400530:	48 83 ec 08          	sub    $0x8,%rsp
+  400534:	48 89 fd             	mov    %rdi,%rbp
+        int i = 0;
+  400537:	bb 00 00 00 00       	mov    $0x0,%ebx
+
+        while (isdigit(**s))
+  40053c:	eb 1d                	jmp    40055b <skip_atoi+0x2d>
+                i = i * 10 + *((*s)++) - '0';
+  40053e:	48 8b 45 00          	mov    0x0(%rbp),%rax
+  400542:	48 8d 50 01          	lea    0x1(%rax),%rdx
+  400546:	48 89 55 00          	mov    %rdx,0x0(%rbp)
+  40054a:	8d 14 dd 00 00 00 00 	lea    0x0(,%rbx,8),%edx
+  400551:	8d 14 5a             	lea    (%rdx,%rbx,2),%edx
+  400554:	0f be 00             	movsbl (%rax),%eax
+  400557:	8d 5c 02 d0          	lea    -0x30(%rdx,%rax,1),%ebx
+
+static int skip_atoi(const char **s)
+{
+        int i = 0;
+
+        while (isdigit(**s))
+  40055b:	48 8b 45 00          	mov    0x0(%rbp),%rax
+  40055f:	0f be 38             	movsbl (%rax),%edi
+  400562:	e8 e2 0d 00 00       	callq  401349 <isdigit>
+  400567:	85 c0                	test   %eax,%eax
+  400569:	75 d3                	jne    40053e <skip_atoi+0x10>
+                i = i * 10 + *((*s)++) - '0';
+        return i;
+}
+  40056b:	89 d8                	mov    %ebx,%eax
+  40056d:	48 83 c4 08          	add    $0x8,%rsp
+  400571:	5b                   	pop    %rbx
+  400572:	5d                   	pop    %rbp
+  400573:	c3                   	retq   
+
+0000000000400574 <vsprintf>:
+	va_end(val);
+	return printed;
+}
+
+int vsprintf(char *buf, const char *fmt, va_list args)
+{
+  400574:	41 57                	push   %r15
+  400576:	41 56                	push   %r14
+  400578:	41 55                	push   %r13
+  40057a:	41 54                	push   %r12
+  40057c:	55                   	push   %rbp
+  40057d:	53                   	push   %rbx
+  40057e:	48 83 ec 28          	sub    $0x28,%rsp
+  400582:	48 89 7c 24 08       	mov    %rdi,0x8(%rsp)
+  400587:	48 89 74 24 18       	mov    %rsi,0x18(%rsp)
+	int field_width;	/* width of output field */
+	int precision;		/* min. # of digits for integers; max
+				   number of chars for from string */
+	int qualifier;		/* 'h', 'l', or 'L:' for integer fields */
+
+	for (str = buf; *fmt; ++fmt) {
+  40058c:	0f b6 06             	movzbl (%rsi),%eax
+  40058f:	84 c0                	test   %al,%al
+  400591:	0f 84 0d 05 00 00    	je     400aa4 <vsprintf+0x530>
+  400597:	49 89 d5             	mov    %rdx,%r13
+  40059a:	48 89 fb             	mov    %rdi,%rbx
+
+		/* process flags */
+		flags = 0;
+	      repeat:
+		++fmt;		/* this also skips first '%' */
+		switch (*fmt) {
+  40059d:	4c 8d 25 7c 0e 00 00 	lea    0xe7c(%rip),%r12        # 401420 <atoi+0x73>
+		/* get the precision */
+		precision = -1;
+		if (*fmt == '.') {
+			++fmt;
+			if (isdigit(*fmt))
+				precision = skip_atoi(&fmt);
+  4005a4:	48 8d 4c 24 18       	lea    0x18(%rsp),%rcx
+  4005a9:	48 89 4c 24 10       	mov    %rcx,0x10(%rsp)
+	int precision;		/* min. # of digits for integers; max
+				   number of chars for from string */
+	int qualifier;		/* 'h', 'l', or 'L:' for integer fields */
+
+	for (str = buf; *fmt; ++fmt) {
+		if (*fmt != '%') {
+  4005ae:	bd 00 00 00 00       	mov    $0x0,%ebp
+  4005b3:	3c 25                	cmp    $0x25,%al
+  4005b5:	74 0b                	je     4005c2 <vsprintf+0x4e>
+			*str++ = *fmt;
+  4005b7:	88 03                	mov    %al,(%rbx)
+  4005b9:	48 8d 5b 01          	lea    0x1(%rbx),%rbx
+			continue;
+  4005bd:	e9 c6 04 00 00       	jmpq   400a88 <vsprintf+0x514>
+		}
+
+		/* process flags */
+		flags = 0;
+	      repeat:
+		++fmt;		/* this also skips first '%' */
+  4005c2:	48 8b 44 24 18       	mov    0x18(%rsp),%rax
+  4005c7:	48 8d 50 01          	lea    0x1(%rax),%rdx
+  4005cb:	48 89 54 24 18       	mov    %rdx,0x18(%rsp)
+		switch (*fmt) {
+  4005d0:	0f b6 78 01          	movzbl 0x1(%rax),%edi
+  4005d4:	8d 47 e0             	lea    -0x20(%rdi),%eax
+  4005d7:	3c 10                	cmp    $0x10,%al
+  4005d9:	77 27                	ja     400602 <vsprintf+0x8e>
+  4005db:	0f b6 c0             	movzbl %al,%eax
+  4005de:	49 63 04 84          	movslq (%r12,%rax,4),%rax
+  4005e2:	4c 01 e0             	add    %r12,%rax
+  4005e5:	ff e0                	jmpq   *%rax
+		case '-':
+			flags |= LEFT;
+  4005e7:	83 cd 10             	or     $0x10,%ebp
+			goto repeat;
+  4005ea:	eb d6                	jmp    4005c2 <vsprintf+0x4e>
+		case '+':
+			flags |= PLUS;
+  4005ec:	83 cd 04             	or     $0x4,%ebp
+			goto repeat;
+  4005ef:	eb d1                	jmp    4005c2 <vsprintf+0x4e>
+		case ' ':
+			flags |= SPACE;
+  4005f1:	83 cd 08             	or     $0x8,%ebp
+			goto repeat;
+  4005f4:	eb cc                	jmp    4005c2 <vsprintf+0x4e>
+		case '#':
+			flags |= SPECIAL;
+  4005f6:	83 cd 40             	or     $0x40,%ebp
+			goto repeat;
+  4005f9:	eb c7                	jmp    4005c2 <vsprintf+0x4e>
+		case '0':
+			flags |= ZEROPAD;
+  4005fb:	83 cd 01             	or     $0x1,%ebp
+  4005fe:	66 90                	xchg   %ax,%ax
+			goto repeat;
+  400600:	eb c0                	jmp    4005c2 <vsprintf+0x4e>
+
+		/* process flags */
+		flags = 0;
+	      repeat:
+		++fmt;		/* this also skips first '%' */
+		switch (*fmt) {
+  400602:	41 89 ef             	mov    %ebp,%r15d
+			goto repeat;
+		}
+	
+		/* get field width */
+		field_width = -1;
+		if (isdigit(*fmt))
+  400605:	40 0f be ff          	movsbl %dil,%edi
+  400609:	e8 3b 0d 00 00       	callq  401349 <isdigit>
+  40060e:	85 c0                	test   %eax,%eax
+  400610:	74 0f                	je     400621 <vsprintf+0xad>
+			field_width = skip_atoi(&fmt);
+  400612:	48 8b 7c 24 10       	mov    0x10(%rsp),%rdi
+  400617:	e8 12 ff ff ff       	callq  40052e <skip_atoi>
+  40061c:	41 89 c6             	mov    %eax,%r14d
+  40061f:	eb 4e                	jmp    40066f <vsprintf+0xfb>
+		else if (*fmt == '*') {
+  400621:	48 8b 44 24 18       	mov    0x18(%rsp),%rax
+			flags |= ZEROPAD;
+			goto repeat;
+		}
+	
+		/* get field width */
+		field_width = -1;
+  400626:	41 be ff ff ff ff    	mov    $0xffffffff,%r14d
+		if (isdigit(*fmt))
+			field_width = skip_atoi(&fmt);
+		else if (*fmt == '*') {
+  40062c:	80 38 2a             	cmpb   $0x2a,(%rax)
+  40062f:	75 3e                	jne    40066f <vsprintf+0xfb>
+			++fmt;
+  400631:	48 ff c0             	inc    %rax
+  400634:	48 89 44 24 18       	mov    %rax,0x18(%rsp)
+			/* it's the next argument */
+			field_width = va_arg(args, int);
+  400639:	41 8b 45 00          	mov    0x0(%r13),%eax
+  40063d:	83 f8 30             	cmp    $0x30,%eax
+  400640:	73 0f                	jae    400651 <vsprintf+0xdd>
+  400642:	89 c2                	mov    %eax,%edx
+  400644:	49 03 55 10          	add    0x10(%r13),%rdx
+  400648:	83 c0 08             	add    $0x8,%eax
+  40064b:	41 89 45 00          	mov    %eax,0x0(%r13)
+  40064f:	eb 0c                	jmp    40065d <vsprintf+0xe9>
+  400651:	49 8b 55 08          	mov    0x8(%r13),%rdx
+  400655:	48 8d 42 08          	lea    0x8(%rdx),%rax
+  400659:	49 89 45 08          	mov    %rax,0x8(%r13)
+  40065d:	44 8b 32             	mov    (%rdx),%r14d
+			if (field_width < 0) {
+  400660:	45 85 f6             	test   %r14d,%r14d
+  400663:	79 0a                	jns    40066f <vsprintf+0xfb>
+				field_width = -field_width;
+  400665:	41 f7 de             	neg    %r14d
+				flags |= LEFT;
+  400668:	41 83 cf 10          	or     $0x10,%r15d
+  40066c:	44 89 fd             	mov    %r15d,%ebp
+			}
+		}
+
+		/* get the precision */
+		precision = -1;
+		if (*fmt == '.') {
+  40066f:	48 8b 44 24 18       	mov    0x18(%rsp),%rax
+				flags |= LEFT;
+			}
+		}
+
+		/* get the precision */
+		precision = -1;
+  400674:	41 b8 ff ff ff ff    	mov    $0xffffffff,%r8d
+		if (*fmt == '.') {
+  40067a:	80 38 2e             	cmpb   $0x2e,(%rax)
+  40067d:	75 6b                	jne    4006ea <vsprintf+0x176>
+			++fmt;
+  40067f:	48 8d 50 01          	lea    0x1(%rax),%rdx
+  400683:	48 89 54 24 18       	mov    %rdx,0x18(%rsp)
+			if (isdigit(*fmt))
+  400688:	0f be 78 01          	movsbl 0x1(%rax),%edi
+  40068c:	e8 b8 0c 00 00       	callq  401349 <isdigit>
+  400691:	85 c0                	test   %eax,%eax
+  400693:	74 0c                	je     4006a1 <vsprintf+0x12d>
+				precision = skip_atoi(&fmt);
+  400695:	48 8b 7c 24 10       	mov    0x10(%rsp),%rdi
+  40069a:	e8 8f fe ff ff       	callq  40052e <skip_atoi>
+  40069f:	eb 3d                	jmp    4006de <vsprintf+0x16a>
+			else if (*fmt == '*') {
+  4006a1:	48 8b 54 24 18       	mov    0x18(%rsp),%rdx
+				flags |= LEFT;
+			}
+		}
+
+		/* get the precision */
+		precision = -1;
+  4006a6:	b8 ff ff ff ff       	mov    $0xffffffff,%eax
+		if (*fmt == '.') {
+			++fmt;
+			if (isdigit(*fmt))
+				precision = skip_atoi(&fmt);
+			else if (*fmt == '*') {
+  4006ab:	80 3a 2a             	cmpb   $0x2a,(%rdx)
+  4006ae:	75 2e                	jne    4006de <vsprintf+0x16a>
+				++fmt;
+  4006b0:	48 ff c2             	inc    %rdx
+  4006b3:	48 89 54 24 18       	mov    %rdx,0x18(%rsp)
+				/* it's the next argument */
+				precision = va_arg(args, int);
+  4006b8:	41 8b 45 00          	mov    0x0(%r13),%eax
+  4006bc:	83 f8 30             	cmp    $0x30,%eax
+  4006bf:	73 0f                	jae    4006d0 <vsprintf+0x15c>
+  4006c1:	89 c2                	mov    %eax,%edx
+  4006c3:	49 03 55 10          	add    0x10(%r13),%rdx
+  4006c7:	83 c0 08             	add    $0x8,%eax
+  4006ca:	41 89 45 00          	mov    %eax,0x0(%r13)
+  4006ce:	eb 0c                	jmp    4006dc <vsprintf+0x168>
+  4006d0:	49 8b 55 08          	mov    0x8(%r13),%rdx
+  4006d4:	48 8d 42 08          	lea    0x8(%rdx),%rax
+  4006d8:	49 89 45 08          	mov    %rax,0x8(%r13)
+  4006dc:	8b 02                	mov    (%rdx),%eax
+  4006de:	85 c0                	test   %eax,%eax
+  4006e0:	41 b8 00 00 00 00    	mov    $0x0,%r8d
+  4006e6:	44 0f 49 c0          	cmovns %eax,%r8d
+				precision = 0;
+		}
+
+		/* get the conversion qualifier */
+		qualifier = -1;
+		if (*fmt == 'h' || *fmt == 'l' || *fmt == 'L') {
+  4006ea:	48 8b 54 24 18       	mov    0x18(%rsp),%rdx
+  4006ef:	0f b6 02             	movzbl (%rdx),%eax
+  4006f2:	3c 68                	cmp    $0x68,%al
+  4006f4:	74 10                	je     400706 <vsprintf+0x192>
+  4006f6:	89 c6                	mov    %eax,%esi
+  4006f8:	83 e6 df             	and    $0xffffffdf,%esi
+			if (precision < 0)
+				precision = 0;
+		}
+
+		/* get the conversion qualifier */
+		qualifier = -1;
+  4006fb:	b9 ff ff ff ff       	mov    $0xffffffff,%ecx
+		if (*fmt == 'h' || *fmt == 'l' || *fmt == 'L') {
+  400700:	40 80 fe 4c          	cmp    $0x4c,%sil
+  400704:	75 0b                	jne    400711 <vsprintf+0x19d>
+			qualifier = *fmt;
+  400706:	0f be c8             	movsbl %al,%ecx
+			++fmt;
+  400709:	48 ff c2             	inc    %rdx
+  40070c:	48 89 54 24 18       	mov    %rdx,0x18(%rsp)
+		}
+
+		/* default base */
+		base = 10;
+
+		switch (*fmt) {
+  400711:	48 8b 44 24 18       	mov    0x18(%rsp),%rax
+  400716:	0f b6 00             	movzbl (%rax),%eax
+  400719:	83 e8 25             	sub    $0x25,%eax
+  40071c:	3c 53                	cmp    $0x53,%al
+  40071e:	0f 87 52 02 00 00    	ja     400976 <vsprintf+0x402>
+  400724:	0f b6 c0             	movzbl %al,%eax
+  400727:	48 8d 35 36 0d 00 00 	lea    0xd36(%rip),%rsi        # 401464 <atoi+0xb7>
+  40072e:	48 63 04 86          	movslq (%rsi,%rax,4),%rax
+  400732:	48 01 f0             	add    %rsi,%rax
+  400735:	ff e0                	jmpq   *%rax
+		case 'c':
+			if (!(flags & LEFT))
+  400737:	40 f6 c5 10          	test   $0x10,%bpl
+  40073b:	75 34                	jne    400771 <vsprintf+0x1fd>
+				while (--field_width > 0)
+  40073d:	41 8d 46 ff          	lea    -0x1(%r14),%eax
+  400741:	85 c0                	test   %eax,%eax
+  400743:	7e 29                	jle    40076e <vsprintf+0x1fa>
+  400745:	41 8d 46 fe          	lea    -0x2(%r14),%eax
+  400749:	48 8d 54 03 01       	lea    0x1(%rbx,%rax,1),%rdx
+  40074e:	48 89 d8             	mov    %rbx,%rax
+					*str++ = ' ';
+  400751:	48 ff c0             	inc    %rax
+  400754:	c6 40 ff 20          	movb   $0x20,-0x1(%rax)
+		base = 10;
+
+		switch (*fmt) {
+		case 'c':
+			if (!(flags & LEFT))
+				while (--field_width > 0)
+  400758:	48 39 d0             	cmp    %rdx,%rax
+  40075b:	75 f4                	jne    400751 <vsprintf+0x1dd>
+  40075d:	41 83 ee 02          	sub    $0x2,%r14d
+  400761:	4a 8d 5c 33 01       	lea    0x1(%rbx,%r14,1),%rbx
+  400766:	41 be 00 00 00 00    	mov    $0x0,%r14d
+  40076c:	eb 03                	jmp    400771 <vsprintf+0x1fd>
+  40076e:	41 89 c6             	mov    %eax,%r14d
+					*str++ = ' ';
+			*str++ = (unsigned char)va_arg(args, int);
+  400771:	48 8d 4b 01          	lea    0x1(%rbx),%rcx
+  400775:	41 8b 45 00          	mov    0x0(%r13),%eax
+  400779:	83 f8 30             	cmp    $0x30,%eax
+  40077c:	73 0f                	jae    40078d <vsprintf+0x219>
+  40077e:	89 c2                	mov    %eax,%edx
+  400780:	49 03 55 10          	add    0x10(%r13),%rdx
+  400784:	83 c0 08             	add    $0x8,%eax
+  400787:	41 89 45 00          	mov    %eax,0x0(%r13)
+  40078b:	eb 0c                	jmp    400799 <vsprintf+0x225>
+  40078d:	49 8b 55 08          	mov    0x8(%r13),%rdx
+  400791:	48 8d 42 08          	lea    0x8(%rdx),%rax
+  400795:	49 89 45 08          	mov    %rax,0x8(%r13)
+  400799:	8b 02                	mov    (%rdx),%eax
+  40079b:	88 03                	mov    %al,(%rbx)
+			while (--field_width > 0)
+  40079d:	41 8d 46 ff          	lea    -0x1(%r14),%eax
+  4007a1:	85 c0                	test   %eax,%eax
+  4007a3:	0f 8e dc 02 00 00    	jle    400a85 <vsprintf+0x511>
+  4007a9:	41 8d 46 fe          	lea    -0x2(%r14),%eax
+  4007ad:	48 8d 54 03 02       	lea    0x2(%rbx,%rax,1),%rdx
+		switch (*fmt) {
+		case 'c':
+			if (!(flags & LEFT))
+				while (--field_width > 0)
+					*str++ = ' ';
+			*str++ = (unsigned char)va_arg(args, int);
+  4007b2:	48 89 c8             	mov    %rcx,%rax
+			while (--field_width > 0)
+				*str++ = ' ';
+  4007b5:	48 ff c0             	inc    %rax
+  4007b8:	c6 40 ff 20          	movb   $0x20,-0x1(%rax)
+		case 'c':
+			if (!(flags & LEFT))
+				while (--field_width > 0)
+					*str++ = ' ';
+			*str++ = (unsigned char)va_arg(args, int);
+			while (--field_width > 0)
+  4007bc:	48 39 d0             	cmp    %rdx,%rax
+  4007bf:	75 f4                	jne    4007b5 <vsprintf+0x241>
+  4007c1:	41 83 ee 02          	sub    $0x2,%r14d
+  4007c5:	4a 8d 5c 31 01       	lea    0x1(%rcx,%r14,1),%rbx
+  4007ca:	e9 b9 02 00 00       	jmpq   400a88 <vsprintf+0x514>
+				*str++ = ' ';
+			continue;
+
+		case 's':
+			s = va_arg(args, char *);
+  4007cf:	41 8b 45 00          	mov    0x0(%r13),%eax
+  4007d3:	83 f8 30             	cmp    $0x30,%eax
+  4007d6:	73 0f                	jae    4007e7 <vsprintf+0x273>
+  4007d8:	89 c2                	mov    %eax,%edx
+  4007da:	49 03 55 10          	add    0x10(%r13),%rdx
+  4007de:	83 c0 08             	add    $0x8,%eax
+  4007e1:	41 89 45 00          	mov    %eax,0x0(%r13)
+  4007e5:	eb 0c                	jmp    4007f3 <vsprintf+0x27f>
+  4007e7:	49 8b 55 08          	mov    0x8(%r13),%rdx
+  4007eb:	48 8d 42 08          	lea    0x8(%rdx),%rax
+  4007ef:	49 89 45 08          	mov    %rax,0x8(%r13)
+  4007f3:	4c 8b 3a             	mov    (%rdx),%r15
+			//len = strnlen(s, precision);
+			len = strlen(s);
+  4007f6:	4c 89 ff             	mov    %r15,%rdi
+  4007f9:	e8 42 0a 00 00       	callq  401240 <strlen>
+  4007fe:	89 c6                	mov    %eax,%esi
+			if (!(flags & LEFT))
+  400800:	40 f6 c5 10          	test   $0x10,%bpl
+  400804:	75 31                	jne    400837 <vsprintf+0x2c3>
+				while (len < field_width--)
+  400806:	41 8d 4e ff          	lea    -0x1(%r14),%ecx
+  40080a:	41 39 c6             	cmp    %eax,%r14d
+  40080d:	7e 25                	jle    400834 <vsprintf+0x2c0>
+  40080f:	44 89 f7             	mov    %r14d,%edi
+  400812:	41 89 ce             	mov    %ecx,%r14d
+  400815:	41 29 c6             	sub    %eax,%r14d
+  400818:	4a 8d 54 33 01       	lea    0x1(%rbx,%r14,1),%rdx
+					*str++ = ' ';
+  40081d:	48 ff c3             	inc    %rbx
+  400820:	c6 43 ff 20          	movb   $0x20,-0x1(%rbx)
+		case 's':
+			s = va_arg(args, char *);
+			//len = strnlen(s, precision);
+			len = strlen(s);
+			if (!(flags & LEFT))
+				while (len < field_width--)
+  400824:	48 39 d3             	cmp    %rdx,%rbx
+  400827:	75 f4                	jne    40081d <vsprintf+0x2a9>
+  400829:	29 f9                	sub    %edi,%ecx
+  40082b:	44 8d 34 01          	lea    (%rcx,%rax,1),%r14d
+					*str++ = ' ';
+  40082f:	48 89 d3             	mov    %rdx,%rbx
+  400832:	eb 03                	jmp    400837 <vsprintf+0x2c3>
+		case 's':
+			s = va_arg(args, char *);
+			//len = strnlen(s, precision);
+			len = strlen(s);
+			if (!(flags & LEFT))
+				while (len < field_width--)
+  400834:	41 89 ce             	mov    %ecx,%r14d
+					*str++ = ' ';
+			for (i = 0; i < len; ++i)
+  400837:	85 c0                	test   %eax,%eax
+  400839:	7e 1c                	jle    400857 <vsprintf+0x2e3>
+  40083b:	ba 00 00 00 00       	mov    $0x0,%edx
+				*str++ = *s++;
+  400840:	41 0f b6 0c 17       	movzbl (%r15,%rdx,1),%ecx
+  400845:	88 0c 13             	mov    %cl,(%rbx,%rdx,1)
+  400848:	48 ff c2             	inc    %rdx
+			//len = strnlen(s, precision);
+			len = strlen(s);
+			if (!(flags & LEFT))
+				while (len < field_width--)
+					*str++ = ' ';
+			for (i = 0; i < len; ++i)
+  40084b:	39 d6                	cmp    %edx,%esi
+  40084d:	7f f1                	jg     400840 <vsprintf+0x2cc>
+  40084f:	8d 50 ff             	lea    -0x1(%rax),%edx
+  400852:	48 8d 5c 13 01       	lea    0x1(%rbx,%rdx,1),%rbx
+				*str++ = *s++;
+			while (len < field_width--)
+  400857:	41 39 c6             	cmp    %eax,%r14d
+  40085a:	0f 8e 28 02 00 00    	jle    400a88 <vsprintf+0x514>
+  400860:	44 89 f6             	mov    %r14d,%esi
+  400863:	89 c2                	mov    %eax,%edx
+  400865:	f7 d2                	not    %edx
+  400867:	41 01 d6             	add    %edx,%r14d
+  40086a:	4a 8d 4c 33 01       	lea    0x1(%rbx,%r14,1),%rcx
+  40086f:	48 89 da             	mov    %rbx,%rdx
+				*str++ = ' ';
+  400872:	48 ff c2             	inc    %rdx
+  400875:	c6 42 ff 20          	movb   $0x20,-0x1(%rdx)
+			if (!(flags & LEFT))
+				while (len < field_width--)
+					*str++ = ' ';
+			for (i = 0; i < len; ++i)
+				*str++ = *s++;
+			while (len < field_width--)
+  400879:	48 39 ca             	cmp    %rcx,%rdx
+  40087c:	75 f4                	jne    400872 <vsprintf+0x2fe>
+  40087e:	f7 d0                	not    %eax
+  400880:	01 f0                	add    %esi,%eax
+  400882:	48 8d 5c 03 01       	lea    0x1(%rbx,%rax,1),%rbx
+  400887:	e9 fc 01 00 00       	jmpq   400a88 <vsprintf+0x514>
+				*str++ = ' ';
+			continue;
+
+		case 'p':
+			if (field_width == -1) {
+  40088c:	41 83 fe ff          	cmp    $0xffffffff,%r14d
+  400890:	75 09                	jne    40089b <vsprintf+0x327>
+				field_width = 2 * sizeof(void *);
+				flags |= ZEROPAD;
+  400892:	83 cd 01             	or     $0x1,%ebp
+				*str++ = ' ';
+			continue;
+
+		case 'p':
+			if (field_width == -1) {
+				field_width = 2 * sizeof(void *);
+  400895:	41 be 10 00 00 00    	mov    $0x10,%r14d
+				flags |= ZEROPAD;
+			}
+			str = number(str,
+				     (unsigned long)va_arg(args, void *), 16,
+  40089b:	41 8b 45 00          	mov    0x0(%r13),%eax
+  40089f:	83 f8 30             	cmp    $0x30,%eax
+  4008a2:	73 0f                	jae    4008b3 <vsprintf+0x33f>
+  4008a4:	89 c6                	mov    %eax,%esi
+  4008a6:	49 03 75 10          	add    0x10(%r13),%rsi
+  4008aa:	83 c0 08             	add    $0x8,%eax
+  4008ad:	41 89 45 00          	mov    %eax,0x0(%r13)
+		case 'p':
+			if (field_width == -1) {
+				field_width = 2 * sizeof(void *);
+				flags |= ZEROPAD;
+			}
+			str = number(str,
+  4008b1:	eb 0c                	jmp    4008bf <vsprintf+0x34b>
+				     (unsigned long)va_arg(args, void *), 16,
+  4008b3:	49 8b 75 08          	mov    0x8(%r13),%rsi
+  4008b7:	48 8d 46 08          	lea    0x8(%rsi),%rax
+  4008bb:	49 89 45 08          	mov    %rax,0x8(%r13)
+		case 'p':
+			if (field_width == -1) {
+				field_width = 2 * sizeof(void *);
+				flags |= ZEROPAD;
+			}
+			str = number(str,
+  4008bf:	41 89 e9             	mov    %ebp,%r9d
+  4008c2:	44 89 f1             	mov    %r14d,%ecx
+  4008c5:	ba 10 00 00 00       	mov    $0x10,%edx
+  4008ca:	48 8b 36             	mov    (%rsi),%rsi
+  4008cd:	48 89 df             	mov    %rbx,%rdi
+  4008d0:	e8 1b fa ff ff       	callq  4002f0 <number>
+  4008d5:	48 89 c3             	mov    %rax,%rbx
+				     (unsigned long)va_arg(args, void *), 16,
+				     field_width, precision, flags);
+			continue;
+  4008d8:	e9 ab 01 00 00       	jmpq   400a88 <vsprintf+0x514>
+
+		case 'n':
+			if (qualifier == 'l') {
+  4008dd:	83 f9 6c             	cmp    $0x6c,%ecx
+  4008e0:	75 37                	jne    400919 <vsprintf+0x3a5>
+				long *ip = va_arg(args, long *);
+  4008e2:	41 8b 45 00          	mov    0x0(%r13),%eax
+  4008e6:	83 f8 30             	cmp    $0x30,%eax
+  4008e9:	73 0f                	jae    4008fa <vsprintf+0x386>
+  4008eb:	89 c2                	mov    %eax,%edx
+  4008ed:	49 03 55 10          	add    0x10(%r13),%rdx
+  4008f1:	83 c0 08             	add    $0x8,%eax
+  4008f4:	41 89 45 00          	mov    %eax,0x0(%r13)
+  4008f8:	eb 0c                	jmp    400906 <vsprintf+0x392>
+  4008fa:	49 8b 55 08          	mov    0x8(%r13),%rdx
+  4008fe:	48 8d 42 08          	lea    0x8(%rdx),%rax
+  400902:	49 89 45 08          	mov    %rax,0x8(%r13)
+  400906:	48 8b 02             	mov    (%rdx),%rax
+				*ip = (str - buf);
+  400909:	48 89 da             	mov    %rbx,%rdx
+  40090c:	48 2b 54 24 08       	sub    0x8(%rsp),%rdx
+  400911:	48 89 10             	mov    %rdx,(%rax)
+  400914:	e9 6f 01 00 00       	jmpq   400a88 <vsprintf+0x514>
+			} else {
+				int *ip = va_arg(args, int *);
+  400919:	41 8b 45 00          	mov    0x0(%r13),%eax
+  40091d:	83 f8 30             	cmp    $0x30,%eax
+  400920:	73 0f                	jae    400931 <vsprintf+0x3bd>
+  400922:	89 c2                	mov    %eax,%edx
+  400924:	49 03 55 10          	add    0x10(%r13),%rdx
+  400928:	83 c0 08             	add    $0x8,%eax
+  40092b:	41 89 45 00          	mov    %eax,0x0(%r13)
+  40092f:	eb 0c                	jmp    40093d <vsprintf+0x3c9>
+  400931:	49 8b 55 08          	mov    0x8(%r13),%rdx
+  400935:	48 8d 42 08          	lea    0x8(%rdx),%rax
+  400939:	49 89 45 08          	mov    %rax,0x8(%r13)
+  40093d:	48 8b 02             	mov    (%rdx),%rax
+				*ip = (str - buf);
+  400940:	48 89 da             	mov    %rbx,%rdx
+  400943:	48 2b 54 24 08       	sub    0x8(%rsp),%rdx
+  400948:	89 10                	mov    %edx,(%rax)
+  40094a:	e9 39 01 00 00       	jmpq   400a88 <vsprintf+0x514>
+			}
+			continue;
+
+		case '%':
+			*str++ = '%';
+  40094f:	c6 03 25             	movb   $0x25,(%rbx)
+  400952:	48 8d 5b 01          	lea    0x1(%rbx),%rbx
+			continue;
+  400956:	e9 2d 01 00 00       	jmpq   400a88 <vsprintf+0x514>
+
+			/* integer number formats - set up the flags and "break" */
+		case 'o':
+			base = 8;
+  40095b:	ba 08 00 00 00       	mov    $0x8,%edx
+			break;
+  400960:	eb 4b                	jmp    4009ad <vsprintf+0x439>
+
+		case 'x':
+			flags |= SMALL;
+  400962:	83 cd 20             	or     $0x20,%ebp
+		case 'X':
+			base = 16;
+  400965:	ba 10 00 00 00       	mov    $0x10,%edx
+  40096a:	eb 41                	jmp    4009ad <vsprintf+0x439>
+			break;
+
+		case 'd':
+		case 'i':
+			flags |= SIGN;
+  40096c:	83 cd 02             	or     $0x2,%ebp
+			qualifier = *fmt;
+			++fmt;
+		}
+
+		/* default base */
+		base = 10;
+  40096f:	ba 0a 00 00 00       	mov    $0xa,%edx
+  400974:	eb 37                	jmp    4009ad <vsprintf+0x439>
+			flags |= SIGN;
+		case 'u':
+			break;
+
+		default:
+			*str++ = '%';
+  400976:	c6 03 25             	movb   $0x25,(%rbx)
+			if (*fmt)
+  400979:	48 8b 44 24 18       	mov    0x18(%rsp),%rax
+  40097e:	0f b6 10             	movzbl (%rax),%edx
+  400981:	84 d2                	test   %dl,%dl
+  400983:	74 0c                	je     400991 <vsprintf+0x41d>
+				*str++ = *fmt;
+  400985:	88 53 01             	mov    %dl,0x1(%rbx)
+  400988:	48 8d 5b 02          	lea    0x2(%rbx),%rbx
+  40098c:	e9 f7 00 00 00       	jmpq   400a88 <vsprintf+0x514>
+			flags |= SIGN;
+		case 'u':
+			break;
+
+		default:
+			*str++ = '%';
+  400991:	48 ff c3             	inc    %rbx
+			if (*fmt)
+				*str++ = *fmt;
+			else
+				--fmt;
+  400994:	48 ff c8             	dec    %rax
+  400997:	48 89 44 24 18       	mov    %rax,0x18(%rsp)
+  40099c:	e9 e7 00 00 00       	jmpq   400a88 <vsprintf+0x514>
+			qualifier = *fmt;
+			++fmt;
+		}
+
+		/* default base */
+		base = 10;
+  4009a1:	ba 0a 00 00 00       	mov    $0xa,%edx
+  4009a6:	eb 05                	jmp    4009ad <vsprintf+0x439>
+			break;
+
+		case 'x':
+			flags |= SMALL;
+		case 'X':
+			base = 16;
+  4009a8:	ba 10 00 00 00       	mov    $0x10,%edx
+				*str++ = *fmt;
+			else
+				--fmt;
+			continue;
+		}
+		if (qualifier == 'l')
+  4009ad:	83 f9 6c             	cmp    $0x6c,%ecx
+  4009b0:	75 2c                	jne    4009de <vsprintf+0x46a>
+			num = va_arg(args, unsigned long);
+  4009b2:	41 8b 45 00          	mov    0x0(%r13),%eax
+  4009b6:	83 f8 30             	cmp    $0x30,%eax
+  4009b9:	73 0f                	jae    4009ca <vsprintf+0x456>
+  4009bb:	89 c1                	mov    %eax,%ecx
+  4009bd:	49 03 4d 10          	add    0x10(%r13),%rcx
+  4009c1:	83 c0 08             	add    $0x8,%eax
+  4009c4:	41 89 45 00          	mov    %eax,0x0(%r13)
+  4009c8:	eb 0c                	jmp    4009d6 <vsprintf+0x462>
+  4009ca:	49 8b 4d 08          	mov    0x8(%r13),%rcx
+  4009ce:	48 8d 41 08          	lea    0x8(%rcx),%rax
+  4009d2:	49 89 45 08          	mov    %rax,0x8(%r13)
+  4009d6:	48 8b 31             	mov    (%rcx),%rsi
+  4009d9:	e9 94 00 00 00       	jmpq   400a72 <vsprintf+0x4fe>
+		else if (qualifier == 'h') {
+  4009de:	83 f9 68             	cmp    $0x68,%ecx
+  4009e1:	75 3a                	jne    400a1d <vsprintf+0x4a9>
+			num = (unsigned short)va_arg(args, int);
+  4009e3:	41 8b 45 00          	mov    0x0(%r13),%eax
+  4009e7:	83 f8 30             	cmp    $0x30,%eax
+  4009ea:	73 0f                	jae    4009fb <vsprintf+0x487>
+  4009ec:	89 c1                	mov    %eax,%ecx
+  4009ee:	49 03 4d 10          	add    0x10(%r13),%rcx
+  4009f2:	83 c0 08             	add    $0x8,%eax
+  4009f5:	41 89 45 00          	mov    %eax,0x0(%r13)
+  4009f9:	eb 0c                	jmp    400a07 <vsprintf+0x493>
+  4009fb:	49 8b 4d 08          	mov    0x8(%r13),%rcx
+  4009ff:	48 8d 41 08          	lea    0x8(%rcx),%rax
+  400a03:	49 89 45 08          	mov    %rax,0x8(%r13)
+  400a07:	8b 01                	mov    (%rcx),%eax
+  400a09:	0f b7 c8             	movzwl %ax,%ecx
+  400a0c:	48 0f bf c0          	movswq %ax,%rax
+  400a10:	40 f6 c5 02          	test   $0x2,%bpl
+  400a14:	48 0f 45 c8          	cmovne %rax,%rcx
+  400a18:	48 89 ce             	mov    %rcx,%rsi
+  400a1b:	eb 55                	jmp    400a72 <vsprintf+0x4fe>
+			if (flags & SIGN)
+				num = (short)num;
+		} else if (flags & SIGN)
+  400a1d:	40 f6 c5 02          	test   $0x2,%bpl
+  400a21:	74 29                	je     400a4c <vsprintf+0x4d8>
+			num = va_arg(args, int);
+  400a23:	41 8b 45 00          	mov    0x0(%r13),%eax
+  400a27:	83 f8 30             	cmp    $0x30,%eax
+  400a2a:	73 0f                	jae    400a3b <vsprintf+0x4c7>
+  400a2c:	89 c1                	mov    %eax,%ecx
+  400a2e:	49 03 4d 10          	add    0x10(%r13),%rcx
+  400a32:	83 c0 08             	add    $0x8,%eax
+  400a35:	41 89 45 00          	mov    %eax,0x0(%r13)
+  400a39:	eb 0c                	jmp    400a47 <vsprintf+0x4d3>
+  400a3b:	49 8b 4d 08          	mov    0x8(%r13),%rcx
+  400a3f:	48 8d 41 08          	lea    0x8(%rcx),%rax
+  400a43:	49 89 45 08          	mov    %rax,0x8(%r13)
+  400a47:	48 63 31             	movslq (%rcx),%rsi
+  400a4a:	eb 26                	jmp    400a72 <vsprintf+0x4fe>
+		else
+			num = va_arg(args, unsigned int);
+  400a4c:	41 8b 45 00          	mov    0x0(%r13),%eax
+  400a50:	83 f8 30             	cmp    $0x30,%eax
+  400a53:	73 0f                	jae    400a64 <vsprintf+0x4f0>
+  400a55:	89 c1                	mov    %eax,%ecx
+  400a57:	49 03 4d 10          	add    0x10(%r13),%rcx
+  400a5b:	83 c0 08             	add    $0x8,%eax
+  400a5e:	41 89 45 00          	mov    %eax,0x0(%r13)
+  400a62:	eb 0c                	jmp    400a70 <vsprintf+0x4fc>
+  400a64:	49 8b 4d 08          	mov    0x8(%r13),%rcx
+  400a68:	48 8d 41 08          	lea    0x8(%rcx),%rax
+  400a6c:	49 89 45 08          	mov    %rax,0x8(%r13)
+  400a70:	8b 31                	mov    (%rcx),%esi
+		str = number(str, num, base, field_width, precision, flags);
+  400a72:	41 89 e9             	mov    %ebp,%r9d
+  400a75:	44 89 f1             	mov    %r14d,%ecx
+  400a78:	48 89 df             	mov    %rbx,%rdi
+  400a7b:	e8 70 f8 ff ff       	callq  4002f0 <number>
+  400a80:	48 89 c3             	mov    %rax,%rbx
+  400a83:	eb 03                	jmp    400a88 <vsprintf+0x514>
+		switch (*fmt) {
+		case 'c':
+			if (!(flags & LEFT))
+				while (--field_width > 0)
+					*str++ = ' ';
+			*str++ = (unsigned char)va_arg(args, int);
+  400a85:	48 89 cb             	mov    %rcx,%rbx
+	int field_width;	/* width of output field */
+	int precision;		/* min. # of digits for integers; max
+				   number of chars for from string */
+	int qualifier;		/* 'h', 'l', or 'L:' for integer fields */
+
+	for (str = buf; *fmt; ++fmt) {
+  400a88:	48 8b 44 24 18       	mov    0x18(%rsp),%rax
+  400a8d:	48 8d 50 01          	lea    0x1(%rax),%rdx
+  400a91:	48 89 54 24 18       	mov    %rdx,0x18(%rsp)
+  400a96:	0f b6 40 01          	movzbl 0x1(%rax),%eax
+  400a9a:	84 c0                	test   %al,%al
+  400a9c:	0f 85 0c fb ff ff    	jne    4005ae <vsprintf+0x3a>
+  400aa2:	eb 05                	jmp    400aa9 <vsprintf+0x535>
+  400aa4:	48 8b 5c 24 08       	mov    0x8(%rsp),%rbx
+			num = va_arg(args, int);
+		else
+			num = va_arg(args, unsigned int);
+		str = number(str, num, base, field_width, precision, flags);
+	}
+	*str = '\0';
+  400aa9:	c6 03 00             	movb   $0x0,(%rbx)
+	return str - buf;
+  400aac:	48 89 d8             	mov    %rbx,%rax
+  400aaf:	48 2b 44 24 08       	sub    0x8(%rsp),%rax
+}
+  400ab4:	48 83 c4 28          	add    $0x28,%rsp
+  400ab8:	5b                   	pop    %rbx
+  400ab9:	5d                   	pop    %rbp
+  400aba:	41 5c                	pop    %r12
+  400abc:	41 5d                	pop    %r13
+  400abe:	41 5e                	pop    %r14
+  400ac0:	41 5f                	pop    %r15
+  400ac2:	c3                   	retq   
+
+0000000000400ac3 <printf>:
+	return str;
+}
+
+//static char printf_buf[1024];
+
+int printf(const char *format, ...) {
+  400ac3:	55                   	push   %rbp
+  400ac4:	53                   	push   %rbx
+  400ac5:	48 81 ec 58 04 00 00 	sub    $0x458,%rsp
+  400acc:	48 89 b4 24 28 04 00 	mov    %rsi,0x428(%rsp)
+  400ad3:	00 
+  400ad4:	48 89 94 24 30 04 00 	mov    %rdx,0x430(%rsp)
+  400adb:	00 
+  400adc:	48 89 8c 24 38 04 00 	mov    %rcx,0x438(%rsp)
+  400ae3:	00 
+  400ae4:	4c 89 84 24 40 04 00 	mov    %r8,0x440(%rsp)
+  400aeb:	00 
+  400aec:	4c 89 8c 24 48 04 00 	mov    %r9,0x448(%rsp)
+  400af3:	00 
+  400af4:	48 89 fe             	mov    %rdi,%rsi
+	va_list val;
+	int printed = 0;
+	char printf_buf[1024];
+	//reset(printf_buf,1024);
+	va_start(val, format);
+  400af7:	c7 84 24 08 04 00 00 	movl   $0x8,0x408(%rsp)
+  400afe:	08 00 00 00 
+  400b02:	48 8d 84 24 70 04 00 	lea    0x470(%rsp),%rax
+  400b09:	00 
+  400b0a:	48 89 84 24 10 04 00 	mov    %rax,0x410(%rsp)
+  400b11:	00 
+  400b12:	48 8d 84 24 20 04 00 	lea    0x420(%rsp),%rax
+  400b19:	00 
+  400b1a:	48 89 84 24 18 04 00 	mov    %rax,0x418(%rsp)
+  400b21:	00 
+	printed = vsprintf(printf_buf, format, val);
+  400b22:	48 8d 94 24 08 04 00 	lea    0x408(%rsp),%rdx
+  400b29:	00 
+  400b2a:	48 8d 6c 24 08       	lea    0x8(%rsp),%rbp
+  400b2f:	48 89 ef             	mov    %rbp,%rdi
+  400b32:	e8 3d fa ff ff       	callq  400574 <vsprintf>
+  400b37:	89 c3                	mov    %eax,%ebx
+	write(1, printf_buf, printed);
+  400b39:	48 63 d0             	movslq %eax,%rdx
+  400b3c:	48 89 ee             	mov    %rbp,%rsi
+  400b3f:	bf 01 00 00 00       	mov    $0x1,%edi
+  400b44:	e8 fa 03 00 00       	callq  400f43 <write>
+	//write(1, format, printed);
+	
+	va_end(val);
+	return printed;
+}
+  400b49:	89 d8                	mov    %ebx,%eax
+  400b4b:	48 81 c4 58 04 00 00 	add    $0x458,%rsp
+  400b52:	5b                   	pop    %rbx
+  400b53:	5d                   	pop    %rbp
+  400b54:	c3                   	retq   
+
+0000000000400b55 <serror>:
+	}
+	*str = '\0';
+	return str - buf;
+}
+
+void serror(int error){
+  400b55:	48 83 ec 08          	sub    $0x8,%rsp
+    switch(error){
+  400b59:	83 ff 28             	cmp    $0x28,%edi
+  400b5c:	0f 87 10 02 00 00    	ja     400d72 <serror+0x21d>
+  400b62:	89 ff                	mov    %edi,%edi
+  400b64:	48 8d 05 49 0a 00 00 	lea    0xa49(%rip),%rax        # 4015b4 <atoi+0x207>
+  400b6b:	48 63 14 b8          	movslq (%rax,%rdi,4),%rdx
+  400b6f:	48 01 d0             	add    %rdx,%rax
+  400b72:	ff e0                	jmpq   *%rax
+		case EPERM:	 
+				printf("operation is not permitted \n");
+  400b74:	48 8d 3d f5 0a 00 00 	lea    0xaf5(%rip),%rdi        # 401670 <digits.1221+0x10>
+  400b7b:	b8 00 00 00 00       	mov    $0x0,%eax
+  400b80:	e8 3e ff ff ff       	callq  400ac3 <printf>
+				break;
+  400b85:	e9 f9 01 00 00       	jmpq   400d83 <serror+0x22e>
+        case ENOENT : 
+				printf("No Such File or directory\n"); 
+  400b8a:	48 8d 3d fc 0a 00 00 	lea    0xafc(%rip),%rdi        # 40168d <digits.1221+0x2d>
+  400b91:	b8 00 00 00 00       	mov    $0x0,%eax
+  400b96:	e8 28 ff ff ff       	callq  400ac3 <printf>
+				break;
+  400b9b:	e9 e3 01 00 00       	jmpq   400d83 <serror+0x22e>
+		case EINTR	:
+				printf("Interrupted system call \n");
+  400ba0:	48 8d 3d 01 0b 00 00 	lea    0xb01(%rip),%rdi        # 4016a8 <digits.1221+0x48>
+  400ba7:	b8 00 00 00 00       	mov    $0x0,%eax
+  400bac:	e8 12 ff ff ff       	callq  400ac3 <printf>
+				break;
+  400bb1:	e9 cd 01 00 00       	jmpq   400d83 <serror+0x22e>
+		case EIO : 
+				printf("Input outpur error \n"); 
+  400bb6:	48 8d 3d 05 0b 00 00 	lea    0xb05(%rip),%rdi        # 4016c2 <digits.1221+0x62>
+  400bbd:	b8 00 00 00 00       	mov    $0x0,%eax
+  400bc2:	e8 fc fe ff ff       	callq  400ac3 <printf>
+				break;
+  400bc7:	e9 b7 01 00 00       	jmpq   400d83 <serror+0x22e>
+		case E2BIG : 
+				printf("Argument list too long \n"); 
+  400bcc:	48 8d 3d 04 0b 00 00 	lea    0xb04(%rip),%rdi        # 4016d7 <digits.1221+0x77>
+  400bd3:	b8 00 00 00 00       	mov    $0x0,%eax
+  400bd8:	e8 e6 fe ff ff       	callq  400ac3 <printf>
+				break;	
+  400bdd:	e9 a1 01 00 00       	jmpq   400d83 <serror+0x22e>
+		case ENOEXEC : 
+				printf("Exec format error \n"); 
+  400be2:	48 8d 3d 07 0b 00 00 	lea    0xb07(%rip),%rdi        # 4016f0 <digits.1221+0x90>
+  400be9:	b8 00 00 00 00       	mov    $0x0,%eax
+  400bee:	e8 d0 fe ff ff       	callq  400ac3 <printf>
+				break;	
+  400bf3:	e9 8b 01 00 00       	jmpq   400d83 <serror+0x22e>
+		case EBADF 	 : 
+				printf("Bad File number \n"); 
+  400bf8:	48 8d 3d 05 0b 00 00 	lea    0xb05(%rip),%rdi        # 401704 <digits.1221+0xa4>
+  400bff:	b8 00 00 00 00       	mov    $0x0,%eax
+  400c04:	e8 ba fe ff ff       	callq  400ac3 <printf>
+				break;
+  400c09:	e9 75 01 00 00       	jmpq   400d83 <serror+0x22e>
+		case ECHILD : 
+				printf("No child process \n"); 
+  400c0e:	48 8d 3d 01 0b 00 00 	lea    0xb01(%rip),%rdi        # 401716 <digits.1221+0xb6>
+  400c15:	b8 00 00 00 00       	mov    $0x0,%eax
+  400c1a:	e8 a4 fe ff ff       	callq  400ac3 <printf>
+				break;
+  400c1f:	e9 5f 01 00 00       	jmpq   400d83 <serror+0x22e>
+		case EAGAIN:
+				printf("error: try again \n");
+  400c24:	48 8d 3d fe 0a 00 00 	lea    0xafe(%rip),%rdi        # 401729 <digits.1221+0xc9>
+  400c2b:	b8 00 00 00 00       	mov    $0x0,%eax
+  400c30:	e8 8e fe ff ff       	callq  400ac3 <printf>
+				break;
+  400c35:	e9 49 01 00 00       	jmpq   400d83 <serror+0x22e>
+        case ENOMEM : 
+				printf("Out of memory\n");
+  400c3a:	48 8d 3d fb 0a 00 00 	lea    0xafb(%rip),%rdi        # 40173c <digits.1221+0xdc>
+  400c41:	b8 00 00 00 00       	mov    $0x0,%eax
+  400c46:	e8 78 fe ff ff       	callq  400ac3 <printf>
+				break;
+  400c4b:	e9 33 01 00 00       	jmpq   400d83 <serror+0x22e>
+        case EACCES : 
+				printf("Permission denied\n"); 
+  400c50:	48 8d 3d f4 0a 00 00 	lea    0xaf4(%rip),%rdi        # 40174b <digits.1221+0xeb>
+  400c57:	b8 00 00 00 00       	mov    $0x0,%eax
+  400c5c:	e8 62 fe ff ff       	callq  400ac3 <printf>
+				break;
+  400c61:	e9 1d 01 00 00       	jmpq   400d83 <serror+0x22e>
+		case EFAULT : 
+				printf("Bad address \n"); 
+  400c66:	48 8d 3d f1 0a 00 00 	lea    0xaf1(%rip),%rdi        # 40175e <digits.1221+0xfe>
+  400c6d:	b8 00 00 00 00       	mov    $0x0,%eax
+  400c72:	e8 4c fe ff ff       	callq  400ac3 <printf>
+				break;	
+  400c77:	e9 07 01 00 00       	jmpq   400d83 <serror+0x22e>
+		case EBUSY	:
+				printf("Device or resource busy \n");
+  400c7c:	48 8d 3d e9 0a 00 00 	lea    0xae9(%rip),%rdi        # 40176c <digits.1221+0x10c>
+  400c83:	b8 00 00 00 00       	mov    $0x0,%eax
+  400c88:	e8 36 fe ff ff       	callq  400ac3 <printf>
+				break;
+  400c8d:	e9 f1 00 00 00       	jmpq   400d83 <serror+0x22e>
+		case EEXIST : 
+				printf("File exists \n"); 
+  400c92:	48 8d 3d ed 0a 00 00 	lea    0xaed(%rip),%rdi        # 401786 <digits.1221+0x126>
+  400c99:	b8 00 00 00 00       	mov    $0x0,%eax
+  400c9e:	e8 20 fe ff ff       	callq  400ac3 <printf>
+				break;	
+  400ca3:	e9 db 00 00 00       	jmpq   400d83 <serror+0x22e>
+		case ENOTDIR : 
+				printf("Not a directory \n"); 
+  400ca8:	48 8d 3d e5 0a 00 00 	lea    0xae5(%rip),%rdi        # 401794 <digits.1221+0x134>
+  400caf:	b8 00 00 00 00       	mov    $0x0,%eax
+  400cb4:	e8 0a fe ff ff       	callq  400ac3 <printf>
+				break;	
+  400cb9:	e9 c5 00 00 00       	jmpq   400d83 <serror+0x22e>
+		case EISDIR : 
+				printf("is a directory \n"); 
+  400cbe:	48 8d 3d e1 0a 00 00 	lea    0xae1(%rip),%rdi        # 4017a6 <digits.1221+0x146>
+  400cc5:	b8 00 00 00 00       	mov    $0x0,%eax
+  400cca:	e8 f4 fd ff ff       	callq  400ac3 <printf>
+				break;	
+  400ccf:	e9 af 00 00 00       	jmpq   400d83 <serror+0x22e>
+		case EINVAL : 
+				printf("Invalid Argument \n"); 
+  400cd4:	48 8d 3d dc 0a 00 00 	lea    0xadc(%rip),%rdi        # 4017b7 <digits.1221+0x157>
+  400cdb:	b8 00 00 00 00       	mov    $0x0,%eax
+  400ce0:	e8 de fd ff ff       	callq  400ac3 <printf>
+				break;
+  400ce5:	e9 99 00 00 00       	jmpq   400d83 <serror+0x22e>
+		case ENFILE	:
+				printf("File table overflow \n");
+  400cea:	48 8d 3d d9 0a 00 00 	lea    0xad9(%rip),%rdi        # 4017ca <digits.1221+0x16a>
+  400cf1:	b8 00 00 00 00       	mov    $0x0,%eax
+  400cf6:	e8 c8 fd ff ff       	callq  400ac3 <printf>
+				break;
+  400cfb:	e9 83 00 00 00       	jmpq   400d83 <serror+0x22e>
+		case EMFILE :
+				printf("Too many open files \n");
+  400d00:	48 8d 3d d9 0a 00 00 	lea    0xad9(%rip),%rdi        # 4017e0 <digits.1221+0x180>
+  400d07:	b8 00 00 00 00       	mov    $0x0,%eax
+  400d0c:	e8 b2 fd ff ff       	callq  400ac3 <printf>
+				break;
+  400d11:	eb 70                	jmp    400d83 <serror+0x22e>
+		case EFBIG : 
+				printf("File too large \n"); 
+  400d13:	48 8d 3d dc 0a 00 00 	lea    0xadc(%rip),%rdi        # 4017f6 <digits.1221+0x196>
+  400d1a:	b8 00 00 00 00       	mov    $0x0,%eax
+  400d1f:	e8 9f fd ff ff       	callq  400ac3 <printf>
+				break;
+  400d24:	eb 5d                	jmp    400d83 <serror+0x22e>
+        case EROFS : 
+				printf("Read-only file system\n"); 
+  400d26:	48 8d 3d da 0a 00 00 	lea    0xada(%rip),%rdi        # 401807 <digits.1221+0x1a7>
+  400d2d:	b8 00 00 00 00       	mov    $0x0,%eax
+  400d32:	e8 8c fd ff ff       	callq  400ac3 <printf>
+				break;
+  400d37:	eb 4a                	jmp    400d83 <serror+0x22e>
+		case ELOOP:
+				printf("Too many symbolic links encountered \n");
+  400d39:	48 8d 3d 08 0b 00 00 	lea    0xb08(%rip),%rdi        # 401848 <digits.1221+0x1e8>
+  400d40:	b8 00 00 00 00       	mov    $0x0,%eax
+  400d45:	e8 79 fd ff ff       	callq  400ac3 <printf>
+				break;
+  400d4a:	eb 37                	jmp    400d83 <serror+0x22e>
+		case EPIPE: 
+				printf("Broken pipe \n"); 
+  400d4c:	48 8d 3d cb 0a 00 00 	lea    0xacb(%rip),%rdi        # 40181e <digits.1221+0x1be>
+  400d53:	b8 00 00 00 00       	mov    $0x0,%eax
+  400d58:	e8 66 fd ff ff       	callq  400ac3 <printf>
+				break;
+  400d5d:	eb 24                	jmp    400d83 <serror+0x22e>
+		case ENAMETOOLONG : 
+				printf("File name too long \n"); 
+  400d5f:	48 8d 3d c6 0a 00 00 	lea    0xac6(%rip),%rdi        # 40182c <digits.1221+0x1cc>
+  400d66:	b8 00 00 00 00       	mov    $0x0,%eax
+  400d6b:	e8 53 fd ff ff       	callq  400ac3 <printf>
+				break;	
+  400d70:	eb 11                	jmp    400d83 <serror+0x22e>
+        default : 
+			printf("Error in Opening or Executing\n");
+  400d72:	48 8d 3d f7 0a 00 00 	lea    0xaf7(%rip),%rdi        # 401870 <digits.1221+0x210>
+  400d79:	b8 00 00 00 00       	mov    $0x0,%eax
+  400d7e:	e8 40 fd ff ff       	callq  400ac3 <printf>
+		
+    }
+  400d83:	48 83 c4 08          	add    $0x8,%rsp
+  400d87:	c3                   	retq   
+
+0000000000400d88 <exit>:
+#include <error.h>
+
+//static void *breakPtr;
+__thread int errno;
+/*working*/
+void exit(int status){
+  400d88:	53                   	push   %rbx
+    syscall_1(SYS_exit, status);
+  400d89:	48 63 df             	movslq %edi,%rbx
+        return ret;
+}
+
+static __inline uint64_t syscall_1(uint64_t n, uint64_t a1) {
+	uint64_t ret;
+	__asm __volatile("movq %1, %%rax;"
+  400d8c:	b8 3c 00 00 00       	mov    $0x3c,%eax
+  400d91:	48 89 c0             	mov    %rax,%rax
+  400d94:	48 89 df             	mov    %rbx,%rdi
+  400d97:	cd 80                	int    $0x80
+  400d99:	48 89 c0             	mov    %rax,%rax
+}
+  400d9c:	5b                   	pop    %rbx
+  400d9d:	c3                   	retq   
+
+0000000000400d9e <brk>:
+/*working*/
+uint64_t brk(void *end_data_segment){
+  400d9e:	53                   	push   %rbx
+  400d9f:	b8 0c 00 00 00       	mov    $0xc,%eax
+  400da4:	48 89 fb             	mov    %rdi,%rbx
+  400da7:	48 89 c0             	mov    %rax,%rax
+  400daa:	48 89 df             	mov    %rbx,%rdi
+  400dad:	cd 80                	int    $0x80
+  400daf:	48 89 c0             	mov    %rax,%rax
+    return syscall_1(SYS_brk, (uint64_t)end_data_segment);
+}
+  400db2:	5b                   	pop    %rbx
+  400db3:	c3                   	retq   
+
+0000000000400db4 <sbrk>:
+
+/*working*/
+/*working*/
+void *sbrk(size_t increment){
+  400db4:	55                   	push   %rbp
+  400db5:	53                   	push   %rbx
+  400db6:	48 83 ec 08          	sub    $0x8,%rsp
+  400dba:	48 89 fd             	mov    %rdi,%rbp
+	void *breakPtr;
+	//if(breakPtr == NULL)
+	//printf("size %p \n", increment);
+	breakPtr = (void *)((uint64_t)brk(0));
+  400dbd:	bf 00 00 00 00       	mov    $0x0,%edi
+  400dc2:	e8 d7 ff ff ff       	callq  400d9e <brk>
+  400dc7:	48 89 c3             	mov    %rax,%rbx
+	if(increment == 0)
+  400dca:	48 85 ed             	test   %rbp,%rbp
+  400dcd:	74 09                	je     400dd8 <sbrk+0x24>
+	{
+		return breakPtr;
+	}
+	void *startAddr = breakPtr;
+	breakPtr = breakPtr+increment;
+  400dcf:	48 8d 3c 28          	lea    (%rax,%rbp,1),%rdi
+	brk(breakPtr);
+  400dd3:	e8 c6 ff ff ff       	callq  400d9e <brk>
+    return startAddr;
+}
+  400dd8:	48 89 d8             	mov    %rbx,%rax
+  400ddb:	48 83 c4 08          	add    $0x8,%rsp
+  400ddf:	5b                   	pop    %rbx
+  400de0:	5d                   	pop    %rbp
+  400de1:	c3                   	retq   
+
+0000000000400de2 <fork>:
+
+//#define T_SYSCALL               0x80       /* System call */
+
+static __inline uint64_t syscall_0(uint64_t n) {
+	uint64_t ret;
+        __asm __volatile("movq %1, %%rax;"
+  400de2:	ba 39 00 00 00       	mov    $0x39,%edx
+  400de7:	48 89 d0             	mov    %rdx,%rax
+  400dea:	cd 80                	int    $0x80
+  400dec:	48 89 c2             	mov    %rax,%rdx
+	if((int)res < 0)
+	{
+		errno = -res;
+		return -1;
+	}
+    return res;
+  400def:	89 d0                	mov    %edx,%eax
+}
+
+/*working*/
+pid_t fork(){
+    uint32_t res = syscall_0(SYS_fork);
+	if((int)res < 0)
+  400df1:	85 d2                	test   %edx,%edx
+  400df3:	79 10                	jns    400e05 <fork+0x23>
+	{
+		errno = -res;
+  400df5:	f7 da                	neg    %edx
+  400df7:	48 8b 05 5a 13 20 00 	mov    0x20135a(%rip),%rax        # 602158 <digits.1221+0x200af8>
+  400dfe:	89 10                	mov    %edx,(%rax)
+		return -1;
+  400e00:	b8 ff ff ff ff       	mov    $0xffffffff,%eax
+	}
+    return res;
+}
+  400e05:	f3 c3                	repz retq 
+
+0000000000400e07 <getpid>:
+  400e07:	b8 27 00 00 00       	mov    $0x27,%eax
+  400e0c:	48 89 c0             	mov    %rax,%rax
+  400e0f:	cd 80                	int    $0x80
+  400e11:	48 89 c0             	mov    %rax,%rax
+
+/*this method doesnt throw error always successful*/
+pid_t getpid(){
+    uint32_t res = syscall_0(SYS_getpid);
+    return res;
+}
+  400e14:	c3                   	retq   
+
+0000000000400e15 <getppid>:
+  400e15:	b8 6e 00 00 00       	mov    $0x6e,%eax
+  400e1a:	48 89 c0             	mov    %rax,%rax
+  400e1d:	cd 80                	int    $0x80
+  400e1f:	48 89 c0             	mov    %rax,%rax
+/*working*/
+pid_t getppid(){
+    uint32_t res = syscall_0(SYS_getppid);
+    return res;
+}
+  400e22:	c3                   	retq   
+
+0000000000400e23 <execve>:
+/*wrokig*/
+int execve(const char *filename, char *const argv[], char *const envp[]){
+  400e23:	53                   	push   %rbx
+        return ret; 
+}
+
+static __inline uint64_t syscall_3(uint64_t n, uint64_t a1, uint64_t a2, uint64_t a3) {
+	 uint64_t ret; 
+        __asm __volatile("movq %1, %%rax;"
+  400e24:	b8 3b 00 00 00       	mov    $0x3b,%eax
+  400e29:	48 89 fb             	mov    %rdi,%rbx
+  400e2c:	48 89 f1             	mov    %rsi,%rcx
+  400e2f:	48 89 c0             	mov    %rax,%rax
+  400e32:	48 89 df             	mov    %rbx,%rdi
+  400e35:	48 89 ce             	mov    %rcx,%rsi
+  400e38:	48 89 d2             	mov    %rdx,%rdx
+  400e3b:	cd 80                	int    $0x80
+  400e3d:	48 89 c0             	mov    %rax,%rax
+  400e40:	48 89 c2             	mov    %rax,%rdx
+    uint64_t res = syscall_3(SYS_execve, (uint64_t)filename, (uint64_t)argv, (uint64_t)envp);
+	if((int)res < 0)
+  400e43:	85 d2                	test   %edx,%edx
+  400e45:	79 10                	jns    400e57 <execve+0x34>
+	{
+		errno = -res;
+  400e47:	f7 da                	neg    %edx
+  400e49:	48 8b 05 08 13 20 00 	mov    0x201308(%rip),%rax        # 602158 <digits.1221+0x200af8>
+  400e50:	89 10                	mov    %edx,(%rax)
+		return -1;
+  400e52:	b8 ff ff ff ff       	mov    $0xffffffff,%eax
+	}
+    return res;
+}
+  400e57:	5b                   	pop    %rbx
+  400e58:	c3                   	retq   
+
+0000000000400e59 <sleep>:
+
+unsigned int sleep(unsigned int seconds){
+  400e59:	53                   	push   %rbx
+    unsigned int res = syscall_1(SYS_nanosleep, seconds);
+  400e5a:	89 fb                	mov    %edi,%ebx
+        return ret;
+}
+
+static __inline uint64_t syscall_1(uint64_t n, uint64_t a1) {
+	uint64_t ret;
+	__asm __volatile("movq %1, %%rax;"
+  400e5c:	b8 23 00 00 00       	mov    $0x23,%eax
+  400e61:	48 89 c0             	mov    %rax,%rax
+  400e64:	48 89 df             	mov    %rbx,%rdi
+  400e67:	cd 80                	int    $0x80
+  400e69:	48 89 c0             	mov    %rax,%rax
+    return res;
+}
+  400e6c:	5b                   	pop    %rbx
+  400e6d:	c3                   	retq   
+
+0000000000400e6e <alarm>:
+
+unsigned int alarm(unsigned int seconds){
+  400e6e:	53                   	push   %rbx
+    unsigned int res = syscall_1(SYS_alarm, seconds);
+  400e6f:	89 fb                	mov    %edi,%ebx
+  400e71:	b8 25 00 00 00       	mov    $0x25,%eax
+  400e76:	48 89 c0             	mov    %rax,%rax
+  400e79:	48 89 df             	mov    %rbx,%rdi
+  400e7c:	cd 80                	int    $0x80
+  400e7e:	48 89 c0             	mov    %rax,%rax
+    return res;
+}
+  400e81:	5b                   	pop    %rbx
+  400e82:	c3                   	retq   
+
+0000000000400e83 <getcwd>:
+/*working*/
+char *getcwd(char *buf, size_t size){
+  400e83:	53                   	push   %rbx
+	return ret;
+}
+
+static __inline uint64_t syscall_2(uint64_t n, uint64_t a1, uint64_t a2) {
+	uint64_t ret;
+        __asm __volatile("movq %1, %%rax;"
+  400e84:	b8 4f 00 00 00       	mov    $0x4f,%eax
+  400e89:	48 89 fb             	mov    %rdi,%rbx
+  400e8c:	48 89 f1             	mov    %rsi,%rcx
+  400e8f:	48 89 c0             	mov    %rax,%rax
+  400e92:	48 89 df             	mov    %rbx,%rdi
+  400e95:	48 89 ce             	mov    %rcx,%rsi
+  400e98:	cd 80                	int    $0x80
+  400e9a:	48 89 c0             	mov    %rax,%rax
+    uint64_t res = syscall_2(SYS_getcwd, (uint64_t) buf, (uint64_t) size);
+	if((char *)res == NULL)
+  400e9d:	48 85 c0             	test   %rax,%rax
+  400ea0:	75 0d                	jne    400eaf <getcwd+0x2c>
+	{
+		errno = EFAULT;
+  400ea2:	48 8b 15 af 12 20 00 	mov    0x2012af(%rip),%rdx        # 602158 <digits.1221+0x200af8>
+  400ea9:	c7 02 0e 00 00 00    	movl   $0xe,(%rdx)
+	}
+    return (char *)res;
+}
+  400eaf:	5b                   	pop    %rbx
+  400eb0:	c3                   	retq   
+
+0000000000400eb1 <chdir>:
+/*working*/ 
+int chdir(const char *path){
+  400eb1:	53                   	push   %rbx
+        return ret;
+}
+
+static __inline uint64_t syscall_1(uint64_t n, uint64_t a1) {
+	uint64_t ret;
+	__asm __volatile("movq %1, %%rax;"
+  400eb2:	b8 50 00 00 00       	mov    $0x50,%eax
+  400eb7:	48 89 fb             	mov    %rdi,%rbx
+  400eba:	48 89 c0             	mov    %rax,%rax
+  400ebd:	48 89 df             	mov    %rbx,%rdi
+  400ec0:	cd 80                	int    $0x80
+  400ec2:	48 89 c0             	mov    %rax,%rax
+    int res = syscall_1(SYS_chdir, (uint64_t)path);
+	if(res < 0)
+  400ec5:	85 c0                	test   %eax,%eax
+  400ec7:	79 10                	jns    400ed9 <chdir+0x28>
+	{
+		errno = -res;
+  400ec9:	f7 d8                	neg    %eax
+  400ecb:	48 8b 15 86 12 20 00 	mov    0x201286(%rip),%rdx        # 602158 <digits.1221+0x200af8>
+  400ed2:	89 02                	mov    %eax,(%rdx)
+		return -1;
+  400ed4:	b8 ff ff ff ff       	mov    $0xffffffff,%eax
+	}
+    return res;
+}
+  400ed9:	5b                   	pop    %rbx
+  400eda:	c3                   	retq   
+
+0000000000400edb <open>:
+/*working*/    
+int open(const char *pathname, int flags){
+  400edb:	53                   	push   %rbx
+    uint64_t res = syscall_2(SYS_open, (uint64_t) pathname, (uint64_t) flags);
+  400edc:	48 63 ce             	movslq %esi,%rcx
+	return ret;
+}
+
+static __inline uint64_t syscall_2(uint64_t n, uint64_t a1, uint64_t a2) {
+	uint64_t ret;
+        __asm __volatile("movq %1, %%rax;"
+  400edf:	b8 02 00 00 00       	mov    $0x2,%eax
+  400ee4:	48 89 fb             	mov    %rdi,%rbx
+  400ee7:	48 89 c0             	mov    %rax,%rax
+  400eea:	48 89 df             	mov    %rbx,%rdi
+  400eed:	48 89 ce             	mov    %rcx,%rsi
+  400ef0:	cd 80                	int    $0x80
+  400ef2:	48 89 c0             	mov    %rax,%rax
+  400ef5:	48 89 c1             	mov    %rax,%rcx
+	if((int)res < 0)
+  400ef8:	85 c9                	test   %ecx,%ecx
+  400efa:	79 10                	jns    400f0c <open+0x31>
+	{
+		errno = -res;
+  400efc:	f7 d9                	neg    %ecx
+  400efe:	48 8b 05 53 12 20 00 	mov    0x201253(%rip),%rax        # 602158 <digits.1221+0x200af8>
+  400f05:	89 08                	mov    %ecx,(%rax)
+		return -1;
+  400f07:	b8 ff ff ff ff       	mov    $0xffffffff,%eax
+	}
+    return res;
+}
+  400f0c:	5b                   	pop    %rbx
+  400f0d:	c3                   	retq   
+
+0000000000400f0e <read>:
+
+/*working*/
+ssize_t read(int fd, void *buf, size_t count){
+  400f0e:	53                   	push   %rbx
+    ssize_t res = syscall_3(SYS_read, (uint64_t) fd, (uint64_t) buf, (uint64_t) count);
+  400f0f:	48 63 df             	movslq %edi,%rbx
+        return ret; 
+}
+
+static __inline uint64_t syscall_3(uint64_t n, uint64_t a1, uint64_t a2, uint64_t a3) {
+	 uint64_t ret; 
+        __asm __volatile("movq %1, %%rax;"
+  400f12:	b8 00 00 00 00       	mov    $0x0,%eax
+  400f17:	48 89 f1             	mov    %rsi,%rcx
+  400f1a:	48 89 c0             	mov    %rax,%rax
+  400f1d:	48 89 df             	mov    %rbx,%rdi
+  400f20:	48 89 ce             	mov    %rcx,%rsi
+  400f23:	48 89 d2             	mov    %rdx,%rdx
+  400f26:	cd 80                	int    $0x80
+  400f28:	48 89 c0             	mov    %rax,%rax
+	if((int)res < 0)
+  400f2b:	85 c0                	test   %eax,%eax
+  400f2d:	79 12                	jns    400f41 <read+0x33>
+	{
+		errno = -res;
+  400f2f:	f7 d8                	neg    %eax
+  400f31:	48 8b 15 20 12 20 00 	mov    0x201220(%rip),%rdx        # 602158 <digits.1221+0x200af8>
+  400f38:	89 02                	mov    %eax,(%rdx)
+		return -1;
+  400f3a:	48 c7 c0 ff ff ff ff 	mov    $0xffffffffffffffff,%rax
+	}
+    return res;
+}
+  400f41:	5b                   	pop    %rbx
+  400f42:	c3                   	retq   
+
+0000000000400f43 <write>:
+
+/*working*/
+ssize_t write(int fd, const void *buf, size_t count){
+  400f43:	53                   	push   %rbx
+    ssize_t res = syscall_3(SYS_write, (uint64_t) fd, (uint64_t) buf, (uint64_t) count);
+  400f44:	48 63 df             	movslq %edi,%rbx
+  400f47:	b8 01 00 00 00       	mov    $0x1,%eax
+  400f4c:	48 89 f1             	mov    %rsi,%rcx
+  400f4f:	48 89 c0             	mov    %rax,%rax
+  400f52:	48 89 df             	mov    %rbx,%rdi
+  400f55:	48 89 ce             	mov    %rcx,%rsi
+  400f58:	48 89 d2             	mov    %rdx,%rdx
+  400f5b:	cd 80                	int    $0x80
+  400f5d:	48 89 c0             	mov    %rax,%rax
+	if((int)res < 0)
+  400f60:	85 c0                	test   %eax,%eax
+  400f62:	79 12                	jns    400f76 <write+0x33>
+	{
+		errno = -res;
+  400f64:	f7 d8                	neg    %eax
+  400f66:	48 8b 15 eb 11 20 00 	mov    0x2011eb(%rip),%rdx        # 602158 <digits.1221+0x200af8>
+  400f6d:	89 02                	mov    %eax,(%rdx)
+		return -1;
+  400f6f:	48 c7 c0 ff ff ff ff 	mov    $0xffffffffffffffff,%rax
+	}
+    return res; 
+}
+  400f76:	5b                   	pop    %rbx
+  400f77:	c3                   	retq   
+
+0000000000400f78 <lseek>:
+
+off_t lseek(int fildes, off_t offset, int whence){
+  400f78:	53                   	push   %rbx
+    off_t res = syscall_3(SYS_lseek, (uint64_t) fildes, (uint64_t) offset, (uint64_t) whence);
+  400f79:	48 63 df             	movslq %edi,%rbx
+  400f7c:	48 63 d2             	movslq %edx,%rdx
+  400f7f:	b8 08 00 00 00       	mov    $0x8,%eax
+  400f84:	48 89 f1             	mov    %rsi,%rcx
+  400f87:	48 89 c0             	mov    %rax,%rax
+  400f8a:	48 89 df             	mov    %rbx,%rdi
+  400f8d:	48 89 ce             	mov    %rcx,%rsi
+  400f90:	48 89 d2             	mov    %rdx,%rdx
+  400f93:	cd 80                	int    $0x80
+  400f95:	48 89 c0             	mov    %rax,%rax
+  400f98:	48 89 c2             	mov    %rax,%rdx
+	if((int)res < 0)
+  400f9b:	85 d2                	test   %edx,%edx
+  400f9d:	79 12                	jns    400fb1 <lseek+0x39>
+	{
+		errno = -res;
+  400f9f:	f7 da                	neg    %edx
+  400fa1:	48 8b 05 b0 11 20 00 	mov    0x2011b0(%rip),%rax        # 602158 <digits.1221+0x200af8>
+  400fa8:	89 10                	mov    %edx,(%rax)
+		return -1;
+  400faa:	48 c7 c0 ff ff ff ff 	mov    $0xffffffffffffffff,%rax
+	}
+    return res;
+}
+  400fb1:	5b                   	pop    %rbx
+  400fb2:	c3                   	retq   
+
+0000000000400fb3 <close>:
+/*working*/
+int close(int fd){
+  400fb3:	53                   	push   %rbx
+    int res = syscall_1(SYS_close, fd);
+  400fb4:	48 63 df             	movslq %edi,%rbx
+        return ret;
+}
+
+static __inline uint64_t syscall_1(uint64_t n, uint64_t a1) {
+	uint64_t ret;
+	__asm __volatile("movq %1, %%rax;"
+  400fb7:	b8 03 00 00 00       	mov    $0x3,%eax
+  400fbc:	48 89 c0             	mov    %rax,%rax
+  400fbf:	48 89 df             	mov    %rbx,%rdi
+  400fc2:	cd 80                	int    $0x80
+  400fc4:	48 89 c0             	mov    %rax,%rax
+	if(res < 0)
+  400fc7:	85 c0                	test   %eax,%eax
+  400fc9:	79 10                	jns    400fdb <close+0x28>
+	{
+		errno = -res;
+  400fcb:	f7 d8                	neg    %eax
+  400fcd:	48 8b 15 84 11 20 00 	mov    0x201184(%rip),%rdx        # 602158 <digits.1221+0x200af8>
+  400fd4:	89 02                	mov    %eax,(%rdx)
+		return -1;
+  400fd6:	b8 ff ff ff ff       	mov    $0xffffffff,%eax
+	}
+    return res;
+}
+  400fdb:	5b                   	pop    %rbx
+  400fdc:	c3                   	retq   
+
+0000000000400fdd <pipe>:
+/*working*/
+int pipe(int filedes[2]){
+  400fdd:	53                   	push   %rbx
+  400fde:	b8 16 00 00 00       	mov    $0x16,%eax
+  400fe3:	48 89 fb             	mov    %rdi,%rbx
+  400fe6:	48 89 c0             	mov    %rax,%rax
+  400fe9:	48 89 df             	mov    %rbx,%rdi
+  400fec:	cd 80                	int    $0x80
+  400fee:	48 89 c0             	mov    %rax,%rax
+    int res = syscall_1(SYS_pipe, (uint64_t)filedes);
+	if(res < 0)
+  400ff1:	85 c0                	test   %eax,%eax
+  400ff3:	79 10                	jns    401005 <pipe+0x28>
+	{
+		errno = -res;
+  400ff5:	f7 d8                	neg    %eax
+  400ff7:	48 8b 15 5a 11 20 00 	mov    0x20115a(%rip),%rdx        # 602158 <digits.1221+0x200af8>
+  400ffe:	89 02                	mov    %eax,(%rdx)
+		return -1;
+  401000:	b8 ff ff ff ff       	mov    $0xffffffff,%eax
+	}
+    return res;
+}
+  401005:	5b                   	pop    %rbx
+  401006:	c3                   	retq   
+
+0000000000401007 <dup>:
+
+int dup(int oldfd){
+  401007:	53                   	push   %rbx
+    int res = syscall_1(SYS_dup,oldfd);
+  401008:	48 63 df             	movslq %edi,%rbx
+  40100b:	b8 20 00 00 00       	mov    $0x20,%eax
+  401010:	48 89 c0             	mov    %rax,%rax
+  401013:	48 89 df             	mov    %rbx,%rdi
+  401016:	cd 80                	int    $0x80
+  401018:	48 89 c0             	mov    %rax,%rax
+	if(res < 0)
+  40101b:	85 c0                	test   %eax,%eax
+  40101d:	79 10                	jns    40102f <dup+0x28>
+	{
+		errno = -res;
+  40101f:	f7 d8                	neg    %eax
+  401021:	48 8b 15 30 11 20 00 	mov    0x201130(%rip),%rdx        # 602158 <digits.1221+0x200af8>
+  401028:	89 02                	mov    %eax,(%rdx)
+		return -1;
+  40102a:	b8 ff ff ff ff       	mov    $0xffffffff,%eax
+	}
+    return res;
+}
+  40102f:	5b                   	pop    %rbx
+  401030:	c3                   	retq   
+
+0000000000401031 <dup2>:
+
+int dup2(int oldfd, int newfd){
+  401031:	53                   	push   %rbx
+    int res = syscall_2(SYS_dup2, (uint64_t) oldfd, (uint64_t) newfd);
+  401032:	48 63 df             	movslq %edi,%rbx
+  401035:	48 63 ce             	movslq %esi,%rcx
+	return ret;
+}
+
+static __inline uint64_t syscall_2(uint64_t n, uint64_t a1, uint64_t a2) {
+	uint64_t ret;
+        __asm __volatile("movq %1, %%rax;"
+  401038:	b8 21 00 00 00       	mov    $0x21,%eax
+  40103d:	48 89 c0             	mov    %rax,%rax
+  401040:	48 89 df             	mov    %rbx,%rdi
+  401043:	48 89 ce             	mov    %rcx,%rsi
+  401046:	cd 80                	int    $0x80
+  401048:	48 89 c0             	mov    %rax,%rax
+	if(res < 0)
+  40104b:	85 c0                	test   %eax,%eax
+  40104d:	79 10                	jns    40105f <dup2+0x2e>
+	{
+		errno = -res;
+  40104f:	f7 d8                	neg    %eax
+  401051:	48 8b 15 00 11 20 00 	mov    0x201100(%rip),%rdx        # 602158 <digits.1221+0x200af8>
+  401058:	89 02                	mov    %eax,(%rdx)
+		return -1;
+  40105a:	b8 ff ff ff ff       	mov    $0xffffffff,%eax
+	}
+    return res;
+}
+  40105f:	5b                   	pop    %rbx
+  401060:	c3                   	retq   
+
+0000000000401061 <opendir>:
+
+void *opendir(const char *name){
+  401061:	41 54                	push   %r12
+  401063:	55                   	push   %rbp
+  401064:	53                   	push   %rbx
+  401065:	48 81 ec 00 04 00 00 	sub    $0x400,%rsp
+  40106c:	49 89 fc             	mov    %rdi,%r12
+	int fd = open(name, O_DIRECTORY);
+  40106f:	be 00 00 01 00       	mov    $0x10000,%esi
+  401074:	e8 62 fe ff ff       	callq  400edb <open>
+  401079:	89 c5                	mov    %eax,%ebp
+	char buf[1024];
+	//struct dirent *d = NULL;
+	if(fd < 0)
+  40107b:	85 c0                	test   %eax,%eax
+  40107d:	78 71                	js     4010f0 <opendir+0x8f>
+		return NULL;
+	//static struct dirent dp;
+	//printf("sashi 1 \n");
+	int res = syscall_3(SYS_getdents, (uint64_t)fd, (uint64_t)buf, (uint64_t)sizeof(struct dirent));
+  40107f:	48 63 d8             	movslq %eax,%rbx
+  401082:	48 89 e1             	mov    %rsp,%rcx
+        return ret; 
+}
+
+static __inline uint64_t syscall_3(uint64_t n, uint64_t a1, uint64_t a2, uint64_t a3) {
+	 uint64_t ret; 
+        __asm __volatile("movq %1, %%rax;"
+  401085:	ba 18 04 00 00       	mov    $0x418,%edx
+  40108a:	b8 4e 00 00 00       	mov    $0x4e,%eax
+  40108f:	48 89 c0             	mov    %rax,%rax
+  401092:	48 89 df             	mov    %rbx,%rdi
+  401095:	48 89 ce             	mov    %rcx,%rsi
+  401098:	48 89 d2             	mov    %rdx,%rdx
+  40109b:	cd 80                	int    $0x80
+  40109d:	48 89 c0             	mov    %rax,%rax
+  4010a0:	48 89 c3             	mov    %rax,%rbx
+	printf("inside opendir %d",res)	;
+  4010a3:	89 c6                	mov    %eax,%esi
+  4010a5:	48 8d 3d e4 07 00 00 	lea    0x7e4(%rip),%rdi        # 401890 <digits.1221+0x230>
+  4010ac:	b8 00 00 00 00       	mov    $0x0,%eax
+  4010b1:	e8 0d fa ff ff       	callq  400ac3 <printf>
+	if(res < 0)
+  4010b6:	85 db                	test   %ebx,%ebx
+  4010b8:	79 12                	jns    4010cc <opendir+0x6b>
+	{
+		errno = -res;	
+  4010ba:	f7 db                	neg    %ebx
+  4010bc:	48 8b 05 95 10 20 00 	mov    0x201095(%rip),%rax        # 602158 <digits.1221+0x200af8>
+  4010c3:	89 18                	mov    %ebx,(%rax)
+		return NULL;
+  4010c5:	b8 00 00 00 00       	mov    $0x0,%eax
+  4010ca:	eb 29                	jmp    4010f5 <opendir+0x94>
+	}
+	//printf("sashi 2 \n");
+	struct dir *d = malloc(sizeof(struct dir));
+  4010cc:	bf 18 04 00 00       	mov    $0x418,%edi
+  4010d1:	e8 9a f1 ff ff       	callq  400270 <malloc>
+  4010d6:	48 89 c3             	mov    %rax,%rbx
+	d->fd = fd;
+  4010d9:	89 28                	mov    %ebp,(%rax)
+	d->addr = (void *)buf;
+  4010db:	48 89 63 08          	mov    %rsp,0x8(%rbx)
+	//printf("sashi 1 \n");
+	strcpy(d->d_name, name);
+  4010df:	48 8d 7b 10          	lea    0x10(%rbx),%rdi
+  4010e3:	4c 89 e6             	mov    %r12,%rsi
+  4010e6:	e8 15 01 00 00       	callq  401200 <strcpy>
+	//printf("sashi 2 \n");
+	//d = (struct dirent *)buf;
+    return (void *)d;
+  4010eb:	48 89 d8             	mov    %rbx,%rax
+  4010ee:	eb 05                	jmp    4010f5 <opendir+0x94>
+void *opendir(const char *name){
+	int fd = open(name, O_DIRECTORY);
+	char buf[1024];
+	//struct dirent *d = NULL;
+	if(fd < 0)
+		return NULL;
+  4010f0:	b8 00 00 00 00       	mov    $0x0,%eax
+	//printf("sashi 1 \n");
+	strcpy(d->d_name, name);
+	//printf("sashi 2 \n");
+	//d = (struct dirent *)buf;
+    return (void *)d;
+}
+  4010f5:	48 81 c4 00 04 00 00 	add    $0x400,%rsp
+  4010fc:	5b                   	pop    %rbx
+  4010fd:	5d                   	pop    %rbp
+  4010fe:	41 5c                	pop    %r12
+  401100:	c3                   	retq   
+
+0000000000401101 <readdir>:
+*/
+struct dirent *readdir(void *dir)
+{
+	struct dirent *dip = (struct dirent *)dir;
+	struct dirent *next;
+	next = (struct dirent *)(dir + dip->d_reclen);
+  401101:	0f b7 47 10          	movzwl 0x10(%rdi),%eax
+	if(next->d_reclen == 0)
+  401105:	48 8d 04 38          	lea    (%rax,%rdi,1),%rax
+		return NULL;
+  401109:	66 83 78 10 00       	cmpw   $0x0,0x10(%rax)
+  40110e:	ba 00 00 00 00       	mov    $0x0,%edx
+  401113:	48 0f 44 c2          	cmove  %rdx,%rax
+	return next;
+}
+  401117:	c3                   	retq   
+
+0000000000401118 <closedir>:
+
+int closedir(void *dir){
+  401118:	55                   	push   %rbp
+  401119:	53                   	push   %rbx
+  40111a:	48 83 ec 08          	sub    $0x8,%rsp
+  40111e:	48 89 fb             	mov    %rdi,%rbx
+	struct dir *dp = (struct dir *)dir;
+	int res = -1;
+	if(dp != NULL)
+  401121:	48 85 ff             	test   %rdi,%rdi
+  401124:	74 13                	je     401139 <closedir+0x21>
+	{	
+		res = close(dp->fd);
+  401126:	8b 3f                	mov    (%rdi),%edi
+  401128:	e8 86 fe ff ff       	callq  400fb3 <close>
+  40112d:	89 c5                	mov    %eax,%ebp
+		free(dp);
+  40112f:	48 89 df             	mov    %rbx,%rdi
+  401132:	e8 b9 f0 ff ff       	callq  4001f0 <free>
+  401137:	eb 05                	jmp    40113e <closedir+0x26>
+	return next;
+}
+
+int closedir(void *dir){
+	struct dir *dp = (struct dir *)dir;
+	int res = -1;
+  401139:	bd ff ff ff ff       	mov    $0xffffffff,%ebp
+	{	
+		res = close(dp->fd);
+		free(dp);
+	}
+	return res;
+}
+  40113e:	89 e8                	mov    %ebp,%eax
+  401140:	48 83 c4 08          	add    $0x8,%rsp
+  401144:	5b                   	pop    %rbx
+  401145:	5d                   	pop    %rbp
+  401146:	c3                   	retq   
+
+0000000000401147 <waitpid>:
+
+/*working*/
+pid_t waitpid(pid_t pid,int *status, int options){
+  401147:	53                   	push   %rbx
+    pid_t res = syscall_3(SYS_wait4,(uint64_t)pid,(uint64_t)status,(uint64_t)options);
+  401148:	89 fb                	mov    %edi,%ebx
+  40114a:	48 63 d2             	movslq %edx,%rdx
+  40114d:	b8 3d 00 00 00       	mov    $0x3d,%eax
+  401152:	48 89 f1             	mov    %rsi,%rcx
+  401155:	48 89 c0             	mov    %rax,%rax
+  401158:	48 89 df             	mov    %rbx,%rdi
+  40115b:	48 89 ce             	mov    %rcx,%rsi
+  40115e:	48 89 d2             	mov    %rdx,%rdx
+  401161:	cd 80                	int    $0x80
+  401163:	48 89 c0             	mov    %rax,%rax
+  401166:	48 89 c2             	mov    %rax,%rdx
+	if((int)res < 0)
+  401169:	85 d2                	test   %edx,%edx
+  40116b:	79 10                	jns    40117d <waitpid+0x36>
+	{
+		errno = -res;	
+  40116d:	f7 da                	neg    %edx
+  40116f:	48 8b 05 e2 0f 20 00 	mov    0x200fe2(%rip),%rax        # 602158 <digits.1221+0x200af8>
+  401176:	89 10                	mov    %edx,(%rax)
+		return -1;
+  401178:	b8 ff ff ff ff       	mov    $0xffffffff,%eax
+	}
+    return res;
+}
+  40117d:	5b                   	pop    %rbx
+  40117e:	c3                   	retq   
+  40117f:	90                   	nop
+
+0000000000401180 <memcmp>:
+
+//Compare first n characters pointed by s1 to s2.
+int memcmp(const void* s1, const void* s2,size_t n)
+{
+    const unsigned char *p1 = s1, *p2 = s2;
+    while(n--)
+  401180:	4c 8d 42 ff          	lea    -0x1(%rdx),%r8
+  401184:	48 85 d2             	test   %rdx,%rdx
+  401187:	74 35                	je     4011be <memcmp+0x3e>
+        if( *p1 != *p2 )
+  401189:	0f b6 07             	movzbl (%rdi),%eax
+  40118c:	0f b6 0e             	movzbl (%rsi),%ecx
+  40118f:	ba 00 00 00 00       	mov    $0x0,%edx
+  401194:	38 c8                	cmp    %cl,%al
+  401196:	74 1b                	je     4011b3 <memcmp+0x33>
+  401198:	eb 10                	jmp    4011aa <memcmp+0x2a>
+  40119a:	0f b6 44 17 01       	movzbl 0x1(%rdi,%rdx,1),%eax
+  40119f:	48 ff c2             	inc    %rdx
+  4011a2:	0f b6 0c 16          	movzbl (%rsi,%rdx,1),%ecx
+  4011a6:	38 c8                	cmp    %cl,%al
+  4011a8:	74 09                	je     4011b3 <memcmp+0x33>
+            return *p1 - *p2;
+  4011aa:	0f b6 c0             	movzbl %al,%eax
+  4011ad:	0f b6 c9             	movzbl %cl,%ecx
+  4011b0:	29 c8                	sub    %ecx,%eax
+  4011b2:	c3                   	retq   
+
+//Compare first n characters pointed by s1 to s2.
+int memcmp(const void* s1, const void* s2,size_t n)
+{
+    const unsigned char *p1 = s1, *p2 = s2;
+    while(n--)
+  4011b3:	4c 39 c2             	cmp    %r8,%rdx
+  4011b6:	75 e2                	jne    40119a <memcmp+0x1a>
+        if( *p1 != *p2 )
+            return *p1 - *p2;
+        else
+            p1++,p2++;
+    return 0;
+  4011b8:	b8 00 00 00 00       	mov    $0x0,%eax
+  4011bd:	c3                   	retq   
+  4011be:	b8 00 00 00 00       	mov    $0x0,%eax
+}
+  4011c3:	c3                   	retq   
+
+00000000004011c4 <memset>:
+
+void *memset(void *str, int c, size_t n)
+{
+  4011c4:	48 89 f8             	mov    %rdi,%rax
+    char *dst = str;
+    while(n-- != 0)
+  4011c7:	48 85 d2             	test   %rdx,%rdx
+  4011ca:	74 12                	je     4011de <memset+0x1a>
+  4011cc:	48 01 fa             	add    %rdi,%rdx
+    return 0;
+}
+
+void *memset(void *str, int c, size_t n)
+{
+    char *dst = str;
+  4011cf:	48 89 f9             	mov    %rdi,%rcx
+    while(n-- != 0)
+    {
+        *dst++ = c;
+  4011d2:	48 ff c1             	inc    %rcx
+  4011d5:	40 88 71 ff          	mov    %sil,-0x1(%rcx)
+}
+
+void *memset(void *str, int c, size_t n)
+{
+    char *dst = str;
+    while(n-- != 0)
+  4011d9:	48 39 d1             	cmp    %rdx,%rcx
+  4011dc:	75 f4                	jne    4011d2 <memset+0xe>
+    {
+        *dst++ = c;
+    }
+    return str;
+}
+  4011de:	f3 c3                	repz retq 
+
+00000000004011e0 <memcpy>:
+
+void *(memcpy)(void * restrict s1, const void * restrict s2, size_t n)
+{
+  4011e0:	48 89 f8             	mov    %rdi,%rax
+     char *dst = s1;
+     const char *src = s2;
+     /* Loop and copy.  */
+     while (n-- != 0)
+  4011e3:	48 85 d2             	test   %rdx,%rdx
+  4011e6:	74 16                	je     4011fe <memcpy+0x1e>
+  4011e8:	b9 00 00 00 00       	mov    $0x0,%ecx
+         *dst++ = *src++;
+  4011ed:	44 0f b6 04 0e       	movzbl (%rsi,%rcx,1),%r8d
+  4011f2:	44 88 04 08          	mov    %r8b,(%rax,%rcx,1)
+  4011f6:	48 ff c1             	inc    %rcx
+void *(memcpy)(void * restrict s1, const void * restrict s2, size_t n)
+{
+     char *dst = s1;
+     const char *src = s2;
+     /* Loop and copy.  */
+     while (n-- != 0)
+  4011f9:	48 39 d1             	cmp    %rdx,%rcx
+  4011fc:	75 ef                	jne    4011ed <memcpy+0xd>
+         *dst++ = *src++;
+     return s1;
+ }
+  4011fe:	f3 c3                	repz retq 
+
+0000000000401200 <strcpy>:
+
+char *strcpy(char *dest, const char *src)
+ {
+  401200:	48 89 f8             	mov    %rdi,%rax
+         char *tmp = dest; 
+         while ((*dest++ = *src++) != '\0');
+  401203:	48 89 fa             	mov    %rdi,%rdx
+  401206:	48 ff c2             	inc    %rdx
+  401209:	48 ff c6             	inc    %rsi
+  40120c:	0f b6 4e ff          	movzbl -0x1(%rsi),%ecx
+  401210:	88 4a ff             	mov    %cl,-0x1(%rdx)
+  401213:	84 c9                	test   %cl,%cl
+  401215:	75 ef                	jne    401206 <strcpy+0x6>
+         return tmp;
+ }
+  401217:	f3 c3                	repz retq 
+
+0000000000401219 <strncpy>:
+
+char *strncpy(char *dest, const char *src, size_t count)
+ {
+  401219:	48 89 f8             	mov    %rdi,%rax
+         char *tmp = dest; 
+         while (count) {
+  40121c:	48 85 d2             	test   %rdx,%rdx
+  40121f:	74 1d                	je     40123e <strncpy+0x25>
+  401221:	48 01 fa             	add    %rdi,%rdx
+         return tmp;
+ }
+
+char *strncpy(char *dest, const char *src, size_t count)
+ {
+         char *tmp = dest; 
+  401224:	48 89 f9             	mov    %rdi,%rcx
+         while (count) {
+                 if ((*tmp = *src) != 0)
+  401227:	44 0f b6 06          	movzbl (%rsi),%r8d
+  40122b:	44 88 01             	mov    %r8b,(%rcx)
+                         src++;
+  40122e:	41 80 f8 01          	cmp    $0x1,%r8b
+  401232:	48 83 de ff          	sbb    $0xffffffffffffffff,%rsi
+                 tmp++;
+  401236:	48 ff c1             	inc    %rcx
+ }
+
+char *strncpy(char *dest, const char *src, size_t count)
+ {
+         char *tmp = dest; 
+         while (count) {
+  401239:	48 39 d1             	cmp    %rdx,%rcx
+  40123c:	75 e9                	jne    401227 <strncpy+0xe>
+                         src++;
+                 tmp++;
+                 count--;
+         }
+         return dest;
+ }
+  40123e:	f3 c3                	repz retq 
+
+0000000000401240 <strlen>:
+
+size_t strlen(const char * str)
+{
+    const char *s;
+    for (s = str; *s; ++s);
+  401240:	80 3f 00             	cmpb   $0x0,(%rdi)
+  401243:	74 0d                	je     401252 <strlen+0x12>
+  401245:	48 89 f8             	mov    %rdi,%rax
+  401248:	48 ff c0             	inc    %rax
+  40124b:	80 38 00             	cmpb   $0x0,(%rax)
+  40124e:	75 f8                	jne    401248 <strlen+0x8>
+  401250:	eb 03                	jmp    401255 <strlen+0x15>
+  401252:	48 89 f8             	mov    %rdi,%rax
+    return(s - str);
+  401255:	48 29 f8             	sub    %rdi,%rax
+}
+  401258:	c3                   	retq   
+
+0000000000401259 <strcmp>:
+
+int strcmp(const char *cs, const char *ct)
+ {
+         unsigned char c1, c2;
+         while (1) {
+                 c1 = *cs++;
+  401259:	48 ff c7             	inc    %rdi
+  40125c:	0f b6 47 ff          	movzbl -0x1(%rdi),%eax
+                 c2 = *ct++;
+  401260:	48 ff c6             	inc    %rsi
+  401263:	0f b6 56 ff          	movzbl -0x1(%rsi),%edx
+                 if (c1 != c2)
+  401267:	38 d0                	cmp    %dl,%al
+  401269:	74 08                	je     401273 <strcmp+0x1a>
+                         return c1 < c2 ? -1 : 1;
+  40126b:	38 d0                	cmp    %dl,%al
+  40126d:	19 c0                	sbb    %eax,%eax
+  40126f:	83 c8 01             	or     $0x1,%eax
+  401272:	c3                   	retq   
+                 if (!c1)
+  401273:	84 c0                	test   %al,%al
+  401275:	75 e2                	jne    401259 <strcmp>
+                         break;
+         }
+         return 0;
+  401277:	b8 00 00 00 00       	mov    $0x0,%eax
+}
+  40127c:	c3                   	retq   
+
+000000000040127d <strstr>:
+
+char *strstr(const char *s1, const char *s2)
+{
+  40127d:	41 55                	push   %r13
+  40127f:	41 54                	push   %r12
+  401281:	55                   	push   %rbp
+  401282:	53                   	push   %rbx
+  401283:	48 83 ec 08          	sub    $0x8,%rsp
+  401287:	48 89 fb             	mov    %rdi,%rbx
+  40128a:	49 89 f5             	mov    %rsi,%r13
+         size_t l1, l2; 
+         l2 = strlen(s2);
+  40128d:	48 89 f7             	mov    %rsi,%rdi
+  401290:	e8 ab ff ff ff       	callq  401240 <strlen>
+  401295:	49 89 c4             	mov    %rax,%r12
+         if (!l2)
+                 return (char *)s1;
+  401298:	48 89 d8             	mov    %rbx,%rax
+
+char *strstr(const char *s1, const char *s2)
+{
+         size_t l1, l2; 
+         l2 = strlen(s2);
+         if (!l2)
+  40129b:	4d 85 e4             	test   %r12,%r12
+  40129e:	74 43                	je     4012e3 <strstr+0x66>
+                 return (char *)s1;
+         l1 = strlen(s1);
+  4012a0:	48 89 df             	mov    %rbx,%rdi
+  4012a3:	e8 98 ff ff ff       	callq  401240 <strlen>
+  4012a8:	48 89 c5             	mov    %rax,%rbp
+         while (l1 >= l2) {
+  4012ab:	49 39 c4             	cmp    %rax,%r12
+  4012ae:	77 22                	ja     4012d2 <strstr+0x55>
+                 l1--;
+  4012b0:	48 ff cd             	dec    %rbp
+                 if (!memcmp(s1, s2, l2))
+  4012b3:	4c 89 e2             	mov    %r12,%rdx
+  4012b6:	4c 89 ee             	mov    %r13,%rsi
+  4012b9:	48 89 df             	mov    %rbx,%rdi
+  4012bc:	e8 bf fe ff ff       	callq  401180 <memcmp>
+  4012c1:	85 c0                	test   %eax,%eax
+  4012c3:	74 14                	je     4012d9 <strstr+0x5c>
+                         return (char *)s1;
+                 s1++;
+  4012c5:	48 ff c3             	inc    %rbx
+         size_t l1, l2; 
+         l2 = strlen(s2);
+         if (!l2)
+                 return (char *)s1;
+         l1 = strlen(s1);
+         while (l1 >= l2) {
+  4012c8:	49 39 ec             	cmp    %rbp,%r12
+  4012cb:	76 e3                	jbe    4012b0 <strstr+0x33>
+  4012cd:	0f 1f 00             	nopl   (%rax)
+  4012d0:	eb 0c                	jmp    4012de <strstr+0x61>
+                 l1--;
+                 if (!memcmp(s1, s2, l2))
+                         return (char *)s1;
+                 s1++;
+         }
+         return NULL;
+  4012d2:	b8 00 00 00 00       	mov    $0x0,%eax
+  4012d7:	eb 0a                	jmp    4012e3 <strstr+0x66>
+  4012d9:	48 89 d8             	mov    %rbx,%rax
+  4012dc:	eb 05                	jmp    4012e3 <strstr+0x66>
+  4012de:	b8 00 00 00 00       	mov    $0x0,%eax
+}
+  4012e3:	48 83 c4 08          	add    $0x8,%rsp
+  4012e7:	5b                   	pop    %rbx
+  4012e8:	5d                   	pop    %rbp
+  4012e9:	41 5c                	pop    %r12
+  4012eb:	41 5d                	pop    %r13
+  4012ed:	c3                   	retq   
+
+00000000004012ee <strcat>:
+
+char *strcat(char *dest, const char *src)
+{
+  4012ee:	48 89 f8             	mov    %rdi,%rax
+         char *tmp = dest; 
+         while (*dest)
+  4012f1:	80 3f 00             	cmpb   $0x0,(%rdi)
+  4012f4:	74 0d                	je     401303 <strcat+0x15>
+  4012f6:	48 89 fa             	mov    %rdi,%rdx
+                 dest++;
+  4012f9:	48 ff c2             	inc    %rdx
+}
+
+char *strcat(char *dest, const char *src)
+{
+         char *tmp = dest; 
+         while (*dest)
+  4012fc:	80 3a 00             	cmpb   $0x0,(%rdx)
+  4012ff:	75 f8                	jne    4012f9 <strcat+0xb>
+  401301:	eb 03                	jmp    401306 <strcat+0x18>
+  401303:	48 89 fa             	mov    %rdi,%rdx
+                 dest++;
+         while ((*dest++ = *src++) != '\0')
+  401306:	48 ff c2             	inc    %rdx
+  401309:	48 ff c6             	inc    %rsi
+  40130c:	0f b6 4e ff          	movzbl -0x1(%rsi),%ecx
+  401310:	88 4a ff             	mov    %cl,-0x1(%rdx)
+  401313:	84 c9                	test   %cl,%cl
+  401315:	75 ef                	jne    401306 <strcat+0x18>
+                 ;
+         return tmp;
+}
+  401317:	f3 c3                	repz retq 
+
+0000000000401319 <isspace>:
+
+int isspace(char c)
+{
+    return (c == ' ' || c == '\t' || c == '\n' || c == '\12');
+  401319:	8d 47 f7             	lea    -0x9(%rdi),%eax
+  40131c:	3c 01                	cmp    $0x1,%al
+  40131e:	0f 96 c2             	setbe  %dl
+  401321:	40 80 ff 20          	cmp    $0x20,%dil
+  401325:	0f 94 c0             	sete   %al
+  401328:	09 d0                	or     %edx,%eax
+  40132a:	0f b6 c0             	movzbl %al,%eax
+}
+  40132d:	c3                   	retq   
+
+000000000040132e <strchr>:
+
+char *strchr(const char *s, int c)
+{
+    while (*s != (char)c)
+  40132e:	eb 07                	jmp    401337 <strchr+0x9>
+        if (!*s++)
+  401330:	48 ff c7             	inc    %rdi
+  401333:	84 c0                	test   %al,%al
+  401335:	74 0c                	je     401343 <strchr+0x15>
+    return (c == ' ' || c == '\t' || c == '\n' || c == '\12');
+}
+
+char *strchr(const char *s, int c)
+{
+    while (*s != (char)c)
+  401337:	0f b6 07             	movzbl (%rdi),%eax
+  40133a:	40 38 f0             	cmp    %sil,%al
+  40133d:	75 f1                	jne    401330 <strchr+0x2>
+  40133f:	48 89 f8             	mov    %rdi,%rax
+  401342:	c3                   	retq   
+        if (!*s++)
+            return 0;
+  401343:	b8 00 00 00 00       	mov    $0x0,%eax
+    return (char *)s;
+}
+  401348:	c3                   	retq   
+
+0000000000401349 <isdigit>:
+
+int isdigit(int ch)
+{
+        return (ch >= '0') && (ch <= '9');
+  401349:	83 ef 30             	sub    $0x30,%edi
+  40134c:	83 ff 09             	cmp    $0x9,%edi
+  40134f:	0f 96 c0             	setbe  %al
+  401352:	0f b6 c0             	movzbl %al,%eax
+}
+  401355:	c3                   	retq   
+
+0000000000401356 <strcspn>:
+
+size_t strcspn(const char *s, const char *reject) {
+  401356:	41 54                	push   %r12
+  401358:	55                   	push   %rbp
+  401359:	53                   	push   %rbx
+  40135a:	48 89 fd             	mov    %rdi,%rbp
+        size_t count = 0;
+
+        while (*s != '\0') {
+  40135d:	0f b6 17             	movzbl (%rdi),%edx
+  401360:	84 d2                	test   %dl,%dl
+  401362:	74 26                	je     40138a <strcspn+0x34>
+  401364:	49 89 f4             	mov    %rsi,%r12
+{
+        return (ch >= '0') && (ch <= '9');
+}
+
+size_t strcspn(const char *s, const char *reject) {
+        size_t count = 0;
+  401367:	bb 00 00 00 00       	mov    $0x0,%ebx
+
+        while (*s != '\0') {
+                if (strchr(reject, *s++) == NULL) {
+  40136c:	0f be f2             	movsbl %dl,%esi
+  40136f:	4c 89 e7             	mov    %r12,%rdi
+  401372:	e8 b7 ff ff ff       	callq  40132e <strchr>
+  401377:	48 85 c0             	test   %rax,%rax
+  40137a:	75 13                	jne    40138f <strcspn+0x39>
+                        ++count;
+  40137c:	48 ff c3             	inc    %rbx
+}
+
+size_t strcspn(const char *s, const char *reject) {
+        size_t count = 0;
+
+        while (*s != '\0') {
+  40137f:	0f b6 54 1d 00       	movzbl 0x0(%rbp,%rbx,1),%edx
+  401384:	84 d2                	test   %dl,%dl
+  401386:	75 e4                	jne    40136c <strcspn+0x16>
+  401388:	eb 05                	jmp    40138f <strcspn+0x39>
+{
+        return (ch >= '0') && (ch <= '9');
+}
+
+size_t strcspn(const char *s, const char *reject) {
+        size_t count = 0;
+  40138a:	bb 00 00 00 00       	mov    $0x0,%ebx
+                } else {
+                        return count;
+                }
+        }
+        return count;
+}
+  40138f:	48 89 d8             	mov    %rbx,%rax
+  401392:	5b                   	pop    %rbx
+  401393:	5d                   	pop    %rbp
+  401394:	41 5c                	pop    %r12
+  401396:	c3                   	retq   
+
+0000000000401397 <reset>:
+void reset(char str[], int len)
+{
+	for(int i = 0; i < len; i++)
+  401397:	85 f6                	test   %esi,%esi
+  401399:	7e 10                	jle    4013ab <reset+0x14>
+  40139b:	b8 00 00 00 00       	mov    $0x0,%eax
+		str[i] = '\0';
+  4013a0:	c6 04 07 00          	movb   $0x0,(%rdi,%rax,1)
+  4013a4:	48 ff c0             	inc    %rax
+        }
+        return count;
+}
+void reset(char str[], int len)
+{
+	for(int i = 0; i < len; i++)
+  4013a7:	39 c6                	cmp    %eax,%esi
+  4013a9:	7f f5                	jg     4013a0 <reset+0x9>
+  4013ab:	f3 c3                	repz retq 
+
+00000000004013ad <atoi>:
+}
+
+int atoi(const char *str)
+{
+    int k = 0;
+    for (int i = 0; str[i] != '\0'; ++i)
+  4013ad:	0f b6 17             	movzbl (%rdi),%edx
+  4013b0:	84 d2                	test   %dl,%dl
+  4013b2:	74 26                	je     4013da <atoi+0x2d>
+  4013b4:	b9 00 00 00 00       	mov    $0x0,%ecx
+		str[i] = '\0';
+}
+
+int atoi(const char *str)
+{
+    int k = 0;
+  4013b9:	b8 00 00 00 00       	mov    $0x0,%eax
+    for (int i = 0; str[i] != '\0'; ++i)
+        k = (k<<3)+(k<<1)+(str[i])-'0';
+  4013be:	8d 34 00             	lea    (%rax,%rax,1),%esi
+  4013c1:	8d 04 c6             	lea    (%rsi,%rax,8),%eax
+  4013c4:	0f be d2             	movsbl %dl,%edx
+  4013c7:	8d 44 10 d0          	lea    -0x30(%rax,%rdx,1),%eax
+}
+
+int atoi(const char *str)
+{
+    int k = 0;
+    for (int i = 0; str[i] != '\0'; ++i)
+  4013cb:	ff c1                	inc    %ecx
+  4013cd:	48 63 d1             	movslq %ecx,%rdx
+  4013d0:	0f b6 14 17          	movzbl (%rdi,%rdx,1),%edx
+  4013d4:	84 d2                	test   %dl,%dl
+  4013d6:	75 e6                	jne    4013be <atoi+0x11>
+  4013d8:	f3 c3                	repz retq 
+		str[i] = '\0';
+}
+
+int atoi(const char *str)
+{
+    int k = 0;
+  4013da:	b8 00 00 00 00       	mov    $0x0,%eax
+    for (int i = 0; str[i] != '\0'; ++i)
+        k = (k<<3)+(k<<1)+(str[i])-'0';
+    return k;
+}
+  4013df:	c3                   	retq   

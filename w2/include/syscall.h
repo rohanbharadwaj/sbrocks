@@ -9,7 +9,7 @@
 static __inline uint64_t syscall_0(uint64_t n) {
 	uint64_t ret;
         __asm __volatile("movq %1, %%rax;"
-                        "syscall;"
+                        "int $0x80;"
                         "movq %%rax, %0;":
                         "=rax" (ret):
                         "rax" (n):
@@ -22,7 +22,7 @@ static __inline uint64_t syscall_1(uint64_t n, uint64_t a1) {
 	uint64_t ret;
 	__asm __volatile("movq %1, %%rax;"
 			"movq %2 , %%rdi;"
-			"syscall;"
+			"int $0x80;"
 			"movq %%rax, %0;":
 			"=a" (ret):
 			"a" (n),"b" (a1):
@@ -36,7 +36,7 @@ static __inline uint64_t syscall_2(uint64_t n, uint64_t a1, uint64_t a2) {
         __asm __volatile("movq %1, %%rax;"
                         "movq %2 , %%rdi;"
 						"movq %3, %%rsi;"
-                        "syscall;"
+                        "int $0x80;"
                         "movq %%rax, %0;":
                         "=a" (ret):
                         "a" (n),"b" (a1),"c" (a2):

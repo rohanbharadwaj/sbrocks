@@ -30,16 +30,23 @@
 #define ALIGN_UP(x)     (((x) & (PAGE_TABLE_ALIGNLENT-1)) ? ALIGN_DOWN(x+PAGE_TABLE_ALIGNLENT) : (x))
 #define ALIGN_DOWN(x) ((x) >> 12 << 12)
 #define LOAD_CR3(lcr3) __asm__ __volatile__ ("movq %0, %%cr3;" :: "r"(lcr3));
+
+#define set_writable_bit(x)   *x = *x | 0x02UL
+#define reset_writable_bit(x) *x = *x & 0xFFFFFFFFFFFFFFFDUL
+#define set_cow_bit(x)        *x = *x | 0x4000000000000000UL
+#define reset_cow_bit(x)      *x = *x & 0xBFFFFFFFFFFFFFFFUL
+
 uint64_t KADDR(uint64_t paddr);
 uint64_t PADDR(uint64_t vddr);
 uint64_t kernmem_mapping(uint64_t virt, uint64_t pbase, uint64_t noofpages, uint64_t pml4e);
 void map_all_phy(uint64_t k_cr3);
 uint64_t virt_to_phy(uint64_t virt, uint64_t pml4e);
 uint64_t getCR3();
-uint64_t virt_to_pde(uint64_t virt);
 void map_virt_to_phy(uint64_t virt, uint64_t phy, uint64_t flags);
 void setup_paging(uint64_t base, uint64_t physfree, uint64_t pbase, uint64_t pfree);
 void initialize_new_pml4e(uint64_t pml4e);
 uint64_t env_setup_vm();
 void free_page_tables(uint64_t pml4e);
+void unmap_phy(uint64_t virt);
+uint64_t *get_pte_entry(uint64_t virt);
 #endif

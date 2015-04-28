@@ -42,10 +42,24 @@ void start(uint32_t* modulep, void* physbase, void* physfree)
 	mm_phy_init((uint64_t)physfree, length, type);
 	setup_paging((uint64_t)physfree, (uint64_t)physfree,(uint64_t) physbase, (uint64_t)physfree);
 	//
-	//initialize_tarfs();
+	initialize_tarfs();
 	//clrscr();
-	readElf("bin/hello");
-	//readElf("bin/test");
+	/*char buf[100];
+	int fd =fopen("bin/");
+	int f= dopen(fd,(uint64_t)buf);
+	dread(f);*/
+	
+	//dread(10);
+	//clrscr();
+	char *argv[10];
+	argv[0] = "abc\0";
+	argv[1] = "def\0";
+	//readElf("bin/malloctest", argv, 2);
+	//readElf("bin/test", argv, 2);
+	//readElf("bin/hello", argv, 2);
+	//readElf("bin/testexec", argv, 2);
+	__asm__("sti");
+	readElf("bin/filetest", argv, 2);
 	//testdivzero();
 	//test_page_fault();
 	//test_malloc();
@@ -53,7 +67,7 @@ void start(uint32_t* modulep, void* physbase, void* physfree)
 	//fb();
 	//kprintf("tarfs in [%p:%p]\n", &_binary_tarfs_start, &_binary_tarfs_end);
 	//setup_paging();
-	schedule_process();
+//	schedule_process();
 	while(1);
 	// kernel starts here
 }
@@ -81,7 +95,7 @@ void boot(void)
 	install_irqs();
 	timer_install();
 	kb_install();
-	__asm__("sti");
+	
 	//wait();
 	start(
 		(uint32_t*)((char*)(uint64_t)loader_stack[3] + (uint64_t)&kernmem - (uint64_t)&physbase),

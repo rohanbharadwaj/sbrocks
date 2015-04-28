@@ -10,5 +10,5 @@
 
 void timer_phase(int hz);
 void timer_install();
-
+void timer_handler(struct regs *r);
 #endif

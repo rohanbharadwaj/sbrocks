@@ -26,7 +26,11 @@ int scanf(const char *format, ...)
 					size = read(0, data, MAXSIZE);
 					if(size != -1)
 					{
-						memcpy((void*)(va_arg(val, char *)), (void*)data, size - 1);
+						char *c = va_arg(val, char *);
+						//printf("char c : %p \n", c);
+						strcpy(c, data);
+						//memcpy((void*)(c), (void*)data, size - 1);
+						//memcpy((void*)(va_arg(val, char *)), (void*)data, size - 1);
 						size--;
 					}
 				//printf("res is %s \n", data);

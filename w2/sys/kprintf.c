@@ -115,6 +115,17 @@ static char printf_buf[1024];
 
 void kprintf(const char *fmt, ...)
 {
+	return;
+	va_list val;
+	va_start(val, fmt);
+	kvsprintf(printf_buf, fmt, val);
+	va_end(val);
+	puts(printf_buf);
+	return;
+}
+
+void kprintf2(const char *fmt, ...)
+{
 	va_list val;
 	va_start(val, fmt);
 	kvsprintf(printf_buf, fmt, val);
@@ -136,7 +147,7 @@ void kprintat(int x, int y, const char *fmt, ...)
 
 void clrscr()
 {
-	clearscreen();
+	//clearscreen();
 }
 
 int kvsprintf(char *buf, const char *fmt, va_list args)

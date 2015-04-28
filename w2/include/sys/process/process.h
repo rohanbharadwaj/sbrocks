@@ -16,12 +16,22 @@ enum task_states{
 	TASK_ZOMBIE,		
 	TASK_STOPPED,		
 	TASK_SWAPPING,
-	TASK_RUNNABLE
+	TASK_RUNNABLE,
+	TASK_SLEEP,
+	TASK_WAITING
+};
+
+enum vma_type
+{
+	VMA_HEAP,
+	VMA_STACK,
+	VMA_NORMAL
 };
 
 #define KSTACK_SIZE 512
 #define USER_STACK_SIZE 16*4096    
 #define USER_STACK 0xF000000000UL
+#define USER_HEAP  0xf000030000UL
 
 /*
  * vm_flags..
@@ -35,6 +45,11 @@ enum task_states{
 #define VM_RW 6
 #define VM_RWX 7
 
+struct regs
+{
+	uint64_t gs, fs, es, ds, r15,r14,r13,r12,r11,r10,r9,r8,rsi,rbp,rdx,rcx,rbx,rax,rdi;
+	uint64_t int_no, err_code, rip, cs, rflag, rsp, ss; 	
+};
 
 
 struct task_struct {
@@ -50,7 +65,13 @@ struct task_struct {
 	uint64_t rip;
 	uint64_t rsp;
 	uint64_t pml4e;
+	uint64_t sleep_time;		//in seconds
 	uint64_t kstack[KSTACK_SIZE];
+	struct regs r;
+	uint64_t fd[10];
+	struct task_struct *parent;
+	uint64_t child_count;
+	uint64_t wait_for_child_pid;
 	struct mm_struct *mm;
 };
 
@@ -63,6 +84,8 @@ struct mm_struct
 	uint64_t arg_start, arg_end, env_start, env_end;
 	uint64_t total_vm_size;
 	uint64_t stack_vm;
+	uint64_t brk_start;
+	uint64_t brk_end;
 };
 
 struct vm_area_struct {
@@ -71,10 +94,11 @@ struct vm_area_struct {
         uint64_t  vm_end;
         uint64_t vm_flags;
     	uint64_t vm_file_descp;
+		uint64_t vma_type;				//heap, stack, normal
 		struct vm_area_struct *next;
 };
 
-struct vm_area_struct * create_vma(struct mm_struct *vm_mm, uint64_t start, uint64_t end, uint64_t flags, uint64_t fd);
+struct vm_area_struct * create_vma(struct mm_struct *vm_mm, uint64_t start, uint64_t end, uint64_t type, uint64_t flags, uint64_t fd);
 void add_to_task_list(struct task_struct *task);
 struct task_struct *get_next_task();
 void initialise_process();
@@ -86,4 +110,8 @@ void add_to_free_vma_list(struct vm_area_struct *vma);
 struct vm_area_struct* get_free_vma();
 void free_task_struct(struct task_struct *task);
 void free_task_mm_struct(struct mm_struct *mm);
+void add_to_vma_list(struct mm_struct *mm, struct  vm_area_struct *vma);
+void update_time_slices();
+void print_task_list();
+void remove_from_parent(struct task_struct *child);
 #endif

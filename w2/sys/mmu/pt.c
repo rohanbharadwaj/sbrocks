@@ -14,12 +14,17 @@ uint64_t* get_phy_page_table(uint64_t *cr3);
 //TODO: Change it using self referencing table 
 uint64_t virt_to_phy(uint64_t virt, uint64_t pml4e) 
 {
+	//clrscr();
 	uint64_t _pml4e_offset  = (0x1ff & (virt >> 39));
 	uint64_t _pdpe_offset = (0x1ff & (virt >> 30));
 	uint64_t _pde_offset = (0x1ff & (virt >> 21));
 	uint64_t _pte_offset = (0x1ff & (virt >> 12));
-	
-	uint64_t *kpml4e = (uint64_t *)KADDR(k_cr3);
+	uint64_t cr3 = read_cr3();
+	uint64_t *kpml4e = (uint64_t *)KADDR(cr3);
+	//uint64_t *kpml4e = (uint64_t *)KADDR(k_cr3);
+	kprintf("cr3 %p \n", cr3);
+	kprintf("kpml4e %p \n", kpml4e);
+	kprintf("_pml4e_offset %p \n", _pml4e_offset);
 	if(!isPresent(kpml4e[_pml4e_offset]))
 	{
 		return 0;
@@ -53,37 +58,94 @@ uint64_t getCR3()
 	return k_cr3;	
 }
 
-//TODO: Change it using self referencing table 
-uint64_t virt_to_pde(uint64_t virt) {
-
-	uint64_t cr3;
-	cr3 = getCR3();
-	
-	uint64_t *_pml4e = 0x0000;
-	uint64_t *_pdpe  = 0x0000;
-	uint64_t *_pde   = 0x0000;
-	
-	_pml4e = (uint64_t *)cr3;
-	_pml4e  += (0x1ff & (virt >> 39));
-	_pml4e  = PHY_TO_VIRT(_pml4e, uint64_t*);
-
-	if(!(*_pml4e & PT_PRESENT_FLAG)) {
+uint64_t *get_pte_entry(uint64_t virt)
+{
+	uint64_t _pml4e_offset  = (0x1ff & (virt >> 39));
+	uint64_t _pdpe_offset = (0x1ff & (virt >> 30));
+	uint64_t _pde_offset = (0x1ff & (virt >> 21));
+	uint64_t _pte_offset = (0x1ff & (virt >> 12));
+	uint64_t cr3 = read_cr3();
+	uint64_t *kpml4e = (uint64_t *)KADDR(cr3);
+	//uint64_t *kpml4e = (uint64_t *)KADDR(k_cr3);
+	kprintf("cr3 %p \n", cr3);
+	kprintf("kpml4e %p \n", kpml4e);
+	kprintf("_pml4e_offset %p \n", _pml4e_offset);
+	if(!isPresent(kpml4e[_pml4e_offset]))
+	{
 		return 0;
 	}
-
-	_pdpe  = (uint64_t*)ALIGN_DOWN(*_pml4e);
-	_pdpe += (0x1ff & (virt >> 30));
-	_pdpe  = PHY_TO_VIRT(_pdpe, uint64_t*);
-
-	if(!(*_pdpe & PT_PRESENT_FLAG)) {
+	
+	//pdpe
+	uint64_t *pdpetable = (uint64_t *)KADDR(ALIGN_DOWN(kpml4e[_pml4e_offset]));
+	
+	if(!isPresent(pdpetable[_pdpe_offset]))
+	{
 		return 0;
 	}
-
-	_pde  = (uint64_t*)ALIGN_DOWN(*_pdpe);
-	_pde += (0x1ff & (virt >> 21));
-	_pde  = PHY_TO_VIRT(_pde, uint64_t*);
-	return *_pde;
+	
+	//pd
+	uint64_t *pdetable = (uint64_t *)KADDR(ALIGN_DOWN(pdpetable[_pdpe_offset]));
+	if(!isPresent(pdetable[_pde_offset]))
+	{
+		return 0;
+	}
+	uint64_t *pttable = (uint64_t *)KADDR(ALIGN_DOWN(pdetable[_pde_offset]));
+	if(!isPresent(pttable[_pte_offset]))
+	{
+		return 0;
+	}
+	kprintf("physical address is %p \n", ALIGN_DOWN(pttable[_pte_offset]));
+	//return ALIGN_DOWN(pttable[_pte_offset]);
+	return &pttable[_pte_offset];
 }
+
+//TODO: Change it using self referencing table 
+void unmap_phy(uint64_t virt) {
+
+	//clrscr();
+	uint64_t _pml4e_offset  = (0x1ff & (virt >> 39));
+	uint64_t _pdpe_offset = (0x1ff & (virt >> 30));
+	uint64_t _pde_offset = (0x1ff & (virt >> 21));
+	uint64_t _pte_offset = (0x1ff & (virt >> 12));
+	uint64_t cr3 = read_cr3();
+	uint64_t *kpml4e = (uint64_t *)KADDR(cr3);
+	//uint64_t *kpml4e = (uint64_t *)KADDR(k_cr3);
+	kprintf("cr3 %p \n", cr3);
+	kprintf("kpml4e %p \n", kpml4e);
+	kprintf("_pml4e_offset %p \n", _pml4e_offset);
+	if(!isPresent(kpml4e[_pml4e_offset]))
+	{
+		return;
+	}
+	
+	//pdpe
+	uint64_t *pdpetable = (uint64_t *)KADDR(ALIGN_DOWN(kpml4e[_pml4e_offset]));
+	
+	if(!isPresent(pdpetable[_pdpe_offset]))
+	{
+		return;
+	}
+	
+	//pd
+	uint64_t *pdetable = (uint64_t *)KADDR(ALIGN_DOWN(pdpetable[_pdpe_offset]));
+	if(!isPresent(pdetable[_pde_offset]))
+	{
+		return;
+	}
+	uint64_t *pttable = (uint64_t *)KADDR(ALIGN_DOWN(pdetable[_pde_offset]));
+	/*if(!isPresent(pttable[_pte_offset]))
+	{
+		return 0;
+	}
+	
+	kprintf("physical address is %p \n", ALIGN_DOWN(pttable[_pte_offset]));
+	return ALIGN_DOWN(pttable[_pte_offset]);	*/
+	if(isPresent(pttable[_pte_offset]))
+	{
+		pttable[_pte_offset] = 0;
+	}
+}
+
 //convert from physical address to kernel virtual address when paging is enabled
 uint64_t KADDR(uint64_t paddr)
 {
@@ -98,6 +160,7 @@ uint64_t PADDR(uint64_t vddr)
 //TODO: method to map virtual address to physical address in page tables
 void map_virt_to_phy(uint64_t virt, uint64_t phy, uint64_t flags)
 {
+	//clrscr();
 	uint64_t _pml4e_offset = 0x0000;
 	uint64_t _pdpe_offset  = 0x0000;
 	uint64_t _pde_offset   = 0x0000;
@@ -109,6 +172,9 @@ void map_virt_to_phy(uint64_t virt, uint64_t phy, uint64_t flags)
 	_pte_offset = (0x1ff & (virt >> 12));
 	uint64_t cr3 = read_cr3();
 	uint64_t *kpml4e = (uint64_t *)KADDR(cr3);
+	kprintf("cr3 %p \n", cr3);
+	kprintf("kpml4e %p \n", kpml4e);
+	kprintf("_pml4e_offset %p \n", _pml4e_offset);
 	//kpml4e[_pml4e_offset] = pdpe | PT_PRESENT_FLAG | PT_WRITABLE_FLAG;
 	
 	//uint64_t *kpml4e = (uint64_t *)PHY_TO_VIRT(pml4e, uint64_t *);
@@ -163,6 +229,7 @@ void map_virt_to_phy(uint64_t virt, uint64_t phy, uint64_t flags)
 	{
 		//kprintf("usig existing pt entry in pde table \n");
 		//kpml4e[_pml4e_offset] = kpml4e[_pml4e_offset] | PT_PRESENT_FLAG | PT_WRITABLE_FLAG;
+		
 	}
 
 	uint64_t *pttable = (uint64_t *)KADDR(ALIGN_DOWN(pdetable[_pde_offset]));
@@ -301,7 +368,7 @@ void setup_paging(uint64_t base, uint64_t physfree, uint64_t pbase, uint64_t pfr
 	uint64_t phy_page = mm_phy_alloc_page();
 	//kprintf("page no is %d \n", phy_page);
 	k_cr3 = mm_page_to_phy(phy_page);	
-	//kprintf("first page address : %p \n", pml4e);
+	kprintf("first page address : %p \n", k_cr3);
 	//uint64_t *kpml4e = (uint64_t *)PHY_TO_VIRT(k_cr3, uint64_t *);
 	//kpml4e[510] = k_cr3 | PT_PRESENT_FLAG | PT_WRITABLE_FLAG;
 	

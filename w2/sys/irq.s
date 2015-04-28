@@ -61,9 +61,13 @@
 .global kb_handler
 irq0:
     cli
+	push $0
+	push $32
     PUSHA
+	mov %rsp, %rdi
     callq timer_handler
     POPA
+	add $0x10, %rsp
     sti
     iretq
  

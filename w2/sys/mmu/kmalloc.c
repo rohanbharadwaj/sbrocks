@@ -7,7 +7,7 @@ void init_kmalloc()
 
 void *kmalloc(uint64_t size)
 {
-void *addr;
+	void *addr;
 	uint64_t num_pages = size/PAGE_SIZE;
 	if(size%PAGE_SIZE > 0)
 		num_pages = num_pages + 1;
