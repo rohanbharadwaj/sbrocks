@@ -492,41 +492,49 @@ void free_page_tables(uint64_t pml4e){
 
 	uint64_t *pdpe,*pde,*pte;
 	uint64_t *pml4e_t = (uint64_t *)pml4e;
-	for (int i = 0; i < 512; ++i)
+	for (int i = 0; i < 511; ++i)     //level 1 loop pml4e
 	{
 		if(isPresent(pml4e_t[i]))
 		{
-			pdpe = (uint64_t *)KADDR(pml4e_t[i]);
-			for (int j = 0; j < 512; ++j)
+			pdpe = (uint64_t *)KADDR(ALIGN_DOWN(pml4e_t[i]));
+			//pdpe = (uint64_t *)KADDR(pml4e_t[i]);
+			for (int j = 0; j < 511; ++j)     //level 2 loop  pdpe
 			{
 				if(isPresent(pdpe[j]))
+				{
+					pde = (uint64_t *)KADDR(ALIGN_DOWN(pdpe[j]));
+					//pde = (uint64_t *)KADDR(pdpe[j]);
+					for (int k = 0; k < 511; ++k)     //level 3 loop pde
 					{
-						pde = (uint64_t *)KADDR(pdpe[j]);
-						for (int k = 0; k < 512; ++k)
+						if(isPresent(pde[k]))
 						{
-							if(isPresent(pde[k])){
-								pte = (uint64_t *)KADDR(pde[k]);
-								if(isPresent(pte[k])){
-									for (int n = 0; n < 512; ++n)
-									{
-										if(isPresent(pte[n])){
-											mm_phy_free_page(pte[n]);
-											pte[n]=0;
-
-										}
-									}
+							pte = (uint64_t *)KADDR(ALIGN_DOWN(pde[k]));
+							//pte = (uint64_t *)KADDR(pde[k]);
+							for (int n = 0; n < 511; ++n)   //level 4 loop pte
+							{
+								if(isPresent(pte[n]))
+								{
+									//kprintf2("freeing page \n");
+									//mm_phy_free_page(mm_phy_to_page(ALIGN_DOWN(pte[n])));
+									pte[n]=0;
 								}
-								pde[k]=0;
 							}
-							
 						}
-						pdpe[j]=0;
-					} 
-			}
-			pml4e_t[i] = 0;
+						mm_phy_free_page(mm_phy_to_page(ALIGN_DOWN(pde[k])));
+						pde[k]=0;
+					}
+				}
+				mm_phy_free_page(mm_phy_to_page(ALIGN_DOWN(pdpe[j])));
+				pdpe[j]=0;
+			} 
 		}
+		mm_phy_free_page(mm_phy_to_page(ALIGN_DOWN(pml4e_t[i])));
+		pml4e_t[i] = 0;
+		//kprintf2("%d \n", i);
 	}
+	//kprintf2("Done \n");
 }
+//}
 
 void dummy_catch()
 {

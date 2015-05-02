@@ -11,7 +11,8 @@ web references: http://www.brokenthorn.com/Resources/OSDev24.html
 
 
 enum task_states{
-	TASK_RUNNING,		
+	TASK_RUNNING,
+	TASK_IDLE,
 	TASK_INTERRUPTIBLE,	
 	TASK_UNINTERRUPTIBLE,	
 	TASK_ZOMBIE,		
@@ -113,10 +114,11 @@ struct task_struct* get_free_task();
 void add_to_free_vma_list(struct vm_area_struct *vma);
 struct vm_area_struct* get_free_vma();
 void free_task_struct(struct task_struct *task);
-void free_task_mm_struct(struct mm_struct *mm);
+void free_task_mm_struct(struct mm_struct *mm, struct task_struct *task);
 void add_to_vma_list(struct mm_struct *mm, struct  vm_area_struct *vma);
 void update_time_slices();
 void print_task_list();
 void remove_from_parent(struct task_struct *child);
+struct task_struct *get_task(uint64_t pid);
 //void add_pipe_to_task(struct task_struct *task, struct file *pipe);
 #endif

@@ -10,8 +10,9 @@
 #include <sys/process/elf.h>
 #include <sys/mmu/kmalloc.h>
 #include <sys/process/process_manager.h>
-
+#include <sys/vgaconsole.h>
 //#include <sys/mmu/phy_alloc.h>
+
 void wait();
 
 void start(uint32_t* modulep, void* physbase, void* physfree)
@@ -46,21 +47,21 @@ void start(uint32_t* modulep, void* physbase, void* physfree)
 	setup_paging((uint64_t)physbase, (uint64_t)physfree);
 	//
 	initialize_tarfs();
-
+	clearscreen();
 	char *argv[10];
 	argv[0] = "abc\0";
 	argv[1] = "shashi.txt\0";
 	argv[2] = "shashi\0";
-	char *envp[10];
+	
 	//kstrcpy(envp[0], "PATH=");
-	envp[0] = "PATH=bin:\0";
+	envp[0] = "PATH=rootfs/bin\0";
 	envp[1] = "shashi";
 	//envp[0] = "/PATH=";
 	//kprintf2("loading binaries \n");
 	//readElf("bin/cat", argv, 2, envp,1);
-	readElf("bin/hello", argv, 0, envp,2);
-	readElf("bin/sbush", argv, 0, envp,1);
-	//readElf("bin/sbush", argv, 0, envp, 1);
+	readElf("rootfs/bin/hello", argv, 0, envp,2);
+	readElf("rootfs/bin/sbush", argv, 0, envp,1);
+	//readElf("bin/printftest", argv, 0, envp, 1);
 	//readElf("bin/printtest", NULL, 0);
 	//readElf("bin/file", argv, 2);
 	//readElf("bin/testexec", argv, 2);

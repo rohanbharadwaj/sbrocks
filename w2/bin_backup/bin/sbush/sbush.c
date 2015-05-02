@@ -308,27 +308,16 @@ int handleCommand(char *cmd, char *args, char *env[])
 		printf("in exit\n");
         exit(1);
     }
-    /*if(strcmp("cd", cmd) == 0)
+/*     if(strcmp("cd", cmd) == 0)
     {
         changeDirectory(args, env);
         return 1;
-    }*/
+    } */
 	if(strcmp("clear", cmd) == 0)
     {
         cls();
         return 1;
     }
-	if(strcmp("pwd", cmd) == 0)
-    {
-		  char *buf;
-      buf = malloc(1024);
-    	if((getcwd(buf, 1024)) != NULL)
-            printf("%s\n", buf);
-   	 else
-            printf("getcwd() error : ");
-     return 1;
-    }
-		
     return 0;
 }
 
@@ -420,10 +409,10 @@ void setPath(char *envp[], char *newval)
 char* getAbsolutePath(char *cmd,char *envp[])
 {
 	//printf("command is %s len is %d \n",cmd, strlen(cmd));
-	/*if(strcmp("cd", cmd) == 0)
+/* 	if(strcmp("cd", cmd) == 0)
     {
         return cmd;
-    }*/
+    } */
     if(strcmp("exit", cmd) == 0)
     {
         return cmd;
@@ -533,7 +522,7 @@ void getPATH(char *envp[])
 // }
 
 void executeProcess(char *envp[]){
-	//printf("executeProcess \n");
+	printf("executeProcess \n");
     int pid;
     int status = 0;
     char cmd[MAX_LEN];
@@ -553,7 +542,7 @@ void executeProcess(char *envp[]){
         return;
     }
 	
-	//printf("executeProcess: before fork \n");
+	printf("executeProcess: before fork \n");
 	//#if 0
     pid = fork();
     if(pid==0){
@@ -624,7 +613,7 @@ void executeProcessPipe(int n,char *envp[]){
     pid = fork();
     if(pid ==0)
     {
-		printf("in child \n");
+		//printf("in child \n");
 		//while(1);
 		//int pid2;
         for (i = 0; i < n-1; ++i)
@@ -635,7 +624,7 @@ void executeProcessPipe(int n,char *envp[]){
 			//while(1);
             if(pid==0)
             {
-				printf("first command %s \n", getAbsolutePath(commands[i][0],envp));
+				//printf("first command %s \n", getAbsolutePath(commands[i][0],envp));
                 if(prev != 0)
                 {
                     dup2 (prev,0);
@@ -669,7 +658,7 @@ void executeProcessPipe(int n,char *envp[]){
             dup2 (prev, 0);
         strcpy(cmd, getAbsolutePath(commands[i][0],envp));
 		sleep(1);
-		printf("second command %s \n",cmd);
+		//printf("second command %s \n",cmd);
         if(handleCommand(cmd, commands[i][1], envp) == 0)
         {
             if(execve(cmd,&commands[i][0],envp)==-1)
@@ -680,7 +669,7 @@ void executeProcessPipe(int n,char *envp[]){
     }
     waitpid(pid,&status,0);
 	//listprocess();
-	printf("parent exit \n");
+	//printf("parent exit \n");
     for(i=0;i<n;i++)
     {
         commands[i][1] = NULL;

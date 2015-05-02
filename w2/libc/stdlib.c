@@ -10,8 +10,17 @@
 __thread int errno;
 /*working*/
 void exit(int status){
+	//printf("In libc exit %d\n",status);
     syscall_1(SYS_exit, status);
 }
+
+uint64_t kill(uint64_t pid)
+{
+	int ret = syscall_1(SYS_Kill, pid);	
+/* 	printf("in libc ret : %d",ret); */
+	return ret;
+}
+
 /*working*/
 uint64_t brk(void *end_data_segment){
     return syscall_1(SYS_brk, (uint64_t)end_data_segment);
@@ -64,6 +73,13 @@ int execve(const char *filename, char *const argv[], char *const envp[]){
 		return -1;
 	}
     return res;
+}
+
+void listprocess(){
+	syscall_0(SYS_listprocess);
+}
+void cls(){
+	syscall_0(SYS_clearscreen);
 }
 
 unsigned int sleep(unsigned int seconds){
@@ -254,14 +270,18 @@ struct dirent * readdir(struct dirent *dir)
 		return NULL;
 	return next; */
 	struct dirent *buf = malloc(sizeof(struct dirent));
-	memset(buf, 0, sizeof(struct dirent));
-	syscall_2(SYS_readdir, (uint64_t)dir,(uint64_t)buf);
 	
+	memset(buf, 0, sizeof(struct dirent));
+	//buf = NULL;
+	syscall_2(SYS_readdir, (uint64_t)dir,(uint64_t)buf);
+	//printf("in stdlib : %s ", buf->d_name);
+	if(strlen(buf->d_name) == 0)
+		return NULL;
 	//printf("d_ino =  %d \n",buf->d_ino);
 	//printf("d_off = %d\n",buf->d_off);
 	//printf("d_reclen %d\n",buf->d_reclen);
 	//printf("d_name %s \n",buf->d_name);
-	printf("End of readdir\n");
+	//printf("End of readdir\n");
 	return (struct dirent *)buf;
 	//printf("dir inside readdir%s",dir->d_name);
 

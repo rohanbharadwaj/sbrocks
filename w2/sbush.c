@@ -153,20 +153,16 @@ int parseCommand(char *inputString)
     }*/
 	//printf("parse command start \n");
     char *srcPtr = inputString;
-	
     int len = strlen(inputString);
-	//printf("srcptr %s \n", srcPtr);
     char *str = NULL;
     int i = 0;
     cmdcount = 0;
     int argcount = 0;
     int found = 0;
     int count = 0;
-	//printf("reached %s, %d\n", srcPtr, strlen(srcPtr));
     while(i < len)
     {
         str = srcPtr;
-		//printf("str =%s \n", str);
         while((*srcPtr != ' '  && *srcPtr != '|') && i < len)
         {      
             //printf("%c \n", *srcPtr); 
@@ -174,7 +170,6 @@ int parseCommand(char *inputString)
             count++;
             srcPtr++;
         }    
-		//printf("reached2 \n");
         if(*srcPtr == '|')
         {
             trim(str);
@@ -195,19 +190,13 @@ int parseCommand(char *inputString)
             
         if(found != 1)
         {
-			//printf("final \n");
             trim(str);
             int len = strlen(str);
             if(len > 0 && count > 0)
             {
-				//printf("final before malloc %d %d %d \n", cmdcount, argcount, len);
-				//listprocess();
                 commands[cmdcount][argcount]=malloc(len);
-				//printf("final after malloc \n");
 				memset(commands[cmdcount][argcount], 0, len);
-				//printf("final after memset \n");
                 strncpy(commands[cmdcount][argcount], str, count);
-				//printf("final after strncpy \n");
 				//printf("command is %s \n",commands[cmdcount][argcount]);
                 argcount++;
             }
@@ -308,27 +297,16 @@ int handleCommand(char *cmd, char *args, char *env[])
 		printf("in exit\n");
         exit(1);
     }
-    /*if(strcmp("cd", cmd) == 0)
+    if(strcmp("cd", cmd) == 0)
     {
         changeDirectory(args, env);
         return 1;
-    }*/
+    }
 	if(strcmp("clear", cmd) == 0)
     {
         cls();
         return 1;
     }
-	if(strcmp("pwd", cmd) == 0)
-    {
-		  char *buf;
-      buf = malloc(1024);
-    	if((getcwd(buf, 1024)) != NULL)
-            printf("%s\n", buf);
-   	 else
-            printf("getcwd() error : ");
-     return 1;
-    }
-		
     return 0;
 }
 
@@ -420,10 +398,10 @@ void setPath(char *envp[], char *newval)
 char* getAbsolutePath(char *cmd,char *envp[])
 {
 	//printf("command is %s len is %d \n",cmd, strlen(cmd));
-	/*if(strcmp("cd", cmd) == 0)
+	if(strcmp("cd", cmd) == 0)
     {
         return cmd;
-    }*/
+    }
     if(strcmp("exit", cmd) == 0)
     {
         return cmd;
@@ -626,7 +604,6 @@ void executeProcessPipe(int n,char *envp[]){
     {
 		printf("in child \n");
 		//while(1);
-		//int pid2;
         for (i = 0; i < n-1; ++i)
         {
             pipe (fd);
@@ -659,16 +636,16 @@ void executeProcessPipe(int n,char *envp[]){
                 }
                 exit(1);
             }
-			//waitpid(pid2,&status,0);
+			//waitpid(pid,&status,0);
             close (fd [1]);
             prev= fd [0];
         }
 		//waitpid(pid,&status,0);
-        //sleep(1);
-		if (prev != 0)
+		//sleep(1);
+        if (prev != 0)
             dup2 (prev, 0);
+		//sleep(2);
         strcpy(cmd, getAbsolutePath(commands[i][0],envp));
-		sleep(1);
 		printf("second command %s \n",cmd);
         if(handleCommand(cmd, commands[i][1], envp) == 0)
         {
@@ -679,8 +656,7 @@ void executeProcessPipe(int n,char *envp[]){
         exit(1);
     }
     waitpid(pid,&status,0);
-	//listprocess();
-	printf("parent exit \n");
+	//printf("parent exit \n");
     for(i=0;i<n;i++)
     {
         commands[i][1] = NULL;

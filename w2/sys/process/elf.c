@@ -45,7 +45,7 @@ struct task_struct *readElf(char *filename, char *argv[], int argc, char *envp[]
 	int pgm_hdr_num = elf_header->e_phnum;
 	Elf64_Phdr *phdr = (Elf64_Phdr *)((void*)elf_header + elf_header->e_phoff);
 	//kprintf("p_vaddr in program header is %p \n",phdr->p_vaddr);
-	kprintf("program headers are %d \n", pgm_hdr_num);
+	//kprintf2("program headers are %d \n", pgm_hdr_num);
 	//clrscr();
 	for(int i = 0; i < pgm_hdr_num; i++)
 	{
@@ -124,7 +124,7 @@ struct task_struct *readElf(char *filename, char *argv[], int argc, char *envp[]
 	/*struct task_struct *t = get_current_task();
 	if(t == NULL)*/
 	//load_process(task, elf_header->e_entry, task->mm->stack_vm);
-	kprintf("Process loaded successfully \n");
+	//kprintf2("Process loaded successfully \n");
 	return task;
 }
 

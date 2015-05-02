@@ -25,7 +25,10 @@ void kfree(uint64_t vaddr, uint64_t size)
     for(int i = 0; i < num_pages; i++)
     {
     	phyaddr = virt_to_phy(vaddr,0);
-        mm_phy_free_page(phyaddr);
+		if(phyaddr != 0)
+       	{ 
+			mm_phy_free_page(mm_phy_to_page(phyaddr));
+		}
         vaddr = vaddr + PAGE_SIZE;
     }
 }

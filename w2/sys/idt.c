@@ -235,6 +235,7 @@ void gpf_fault_handler(struct regs *r)
 
 void page_fault_handler(struct regs *r)
 {
+	
 	clrscr();
 	//kprintf2("error code %p \n", r->err_code);
 	struct task_struct *task = get_current_task();
@@ -242,6 +243,13 @@ void page_fault_handler(struct regs *r)
 		task->r = *r;
 	uint64_t vaddr;
 	vaddr = read_cr2();
+	if(vaddr >= VIRT_KERNEL_BASE)
+	{
+		kprintf2("page fault in kernel \n");
+		//TODO kill current running task
+		system_exit(0);
+		return;
+	}
 	//puts("shashi \n");
 	//__asm__ __volatile__("cli;" : :);
 	kprintf("page fault  handler reached.... \n");
@@ -257,7 +265,7 @@ void page_fault_handler(struct regs *r)
 			if(is_cow_set(pte) && !is_writable_page(pte))
 			{
 				//for fork
-				//kprintf2("cow page \n");
+				kprintf2("cow page \n");
 				uint64_t start_addr = ALIGN_DOWN(vaddr);
 				//allocate a new physical page at dummy virtual address
 				uint64_t dummy_vaddr = alloc_pages(1, PT_PRESENT_FLAG | PT_USER | PT_WRITABLE_FLAG);
@@ -297,6 +305,7 @@ void page_fault_handler(struct regs *r)
 void demand_paging(uint64_t addr)
 {
 	//save_current_task_regs();
+	//int foundaddr = 0;
 	struct task_struct *task = get_current_task();
 	struct vm_area_struct *temp_vma = task->mm->vma_list;
 	while(temp_vma != NULL)
@@ -305,18 +314,19 @@ void demand_paging(uint64_t addr)
 		if(temp_vma->vma_type == VMA_HEAP)
 		{
 		//	kprintf2("start: %p end %p \n", temp_vma->vm_start, temp_vma->vm_end);	
-			if(temp_vma->vm_start <= addr && temp_vma->vm_end > addr)
+			if(temp_vma->vm_start <= addr && temp_vma->vm_end+(2*PAGE_SIZE) > addr)
 			{
 				//allocate pages for this vma	
 				//uint64_t k_cr3 = read_cr3();
 				write_cr3(virt_to_phy(task->pml4e, 0));
 				uint64_t vaddr = ALIGN_DOWN(addr);
 				alloc_pages_at_virt(vaddr, PAGE_SIZE , PT_PRESENT_FLAG | PT_WRITABLE_FLAG | PT_USER);
+				memset((void *)vaddr, 0, PAGE_SIZE);
 				uint64_t phy = virt_to_phy(vaddr, 0);
 				kprintf("vaddr %p and phys is %p \n",vaddr, phy);
 				kprintf("start: %p end %p \n", temp_vma->vm_start, temp_vma->vm_end);
 				//set_current_task(NULL);
-
+				//foundaddr = 1;
 				//write_cr3(k_cr3);
 				//__asm__ __volatile__("movq %[next_rsp], %%rsp" : : [next_rsp] "m" (task->rsp));
 				//__asm__ __volatile__("movq %[next_rip], %%rip" : : [next_rip] "m" (task->rip));
@@ -341,11 +351,14 @@ void demand_paging(uint64_t addr)
 				write_cr3(virt_to_phy(task->pml4e, 0));
 				uint64_t vaddr = ALIGN_UP(addr) - 4096;
 				alloc_pages_at_virt(vaddr, PAGE_SIZE , PT_PRESENT_FLAG | PT_WRITABLE_FLAG | PT_USER);
+				return;
 			}
 		}
 		temp_vma = temp_vma->next;
 	}
 	//__asm__ __volatile__("sti;" : :);
+	//call exit of process
+	system_exit(0);
 }
 
 void save_current_task_regs()

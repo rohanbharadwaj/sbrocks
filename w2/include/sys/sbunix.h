@@ -3,6 +3,7 @@
 
 #include <sys/defs.h>
 
+char *envp[10];
 /* This defines what the stack looks like after an ISR was running */
 #if 0
 struct regs

@@ -168,20 +168,21 @@ void handlekey(unsigned char scancode)
     	if((current_char=='\n'))
 		{
 			//kprintf2(" new line reached ... \n");
-			kprintf2("%s \n", a);
+			//kprintf2("%s \n", a);
 			
 			a[i++] = '\n';
-			for(int j = i; j <count; j++)
+			/*for(int j = i; j <count; j++)
 			{
 				a[j] = '\0';	
-			}
+			}*/
    			unset_flag();
 			uint64_t k_cr3 = read_cr3();
 			write_cr3(virt_to_phy(waiting_task->pml4e, 0));
-			memcpy((void *)str, (void *)a, count);
+			memcpy((void *)str, (void *)a, i);
 			//kstrncpy(str, a, count);
-			kprintf2("%s \n", str);
-			kprintf2("len= %d \n", strlen((char*)str));
+			//kprintf2("%s \n", str);
+			
+			//kprintf2("len= %d \n", i);
 			write_cr3(k_cr3);
 			i= 0;
 			for(int j = 0; j <= i; j++)
@@ -201,15 +202,16 @@ void handlekey(unsigned char scancode)
 				a[i++]=current_char;
 				if(i >= count)
 				{
-					a[i++] = '\n';
+					/*a[i++] = '\n';
 					for(int j = i; j <count; j++)
 					{
 						a[j] = '\0';	
-					}
+					}*/
+					//kprintf2("greate then count \n");
 					unset_flag();
 					uint64_t k_cr3 = read_cr3();
 					write_cr3(virt_to_phy(waiting_task->pml4e, 0));
-					memcpy((void *)str, (void *)a, count);
+					memcpy((void *)str, (void *)a, 1);
 					//kprintf2("%s \n", str);
 					write_cr3(k_cr3);
 					i= 0;

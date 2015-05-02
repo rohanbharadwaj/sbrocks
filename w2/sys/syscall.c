@@ -76,7 +76,7 @@ uint64_t switch_handler( uint64_t syscall_num,uint64_t first_arg,uint64_t sec_ar
 				 ret = system_getcwd(first_arg,sec_arg);
 				 break;
 		case 80: 
-				 system_chdir(first_arg);
+				 ret = system_chdir(first_arg);
 				 break;
 		case 8 : 
 				 ret = system_lseek(first_arg,sec_arg,third_arg);
@@ -94,6 +94,12 @@ uint64_t switch_handler( uint64_t syscall_num,uint64_t first_arg,uint64_t sec_ar
 		         break;
 		case 81: system_readdir(first_arg,sec_arg);
 		         break;
+		case 82: system_listprocess();
+						break;
+		case 83: system_clearscreen();
+						break;
+		case 84: ret = system_kill(first_arg);
+				break;
 		default: break;
 	}
 	return ret;
@@ -140,11 +146,25 @@ uint64_t system_write(uint64_t fd,uint64_t buf,uint64_t nbytes)
 	return nbytes;
 }
 
-
+uint64_t system_kill(uint64_t process_id)
+{
+/* 	kstrcpy(envp[0],"hjfer");
+	kprintf2("PATH %s \n",envp[0]); */
+	//kprintf2("sycall pid %d\n",process_id);
+	struct task_struct *t = get_task(process_id);
+	if(t!= NULL)
+	{
+		free_task_struct(t);
+		t->state = TASK_STOPPED;
+		return 0;
+	}
+	return -1;
+}
 
 void system_exit(uint64_t first_arg)
 {
 	struct task_struct* task = get_current_task();
+	//kprintf2("reached exit end1 %s \n", task->name);
 	if(task->ppid > 0)	//this is child process
 	{
 		//remote this child from parent process	
@@ -152,10 +172,11 @@ void system_exit(uint64_t first_arg)
 		remove_from_parent(task);
 		
 	}
-	//free_task_struct(task);
+	free_task_struct(task);
 	task->state = TASK_STOPPED;
 	set_current_task(NULL);
-	//kprintf2("reached exit end \n");
+	//kprintf2("exit called \n");
+	//kprintf2("reached exit end2 %s \n", task->name);
 	__asm__ __volatile__("sti");
 	__asm__ __volatile__("int $0x20;" : :);
 	while(1);
@@ -166,6 +187,8 @@ uint64_t system_brk(uint64_t end_brk)
 {
 //	 addr=kmalloc(first_arg);
 //	 return addr;
+	//if(end_brk != 0)
+		//kprintf2("task name %s ,new end brk = %p \n", get_current_task()->name, end_brk);
 	struct task_struct *task = get_current_task();
 	if(end_brk == 0)
 	{
@@ -184,7 +207,7 @@ uint64_t system_brk(uint64_t end_brk)
 void increament_heap_vma(struct task_struct *task, uint64_t end_brk)
 {
 	struct vm_area_struct *temp_vma = task->mm->vma_list;
-	while(temp_vma->next != NULL)
+	while(temp_vma != NULL)
 	{
 		if(temp_vma->vma_type != VMA_HEAP)
 			temp_vma = temp_vma->next;
@@ -192,7 +215,8 @@ void increament_heap_vma(struct task_struct *task, uint64_t end_brk)
 		{
 			if(temp_vma->vma_type == VMA_HEAP)
 			{
-				kprintf("allocating memory for heap \n");
+				//kprintf2("increament_heap_vma::task name %s ,new end brk = %p \n", get_current_task()->name, end_brk);
+				//kprintf("allocating memory for heap \n");
 				//kprintf("start: %p end %p \n", temp_vma->vm_start, temp_vma->vm_end);
 				temp_vma->vm_end = end_brk;	
 				#if 0
@@ -210,6 +234,14 @@ void increament_heap_vma(struct task_struct *task, uint64_t end_brk)
 	}
 }
 
+void system_listprocess(){
+	print_task_list();
+}
+
+void system_clearscreen(){
+	clearscreen();
+}
+
 uint64_t system_getpid()
 {
 	struct task_struct *task = get_current_task();
@@ -225,6 +257,7 @@ uint64_t system_getppid()
 }
 /*web reference: http://www.jamesmolloy.co.uk/tutorial_html/9.-Multitasking.html */
 uint64_t system_fork(){
+	//kprintf2("in side fork \n");
 	//create child process
 	//__asm__ __volatile__("cli;");
 	struct task_struct *parent = get_current_task();
@@ -274,14 +307,14 @@ uint64_t system_fork(){
 	//copy_pipe(pipe, temp);
 	//kprintf2("adding fd = %d \n", pipe->fd);
 	parent->r.rax =  child->pid;
-	parent->state = TASK_WAITING;
+	parent->state = TASK_RUNNABLE;
 	set_current_task(NULL);
 	//kprintf2("reached exit end \n");
 	__asm__ __volatile__("sti");
 	__asm__ __volatile__("int $0x20;" : :);
 	//while(1);
-	return child->pid;
-	//return 0;
+	//return child->pid;
+	return 0;
 	//copy stack
 	//map other vmas
 }
@@ -386,9 +419,9 @@ void setup_memory(struct task_struct *c, struct task_struct *p)
 				//kprintf2("vaddr %p , end %p \n", vaddr, end);
 				paddr = virt_to_phy(vaddr, 0);      // get physical page from parent process page table
 				//TODO:remove write permission and set cow bit
-				uint64_t *pte = get_pte_entry(vaddr);
+				//uint64_t *pte = get_pte_entry(vaddr);
 				//reset_writable_bit(pte);
-				set_cow_bit(pte);
+				//set_cow_bit(pte);
 				//uint64_t flags = *pte & 0xFFF000000000000F;				
 				//kprintf("pte entry is %p \n", pte);
 				//uint64_t flags = paddr & 0xFFF0000000000FFFUL;
@@ -451,8 +484,11 @@ void system_execve(uint64_t filename, uint64_t argv_addr, uint64_t envp_addr)
 	
 	char *envp[10];
 	//envp[0] = "PATH=bin:\0";
-	envp[0] = ((char **)envp_addr) [0];
-
+/* 	envp[0] = ((char **)envp_addr) [0];
+	strcat(envp[0], "\0"); */
+	envp[0] = kmalloc(strlen(((char **)envp_addr)[0]));
+	kstrcpy(envp[0],((char **)envp_addr) [0]);
+	//kprintf2("execve %s \n", envp[0]);
 	/*char *argv[10];
 	argv[0] = "abc\0";
 	argv[1] = "shashi.txt\0";
@@ -488,7 +524,7 @@ void system_execve(uint64_t filename, uint64_t argv_addr, uint64_t envp_addr)
 		//kprintf2("shashi \n");
 		//while(1);
 	}
-	
+	//kprintf2("everything done!! %s \n",task->name);
 	//readElf("bin/cat", argv, 2, envp,1);
 	//task = get_current_task();
 	//free_task_struct(task);
@@ -610,12 +646,22 @@ void system_alarm(uint64_t first_arg){
 }
 uint64_t system_getcwd(uint64_t buf, uint64_t size_t){
 	//char *curr_cwd = get_cwd();
+	//kprintf2("In getcwd \n");
 	//char *currrent_dir = kmalloc(strlen(curr_cwd));
 	kstrcpy((char *)buf, get_cwd());
+	//kprintf2("buf is %s \n",buf);
 	return buf;
 }
-void system_chdir(uint64_t path){
-	set_cwd((char*)path);
+uint64_t system_chdir(uint64_t path){
+	int fd = fopen((char*)path);
+	//kprintf2("path: %s , fd = %d \n", (char *)path, fd);
+	if(fd<0)
+		return -1;
+	else
+		{
+		set_cwd((char*)path);
+	}
+	return 0;
 }
 uint64_t system_lseek(uint64_t fd,uint64_t offset,uint64_t whence){
 	return fseek(fd,offset,whence);
@@ -700,6 +746,10 @@ uint64_t system_getdents(uint64_t fd,uint64_t buf,uint64_t size){
 	
 	//kprintf("fd inside system_getdents %d \n",fd);
 	struct file *r = dopen(fd,buf);
+	if(r == NULL)
+	{
+		return -1;
+	}
 	dir->d_ino = r->fd;
 	dir->d_off = r->offset;
 	dir->d_reclen = r->size;
@@ -728,6 +778,10 @@ void system_readdir(uint64_t addr,uint64_t buf){
 	dir->fd = temp->d_ino;
 	//kprintf2("fd %d",dir->fd);
     struct file *r = dread(dir);
+	if(r == NULL)
+	{
+		return;
+	}
 	temp->d_ino = r->fd;
 	temp->d_off = r->offset;
 	temp->d_reclen = r->size;

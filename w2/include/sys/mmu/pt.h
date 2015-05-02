@@ -14,7 +14,7 @@
 #define PAGE_MAX 32510
 //#define VIRT_KERNEL_BASE 0xffffffff80000000
 /*** all available physical memory will be mapped to virtual address (physical + VIRT_OFFSET) ***/
-#define VIRT_KERNEL_BASE 0xFFFFFFFF80000000
+#define VIRT_KERNEL_BASE   0xFFFFFFFF80000000
 #define ONE_ON_ONE_MAPPING 0xFFFFFFFF00000000
 /*** pointer arithmetic ***/
 

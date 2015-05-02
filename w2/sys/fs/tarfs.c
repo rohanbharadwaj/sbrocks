@@ -4,9 +4,29 @@ int fd_count = 2;
 struct file *filelist;
 void print_files();
 void add_to_filelist(struct file *f);
+char fname[1024];
+void change_name(char *fname);
 
-uint64_t find_offset_for_file(char *fname)
+void change_name(char *name)
 {
+	//kprintf2("%s \n", fname);
+	memset((void*)fname, 0, 1024);
+	while(*name != '/')
+		  name++;
+	name++;
+	int i = 0;
+	while (*name)
+	{
+		fname[i] = *name;
+		name++;
+    	i++;
+	}
+}
+
+uint64_t find_offset_for_file(char *name)
+{
+	change_name(name);
+	//kprintf2("binary name shashi : %s \n", fname);
 	struct posix_header_ustar *ustart;
 	//uint64_t count = 0;
 	ustart = (struct posix_header_ustar *)(&_binary_tarfs_start);
@@ -16,7 +36,7 @@ uint64_t find_offset_for_file(char *fname)
 	while(strlen(ustart->name) != 0)
 	{
 		uint64_t size = octal_to_decimal(atoi(ustart->size));
-		//kprintf("binary name is %s \n",ustart->name);
+		//kprintf2("binary name is %s \n",ustart->name);
 		//kprintf("binary size is %d \n",size);
 		//uint64_t align = 0;
 		/*if(size != 0)
@@ -27,7 +47,7 @@ uint64_t find_offset_for_file(char *fname)
 		
 		if(kstrcmp(ustart->name, fname) == 0)
 		{
-			//kprintf("matched %d \n", offset);
+			//kprintf2("matched %d \n", offset);
 			return offset + 512;
 		}
 		uint64_t align = 0;
@@ -49,13 +69,14 @@ void print_files()
 	{
 		return;
 	}
+	//kprintf2("ashish\n");
 	struct file *t = filelist;
 	while(t != NULL)
 	{
-		kprintf("name: %s \t", t->name);
-		kprintf("addr: %p \t", t->addr);
-		kprintf("type: %d \t", t->type);
-		kprintf("size: %d \n", t->size);
+		kprintf2("name: %s \t", t->name);
+		kprintf2("fd: %d \n", t->fd);
+		//kprintf("type: %d \t", t->type);
+		//kprintf("size: %d \n", t->size);
 		t = t->next;	
 	}
 }
@@ -90,13 +111,32 @@ void initialize_tarfs()
 	uint64_t offset = 0;
 	int index = 0;
 	struct file *f = NULL;
+	f = kmalloc(sizeof(struct file)); 
+	f->fd=fd_count;
+	f->type = TYPE_DIRECTORY;
+	fd_count++;
+	kstrcpy(f->name,"rootfs/");
+	add_to_filelist(f);
+	int size;
+	char *buf = kmalloc(1024);
 	while(strlen(ustart->name) != 0)
 	{
-		//kprintf("binary name is %s \n",ustart->name);
+		kstrcpy(buf,"rootfs/");
+		//kprintf2("binary name is %s length - %d\n",ustart->name,strlen(ustart->name));
 		f = kmalloc(sizeof(struct file)); 
-		kstrcpy(f->name,ustart->name); 
+		//kprintf2("name is  -  %s\n",buf);
+		//kprintf2("name is  -  %s\n",buf);
+		strcat(buf,ustart->name);
+		//kprintf2("name now is  -  %s\n",buf);
+		size=strlen(buf);
+		
+		
+		kstrcpy(f->name,buf); 
+		//kprintf2("name is  -  %s\n",f->name);
+		memset(buf, 0, size);
 		f->addr = (uint64_t)&_binary_tarfs_start + offset;
 		f->fd = fd_count;
+		//kprintf2("fd is  -  %d\n",f->fd);
 		fd_count++;
 		f->type = atoi(ustart->typeflag);
 		f->size = octal_to_decimal(atoi(ustart->size));
@@ -112,8 +152,10 @@ void initialize_tarfs()
 		add_to_filelist(f);
 		index++;
 		//count++;
+		
 	}
 	//file[index] = kmalloc(sizeof(struct file));
+	kfree((uint64_t)buf,strlen(buf));
 	print_files();
 }
 
@@ -244,6 +286,7 @@ struct file *dopen(uint64_t fd, uint64_t buf)
 			if(t->fd == fd && t->type == TYPE_DIRECTORY)
 					{
 					   int len = strlen(t->name); 
+						//kprintf2("%s\n",t->name);
 					   char* name = t->name;
 				    if(t->next != NULL && kstrncmp(t->next->name, name,len)==0){
 							//kprintf2("name of next file %s\n",t->name);
@@ -287,24 +330,36 @@ struct file *dread(struct file* f)
 		if(t->fd == f->fd)
 		{
 			char temp_name[1024];
-			int j =0;
+			//int j =0;
 			char* iter_name = f->name;
-			for(int i = 0; iter_name[i] != '/' ; i++) {
-    					temp_name[j++]=iter_name[i];
-			}
-			int len = j++;
+			int length = strlen(iter_name);
+			int i = length-2;
+			//kprintf2("length of file %s is %d\n",iter_name,length);
+			while(iter_name[i] != '/')
+    			i--;		//temp_name[j]=iter_name[i];
+			length = i+1;
+			kstrncpy(temp_name,f->name,length);
+			//kprintf2("temp_name after modification %s length %d\n",temp_name,length);
 			 //int len = strlen(t->name); 
 			 //char* name = t->name;
-			  if(t->next !=NULL && kstrncmp(t->next->name, temp_name,len)==0){
+			while(t->next!=NULL && kstrncmp(t->next->name, temp_name,length)==0)
+			{
+				//kprintf2("inside while\n");
+				//kprintf2("t->next->name%s\n",t->next->name);
+				//kprintf2("f->name%s\n",f->name);
+			  if(kstrncmp(t->next->name, f->name,strlen(f->name))!=0){
+				  			
 							//kprintf2("name of next file %s\n",t->next->name);
 						  return t->next;
 						}
-						else{
-							return NULL;
-						}
-			}
+						
 				t=t->next;
-			}			
+			}
+			return NULL;
+				
+		}	
+		    t=t->next;
+	}
 			return NULL;
 }
 

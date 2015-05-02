@@ -8,7 +8,7 @@ extern __thread int errno;
 
 int main(int argc, char* argv[], char* envp[]);
 void exit(int status);
-
+uint64_t kill(uint64_t pid);
 // memory
 typedef uint64_t size_t;
 void *malloc(size_t size);
@@ -24,6 +24,7 @@ int execve(const char *filename, char *const argv[], char *const envp[]);
 pid_t waitpid(pid_t pid, int *status, int options);
 unsigned int sleep(unsigned int seconds);
 unsigned int alarm(unsigned int seconds);
+void listprocess();
 
 // paths
 char *getcwd(char *buf, size_t size);
@@ -76,5 +77,5 @@ struct File
 void *opendir(const char *name);
 struct dirent * readdir(struct dirent *dir);
 int closedir(void *dir);
-
+void cls();
 #endif

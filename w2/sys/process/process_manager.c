@@ -6,6 +6,20 @@ void save_registers(struct task_struct *p, struct task_struct *task);
 //void start_process(struct task_struct* task);
 /* web reference: http://www.jamesmolloy.co.uk/tutorial_html/10.-User%20Mode.html   */
 
+static struct task_struct* idle_task = NULL;
+
+static void idle_process(){
+	while(1);
+}
+
+void init_idle_process(){
+	idle_task = create_new_task("idle"); 
+	
+	idle_task->state = TASK_IDLE;
+	idle_task->e_entry = (uint64_t)idle_process;
+	schedule_process();
+}
+
 struct task_struct* get_current_task()
 {
 	return current_task;	
@@ -38,6 +52,9 @@ void load_process(struct task_struct* task, uint64_t binary_entry, uint64_t usta
 
 void schedule_process()
 {
+	//TODO in case there is no task to run schedule kernel  
+	//if there is any new non kernel task scheduled and if current task is kernel remove kernel to IDLE state and 
+	// schedule new task
 	kprintf("scheduling process stared.........\n");
 	struct task_struct *task = NULL;
 	if(current_task == NULL)
@@ -51,6 +68,7 @@ void schedule_process()
 			//task->rsp = task->mm->stack_vm;    //rsp
 			//task->rip = task->e_entry;
 			current_task = task;
+			current_task->state = TASK_RUNNING;	
 			start_process(task, task->mm->stack_vm, task->e_entry);
 			//load_process(task, task->e_entry, task->mm->stack_vm);
 			
@@ -72,11 +90,12 @@ void schedule_process()
 			current_task->state = TASK_RUNNABLE;
 			kprintf("schedule called...%d \n", current_task->pid);
 			current_task = task;
+			current_task->state = TASK_RUNNING;	
 			start_process(task, task->mm->stack_vm, task->e_entry);
 			//load_process(task, task->e_entry, task->mm->stack_vm);
 		}
 	}
-	current_task->state = TASK_RUNNING;	
+	
 }
 
 void save_registers(struct task_struct *p, struct task_struct *task)
@@ -84,8 +103,8 @@ void save_registers(struct task_struct *p, struct task_struct *task)
 	int i = 1;
 	while(p->kstack[KSTACK_SIZE - i] == 0)
 		i++;
-	p->rsp = p->kstack[KSTACK_SIZE - i - 1];
-	p->rip = p->kstack[KSTACK_SIZE - i - 4];
+	//p->rsp = p->kstack[KSTACK_SIZE - i - 1];
+	//p->rip = p->kstack[KSTACK_SIZE - i - 4];
 	/*if(task->ppid == current_task->pid)
 	{
 		task->rsp = p->rsp;
@@ -95,13 +114,13 @@ void save_registers(struct task_struct *p, struct task_struct *task)
 
 void start_process(struct task_struct* task, uint64_t ustack, uint64_t binary_entry)
 {
+	//kprintf2("Running process %s \n",task->name);
 	//1. load cr3
 	write_cr3(virt_to_phy(task->pml4e,0));
 	//task->r.rsp = ustack;
 	//task->r.rip = task->e_entry;
 	//task->r.rsp = ustack;
 	//task->r.rip = task->e_entry;
-	
 	task->r.ss = 0x23;
 	task->r.cs = 0x1b;
 	task->r.rflag = 0x200;
