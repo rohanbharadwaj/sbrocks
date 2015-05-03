@@ -21,7 +21,7 @@
 
 #define MAX_LEN 1024
 #define CMD_LEN 1024
-#define MAX_CMD 2
+#define MAX_CMD 5
 #define MAX_ARG_LEN 128
 #define MAX_ARG_COUNT 64
 //#define NULL 0
@@ -95,10 +95,16 @@ int main(int argc,char *argv[],char *envP[]){
                 case 1:
                     executeProcess(envp);
                     break;
-                default:
+                case 2:
 					//printf("executeProcessPipe should be called \n");
                     executeProcessPipe(num_args,envp);
+					break;
+				case 3:
+					executeProcessPipe(num_args,envp);
                     break;
+				default:
+					printf("more than 2 pipes not supported \n");
+					break;
             }
 
         }
@@ -144,6 +150,110 @@ void executeScript(char* fname,char *envp[]){
         }
     
 }
+#if 0
+int parseCommand(char *inputString)
+{
+   /* for(int i = 0; i < cmdcount; i++)
+    {
+        free(commands[i]);
+    }*/
+	//printf("parse command start \n");
+	
+	//char *srcPtr = malloc(strlen(inputString));
+	//memset(srcPtr, 0, strlen(inputString));
+	//char *srcPtr = NULL;
+	//strcpy(srcPtr, inputString);
+	
+    char *srcPtr = inputString;
+	
+    int len = strlen(inputString);
+	//printf("srcptr %s \n", srcPtr);
+    char *str = NULL;
+    int i = 0;
+    cmdcount = 0;
+    int argcount = 0;
+    int found = 0;
+    int count = 0;
+	//printf("reached %s, %d\n", srcPtr, strlen(srcPtr));
+    while(i < len)
+    {
+		if(str != NULL)
+			memset(str, 0, strlen(str));
+        str = srcPtr;
+		//printf("str =%s \n", str);
+        while((*srcPtr != ' '  && *srcPtr != '|') && i < len)
+        {      
+            //printf("%c \n", *srcPtr); 
+            i++;
+            count++;
+            srcPtr++;
+        }    
+		//printf("reached2 \n");
+		//this command is over
+        if(*srcPtr == '|')
+        {
+			
+            trim(str);
+            int len = strlen(str);
+            if(len > 0 && count > 0)
+            {
+                commands[cmdcount][argcount]=malloc(len);
+				memset(commands[cmdcount][argcount], 0, len);
+                strncpy(commands[cmdcount][argcount], str, count);
+                printf("command is %s \n",commands[cmdcount][argcount]);
+                argcount++;
+            }
+			if(*srcPtr == '|')
+			{
+				printf("pipe \n");
+				//printf("new srcPtr = %c \n", *srcPtr);
+				printf("new srcPtr = %s \n", srcPtr);	
+				cmdcount++;
+            	argcount = 0;
+				found = 1;
+            	srcPtr++;
+			} 
+            
+			
+        }
+        //this is argument    
+        if(found != 1)
+        {
+			printf("final \n");
+            trim(str);
+            int len = strlen(str);
+            if(len > 0 && count > 0)
+            {
+				//printf("final before malloc %d %d %d \n", cmdcount, argcount, len);
+				//listprocess();
+                commands[cmdcount][argcount]=malloc(len);
+				//printf("final after malloc \n");
+				memset(commands[cmdcount][argcount], 0, len);
+				//printf("final after memset \n");
+                strncpy(commands[cmdcount][argcount], str, count);
+				//printf("final after strncpy \n");
+				printf("command is %s \n",commands[cmdcount][argcount]);
+                argcount++;
+            }
+        }
+        found = 0;
+        count = 0;
+		//remove spaces
+        while (*srcPtr == ' ' && i<len) {
+            *srcPtr = '\0';
+            srcPtr++;
+            i++;
+        }
+        //printf("shashi:  %c \n", *srcPtr); 
+        commands[cmdcount][argcount]=NULL;
+
+    }
+	printf("parse command end \n");
+	//printf("cmdcount = %d, argcount= %d \n", cmdcount, argcount);
+    return cmdcount + 1;
+}
+#endif
+
 
 int parseCommand(char *inputString)
 {
@@ -165,6 +275,9 @@ int parseCommand(char *inputString)
 	//printf("reached %s, %d\n", srcPtr, strlen(srcPtr));
     while(i < len)
     {
+		if(str != NULL)
+			memset(str, 0, strlen(str));
+        //str = srcPtr;
         str = srcPtr;
 		//printf("str =%s \n", str);
         while((*srcPtr != ' '  && *srcPtr != '|') && i < len)
@@ -182,11 +295,12 @@ int parseCommand(char *inputString)
             if(len > 0 && count > 0)
             {
                 commands[cmdcount][argcount]=malloc(len);
-				memset(commands[cmdcount][argcount], 0, len);
+				memset(commands[cmdcount][argcount], 0, 1024);
                 strncpy(commands[cmdcount][argcount], str, count);
                 //printf("command is %s \n",commands[cmdcount][argcount]);
                 argcount++;
             }
+			//printf("new srcPtr = %s \n", srcPtr);
             cmdcount++;
             argcount = 0;
             found = 1;
@@ -197,20 +311,24 @@ int parseCommand(char *inputString)
         {
 			//printf("final \n");
             trim(str);
+			//printf("after trim\n");
             int len = strlen(str);
+			//printf("after str\n");
             if(len > 0 && count > 0)
             {
+				//printf("inside id\n");
 				//printf("final before malloc %d %d %d \n", cmdcount, argcount, len);
 				//listprocess();
                 commands[cmdcount][argcount]=malloc(len);
 				//printf("final after malloc \n");
-				memset(commands[cmdcount][argcount], 0, len);
+				memset(commands[cmdcount][argcount], 0, 1024);
 				//printf("final after memset \n");
                 strncpy(commands[cmdcount][argcount], str, count);
 				//printf("final after strncpy \n");
 				//printf("command is %s \n",commands[cmdcount][argcount]);
                 argcount++;
             }
+			//printf("final out\n");
         }
         found = 0;
         count = 0;
@@ -219,15 +337,14 @@ int parseCommand(char *inputString)
             srcPtr++;
             i++;
         }
-        //printf("shashi:  %c \n", *srcPtr); 
-        commands[cmdcount][argcount]=NULL;
+        //printf("while end\n"); 
+        //commands[cmdcount][argcount]=NULL;
 
     }
 	//printf("parse command end \n");
 	//printf("cmdcount = %d, argcount= %d \n", cmdcount, argcount);
     return cmdcount + 1;
 }
-
 void printPrompt(){
     if(strlen(PS1)<2)  
     {   
@@ -315,6 +432,7 @@ int handleCommand(char *cmd, char *args, char *env[])
     }*/
 	if(strcmp("clear", cmd) == 0)
     {
+		printf("clear \n");
         cls();
         return 1;
     }
@@ -326,6 +444,11 @@ int handleCommand(char *cmd, char *args, char *env[])
             printf("%s\n", buf);
    	 else
             printf("getcwd() error : ");
+     return 1;
+    }
+	  if(strcmp("echo", cmd) == 0)
+    {
+		 printf("%s\n",commands[0][1]);	
      return 1;
     }
 		
@@ -451,12 +574,13 @@ char* getAbsolutePath(char *cmd,char *envp[])
         after = tokenizeWithKey(after, ':', &before);
 		//printf("command is %s len is %d \n",cmd, strlen(cmd));
         strcpy(abspath, before);
+		//printf("absolute path is%s, len = %d \n", abspath, strlen()
         strcat(abspath, "/");
         strcat(abspath,cmd);
         trim(abspath);
 		//printf("absolute path is : %s \n", abspath);
         int filedesc = open(abspath, O_RDONLY);
-		//printf("absolute path is %s fd is %d \n", abspath, filedesc);
+		//printf("absolute path is%s, len = %d fd is %d \n", abspath, strlen(abspath),filedesc);
         if(filedesc >= 0)
         {
 			//printf("getAbsolutePath absolute path is %s \n", abspath);
@@ -602,6 +726,7 @@ void executeProcess(char *envp[]){
 }
 
 void executeProcessPipe(int n,char *envp[]){
+	//printf("executeProcessPipe %d \n", n);
     char cmd[MAX_LEN];
     int fd[2];
     int pid=0,status;
@@ -624,7 +749,7 @@ void executeProcessPipe(int n,char *envp[]){
     pid = fork();
     if(pid ==0)
     {
-		printf("in child \n");
+		//printf("in child \n");
 		//while(1);
 		//int pid2;
         for (i = 0; i < n-1; ++i)
@@ -635,11 +760,11 @@ void executeProcessPipe(int n,char *envp[]){
 			//while(1);
             if(pid==0)
             {
-				printf("first command %s \n", getAbsolutePath(commands[i][0],envp));
+				//printf("first command %s \n", getAbsolutePath(commands[i][0],envp));
                 if(prev != 0)
                 {
                     dup2 (prev,0);
-                    close(prev);
+                    //close(prev);
                 }
                 if(fd[1] != 1)
                 {
@@ -660,7 +785,7 @@ void executeProcessPipe(int n,char *envp[]){
                 exit(1);
             }
 			//waitpid(pid2,&status,0);
-            close (fd [1]);
+            //close (fd [1]);
             prev= fd [0];
         }
 		//waitpid(pid,&status,0);
@@ -669,7 +794,7 @@ void executeProcessPipe(int n,char *envp[]){
             dup2 (prev, 0);
         strcpy(cmd, getAbsolutePath(commands[i][0],envp));
 		sleep(1);
-		printf("second command %s \n",cmd);
+		//printf("second command %s \n",cmd);
         if(handleCommand(cmd, commands[i][1], envp) == 0)
         {
             if(execve(cmd,&commands[i][0],envp)==-1)
@@ -680,7 +805,7 @@ void executeProcessPipe(int n,char *envp[]){
     }
     waitpid(pid,&status,0);
 	//listprocess();
-	printf("parent exit \n");
+	//printf("parent exit \n");
     for(i=0;i<n;i++)
     {
         commands[i][1] = NULL;

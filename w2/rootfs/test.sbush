@@ -1,0 +1,5 @@
+#! rootfs/bin/sbush
+echo "hey i am echo  from script"
+ls
+cat rootfs/shashi.txt
+ps
